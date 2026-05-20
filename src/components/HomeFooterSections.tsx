@@ -78,6 +78,7 @@ export function HomeFooterSections() {
                   <ul className="list-decor">
                     <li><a href="/">CATALOGUE SCOOTERS</a></li>
                     <li><a href="/about">À PROPOS</a></li>
+                    <li><a href="/gallery">GALERIE</a></li>
                     <li><a href="/">LOUER/ACHETER</a></li>
                     <li><a href="/contact">NOUS TROUVER</a></li>
                   </ul>

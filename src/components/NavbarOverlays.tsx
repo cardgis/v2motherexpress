@@ -49,6 +49,7 @@ export function NavbarOverlays({ menuOpen, searchOpen, onCloseMenu, onCloseSearc
                 <li><Link href="/" onClick={onCloseMenu}>Accueil</Link></li>
                 <li><Link href="/" onClick={(e) => { onCloseMenu(); onCatalogueClick(e); }}>Catalogue motos</Link></li>
                 <li><Link href="/about" onClick={onCloseMenu}>À PROPOS</Link></li>
+                <li><Link href="/gallery" onClick={onCloseMenu}>GALERIE</Link></li>
                 <li><Link href="/" onClick={onCloseMenu}>Louer / Acheter</Link></li>
                 <li><Link href="/contact" onClick={onCloseMenu}>NOUS TROUVER</Link></li>
               </ul>
