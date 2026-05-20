@@ -5584,8 +5584,8 @@ blockquote span::before {
   }
 
   .slideshow-item__decor {
-    bottom: -15%;
-    transform: translateX(-55%);
+    bottom: auto;
+    transform: none;
   }
 
   .section-hero__form {
