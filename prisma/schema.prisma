@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+model Produit {
+  id              String    @id @default(uuid())
+  slug            String    @unique
+  nom             String
+  marque          String
+  modele          String
+  annee           Int       @default(2024)
+  categorie       Categorie
+  moteurType      String
+  batterie        String
+  vitesseMaxKmh   Int
+  autonomieKm     Int
+  stockTotal      Int       @default(0)
+  stockDisponible Int       @default(0)
+  estDisponible   Boolean   @default(true)
+  aLaVente        Boolean   @default(true)
+  aLaLocation     Boolean   @default(true)
+  estActif        Boolean   @default(true)
+  imageUrl        String?
+  images          String[]
+  tarification    Tarification?
+  locations       Location[]
+  ventes          Vente[]
+  inventories     Inventory[]
+  updatedById     String?
+  updatedBy       AdminUser? @relation("ProductUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Tarification {
+  id                      String   @id @default(uuid())
+  produit                 Produit  @relation(fields: [produitId], references: [id])
+  produitId               String   @unique
+  prixVenteFcfa           Int
+  moratoireActif          Boolean  @default(false)
+  moratoireAcompte        Int?
+  moratoireSolde          Int?
+  moratoireDureeEnMois    Int      @default(4)
+  kmInclus                Int
+  tarifKmSupplementaire   Int      @default(1000)
+  tarifMatinFcfa          Int
+  tarifApresMidiFcfa      Int
+  tarifJourneeFcfa        Int
+  tarif24hFcfa            Int
+  rachatMontantJournalier Int      @default(5000)
+  rachatNombreJours       Int      @default(730)
+  rachatMontantTotal      Int      @default(3650000)
+  createdAt               DateTime @default(now())
+}
+
+model Accessoire {
+  id                   String   @id @default(uuid())
+  nom                  String
+  prixAchatFcfa        Int
+  tarifLocationDemi    Int
+  tarifLocationJournee Int
+  tarifLocation24h     Int
+  stock                Int      @default(0)
+  estDisponible        Boolean  @default(true)
+  imageUrl             String?
+}
+
+model Location {
+  id                String         @id @default(uuid())
+  produit           Produit        @relation(fields: [produitId], references: [id])
+  produitId         String
+  nomClient         String
+  telephoneClient   String
+  creneau           CreneauLocation
+  formule           FormuleLocation
+  dateDebut         DateTime
+  dateFin           DateTime?
+  kmDepart          Int?
+  kmRetour          Int?
+  kmSupplementaires Int            @default(0)
+  coutKmSupp        Int            @default(0)
+  tarifBase         Int
+  montantPaye       Int            @default(0)
+  joursPayes        Int            @default(0)
+  statut            StatutLocation @default(ACTIF)
+  createdAt         DateTime       @default(now())
+}
+
+model Vente {
+  id                String      @id @default(uuid())
+  produit           Produit     @relation(fields: [produitId], references: [id])
+  produitId         String
+  nomClient         String
+  telephoneClient   String
+  formule           FormuleVente
+  prixTotal         Int
+  montantPaye       Int
+  montantRestant    Int         @default(0)
+  echeanceMoratoire DateTime?
+  statut            StatutVente @default(EN_COURS)
+  createdAt         DateTime    @default(now())
+}
+
+model Store {
+  id           String       @id @default(uuid())
+  slug         String       @unique
+  name         String
+  city         String?
+  isActive     Boolean      @default(true)
+  inventories   Inventory[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Inventory {
+  id               String     @id @default(uuid())
+  produit          Produit    @relation(fields: [produitId], references: [id], onDelete: Cascade)
+  produitId        String
+  store            Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  storeId          String
+  totalQuantity    Int        @default(0)
+  availableQuantity Int       @default(0)
+  isAvailable      Boolean    @default(true)
+  updatedById      String?
+  updatedBy        AdminUser? @relation("InventoryUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  @@unique([produitId, storeId])
+}
+
+model AdminUser {
+  id                String     @id @default(uuid())
+  email             String     @unique
+  name              String?
+  passwordHash      String
+  role              AdminRole  @default(ADMIN)
+  isActive          Boolean    @default(true)
+  updatedProducts   Produit[]  @relation("ProductUpdatedBy")
+  updatedInventories Inventory[] @relation("InventoryUpdatedBy")
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+}
+
+enum Categorie {
+  ELECTRIQUE
+}
+
+enum CreneauLocation {
+  MATIN
+  APRES_MIDI
+  JOURNEE
+  H24
+}
+
+enum FormuleLocation {
+  CLASSIQUE
+  RACHAT_PROGRESSIF
+}
+
+enum FormuleVente {
+  COMPTANT
+  MORATOIRE
+}
+
+enum StatutVente {
+  EN_COURS
+  SOLDE
+  DEFAUT
+}
+
+enum StatutLocation {
+  ACTIF
+  TERMINE
+  ANNULE
+}
+
+enum AdminRole {
+  ADMIN
+  SUPER_ADMIN
+}

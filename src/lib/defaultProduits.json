@@ -1,0 +1,57 @@
+[
+  {
+    "id": "1",
+    "slug": "revoo-a10",
+    "nom": "Revoo A10",
+    "modele": "A10",
+    "imageUrl": "/assets/img/product-2.jpg",
+    "estDisponible": true,
+    "vitesseMaxKmh": 40,
+    "autonomieKm": 70,
+    "tarification": { "tarif24hFcfa": 4000 }
+  },
+  {
+    "id": "2",
+    "slug": "revoo-a12",
+    "nom": "Revoo A12",
+    "modele": "A12",
+    "imageUrl": "/assets/img/product-3.jpg",
+    "estDisponible": true,
+    "vitesseMaxKmh": 50,
+    "autonomieKm": 80,
+    "tarification": { "tarif24hFcfa": 5000 }
+  },
+  {
+    "id": "3",
+    "slug": "revoo-c32",
+    "nom": "Revoo C32",
+    "modele": "C32",
+    "imageUrl": "/assets/img/product-4.jpg",
+    "estDisponible": true,
+    "vitesseMaxKmh": 60,
+    "autonomieKm": 90,
+    "tarification": { "tarif24hFcfa": 6500 }
+  },
+  {
+    "id": "4",
+    "slug": "revoo-b12",
+    "nom": "Revoo B12",
+    "modele": "B12",
+    "imageUrl": "/assets/img/product-5.jpg",
+    "estDisponible": true,
+    "vitesseMaxKmh": 60,
+    "autonomieKm": 140,
+    "tarification": { "tarif24hFcfa": 10000 }
+  },
+  {
+    "id": "5",
+    "slug": "revoo-e52",
+    "nom": "Revoo E52",
+    "modele": "E52",
+    "imageUrl": "/assets/img/product-6.jpg",
+    "estDisponible": true,
+    "vitesseMaxKmh": 80,
+    "autonomieKm": 120,
+    "tarification": { "tarif24hFcfa": 15000 }
+  }
+]
