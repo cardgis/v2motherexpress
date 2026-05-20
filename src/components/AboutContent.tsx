@@ -43,7 +43,7 @@ export function AboutContent() {
 
           <p className="about-body" data-reveal data-reveal-delay="80">
             Celle dont le nom nourrit, rassemble, et fait avancer. Ici au Sénégal,
-            on l'appelle <strong>La Mother</strong> — pas par hasard. C'est elle qui tient
+            on l'appelle <strong>La Mother</strong>  pas par hasard. C'est elle qui tient
             la maison, qui connaît chaque visage, qui sert avec le cœur. C'est
             autour d'elle que tout commence.
           </p>
@@ -52,7 +52,7 @@ export function AboutContent() {
 
           <p className="about-body" data-reveal data-reveal-delay="80">
             L'aventure a d'abord pris la forme d'une table. <strong>Chez La Mother</strong>, un
-            restaurant où l'on mange comme à la maison — avec les saveurs du
+            restaurant où l'on mange comme à la maison avec les saveurs du
             terroir, la chaleur du foyer, et cette générosité qui ne se commande
             pas. Un lieu où Thiès se retrouve autour d'un plat, d'un
             sourire, d'une histoire partagée.
@@ -81,7 +81,7 @@ export function AboutContent() {
         </div>
 
         <p className="about-body" data-reveal data-reveal-delay="80">
-          La Mother Express, c'est le même esprit — familial, ancré, sincère —
+          La Mother Express, c'est le même esprit familial, ancré, sincère 
           mais sur deux roues. Une extension naturelle, portée par la même
           conviction : entreprendre ici, pour les gens d'ici, avec ce que la
           terre et l'époque offrent de meilleur. Aujourd'hui, cette époque,
@@ -95,7 +95,7 @@ export function AboutContent() {
           <p>
             Avec <strong>REVOO</strong> comme partenaire, on ne vend pas juste un
             scooter. On propose une nouvelle façon de circuler à Mbour, à
-            Thiès — et demain, ailleurs.
+            Thiès et demain, ailleurs.
           </p>
         </div>
 

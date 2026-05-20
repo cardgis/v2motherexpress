@@ -5983,3 +5983,11 @@ blockquote span::before {
   color: #2e7d32;
   font-size: 14px;
 }
+
+@media only screen and (max-width: 639px) {
+  .floating-contact {
+    top: auto;
+    bottom: 98px;
+    transform: none;
+  }
+}
