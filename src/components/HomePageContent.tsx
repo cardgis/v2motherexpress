@@ -1,5 +1,4 @@
 import { HomeHeroAbout } from "@/components/HomeHeroAbout";
-import { HomeMiddleSections } from "@/components/HomeMiddleSections";
 import { HomeProductsSection } from "@/components/HomeProductsSection";
 import { HomeVideosSection } from "@/components/HomeVideosSection";
 import { HomeFooterSections } from "@/components/HomeFooterSections";
@@ -20,7 +19,6 @@ export function HomePageContent({ produits, inventoriesByProductId }: HomePageCo
         <HomeProductsSection produits={produits} inventoriesByProductId={inventoriesByProductId} />
         <ContactInfoSection />
         <HomeVideosSection />
-        <HomeMiddleSections />
       </main>
       <HomeFooterSections />
     </div>

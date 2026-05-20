@@ -67,6 +67,7 @@ export function Header() {
               <ul className="uk-navbar-nav">
                 <li><Link href="/" onClick={handleCatalogueClick}>CATALOGUE SCOOTERS</Link></li>
                 <li><Link href="/about">À PROPOS</Link></li>
+                <li><Link href="/gallery">GALERIE</Link></li>
                 <li><Link href="/">LOUER/ACHETER</Link></li>
                 <li><Link href="/contact">NOUS TROUVER</Link></li>
               </ul>
