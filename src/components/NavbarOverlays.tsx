@@ -8,10 +8,9 @@ type NavbarOverlaysProps = {
   searchOpen: boolean;
   onCloseMenu: () => void;
   onCloseSearch: () => void;
-  onCatalogueClick: (e: React.MouseEvent) => void;
 };
 
-export function NavbarOverlays({ menuOpen, searchOpen, onCloseMenu, onCloseSearch, onCatalogueClick }: NavbarOverlaysProps) {
+export function NavbarOverlays({ menuOpen, searchOpen, onCloseMenu, onCloseSearch }: NavbarOverlaysProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -47,7 +46,7 @@ export function NavbarOverlays({ menuOpen, searchOpen, onCloseMenu, onCloseSearc
             <nav aria-label="Navigation mobile">
               <ul className="navbar-overlay__nav uk-nav uk-nav-default uk-nav-parent-icon">
                 <li><Link href="/" onClick={onCloseMenu}>Accueil</Link></li>
-                <li><Link href="/" onClick={(e) => { onCloseMenu(); onCatalogueClick(e); }}>Catalogue motos</Link></li>
+                <li><Link href="/produits" onClick={onCloseMenu}>Catalogue motos</Link></li>
                 <li><Link href="/about" onClick={onCloseMenu}>À PROPOS</Link></li>
                 <li><Link href="/gallery" onClick={onCloseMenu}>GALERIE</Link></li>
                 <li><Link href="/" onClick={onCloseMenu}>Louer / Acheter</Link></li>
@@ -99,7 +98,7 @@ export function NavbarOverlays({ menuOpen, searchOpen, onCloseMenu, onCloseSearc
             />
           </form>
           <div className="navbar-overlay__quick-links" aria-label="Raccourcis de recherche">
-            <Link href="/" onClick={(e) => { onCloseSearch(); onCatalogueClick(e); }}>Catalogue motos</Link>
+            <Link href="/produits" onClick={onCloseSearch}>Catalogue motos</Link>
             <Link href="/about" onClick={onCloseSearch}>À PROPOS</Link>
             <Link href="/" onClick={onCloseSearch}>LOUER/ACHETER</Link>
             <Link href="/contact" onClick={onCloseSearch}>NOUS TROUVER</Link>

@@ -6,13 +6,6 @@ function PhoneIcon() {
   );
 }
 
-function MapPinIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="36" height="36" fill="currentColor" aria-hidden="true">
-      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-    </svg>
-  );
-}
 
 function MailIcon() {
   return (
@@ -22,16 +15,6 @@ function MailIcon() {
   );
 }
 
-function MapPlaceholder() {
-  return (
-    <div className="contact-map-placeholder">
-      <div className="contact-map-placeholder__inner">
-        <MapPinIcon />
-        <span>Coordonnées GPS à venir</span>
-      </div>
-    </div>
-  );
-}
 
 function NavIcon() {
   return (
@@ -94,7 +77,11 @@ export function ContactInfoSection() {
                 +221 70 367 75 75
               </a>
             </div>
-            <MapPlaceholder />
+            <MapEmbed
+              src="https://maps.google.com/maps?q=C2W7%2B5C+M%27bour%2C+S%C3%A9n%C3%A9gal&output=embed&hl=fr&z=16"
+              title="La Mother Express Mbour"
+              directionsUrl="https://www.google.com/maps/dir/?api=1&destination=C2W7%2B5C+M%27bour%2C+S%C3%A9n%C3%A9gal"
+            />
           </div>
 
           {/* — Thiès — */}

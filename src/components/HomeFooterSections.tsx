@@ -76,7 +76,7 @@ export function HomeFooterSections() {
                 <div className="page-footer__column page-footer__menu">
                   <div className="uk-h4">Liens rapides</div>
                   <ul className="list-decor">
-                    <li><a href="/">CATALOGUE SCOOTERS</a></li>
+                    <li><a href="/produits">CATALOGUE SCOOTERS</a></li>
                     <li><a href="/about">À PROPOS</a></li>
                     <li><a href="/gallery">GALERIE</a></li>
                     <li><a href="/">LOUER/ACHETER</a></li>

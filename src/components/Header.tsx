@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { SearchButton } from "./SearchButton";
@@ -11,20 +11,10 @@ export function Header() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const scrollToCatalogueRef = useRef(false);
 
   useEffect(() => {
     setMenuOpen(false);
     setSearchOpen(false);
-  }, [pathname]);
-
-  // After navigating to '/', scroll to #catalogue if the click requested it
-  useEffect(() => {
-    if (pathname !== '/' || !scrollToCatalogueRef.current) return;
-    scrollToCatalogueRef.current = false;
-    requestAnimationFrame(() => {
-      document.getElementById('catalogue')?.scrollIntoView({ behavior: 'smooth' });
-    });
   }, [pathname]);
 
   useEffect(() => {
@@ -38,18 +28,9 @@ export function Header() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const handleCatalogueClick = (e: React.MouseEvent) => {
-    if (pathname === '/') {
-      e.preventDefault();
-      document.getElementById('catalogue')?.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      scrollToCatalogueRef.current = true;
-    }
-  };
-
   if (pathname.startsWith('/admin')) return null;
 
-  const isTransparent = pathname !== '/contact';
+  const isTransparent = pathname !== '/contact' && pathname !== '/produits';
   const headerClass = isTransparent ? "page-header page-header-transparent" : "page-header";
 
   return (
@@ -65,7 +46,7 @@ export function Header() {
           <div className="page-header__center">
             <nav className="page-nav" data-uk-navbar>
               <ul className="uk-navbar-nav">
-                <li><Link href="/" onClick={handleCatalogueClick}>CATALOGUE SCOOTERS</Link></li>
+                <li><Link href="/produits">CATALOGUE SCOOTERS</Link></li>
                 <li><Link href="/about">À PROPOS</Link></li>
                 <li><Link href="/gallery">GALERIE</Link></li>
                 <li><Link href="/">LOUER/ACHETER</Link></li>
@@ -84,7 +65,6 @@ export function Header() {
         searchOpen={searchOpen}
         onCloseMenu={() => setMenuOpen(false)}
         onCloseSearch={() => setSearchOpen(false)}
-        onCatalogueClick={handleCatalogueClick}
       />
     </>
   );

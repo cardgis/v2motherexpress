@@ -1,5 +1,5 @@
 import { HomeHeroAbout } from "@/components/HomeHeroAbout";
-import { HomeProductsSection } from "@/components/HomeProductsSection";
+import ProductExplorer from "@/components/ProductExplorer";
 import { HomeVideosSection } from "@/components/HomeVideosSection";
 import { HomeFooterSections } from "@/components/HomeFooterSections";
 import { ContactInfoSection } from "@/components/ContactInfoSection";
@@ -16,7 +16,7 @@ export function HomePageContent({ produits, inventoriesByProductId }: HomePageCo
       <ScrollReveal />
       <main className="page-main">
         <HomeHeroAbout />
-        <HomeProductsSection produits={produits} inventoriesByProductId={inventoriesByProductId} />
+        <ProductExplorer produits={produits} inventoriesByProductId={inventoriesByProductId} variant="section" />
         <ContactInfoSection />
         <HomeVideosSection />
       </main>
