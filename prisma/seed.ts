@@ -25,7 +25,7 @@ const produits = [
     stockTotal: 5,
     stockDisponible: 5,
     estDisponible: true,
-    imageUrl: "/assets/img/product-2.jpg",
+    imageUrl: "/assets/img/A10.png",
     images: [],
     tarification: {
       prixVenteFcfa: 410000,
@@ -57,7 +57,7 @@ const produits = [
     stockTotal: 5,
     stockDisponible: 5,
     estDisponible: true,
-    imageUrl: "/assets/img/product-3.jpg",
+    imageUrl: "/assets/img/A12.png",
     images: [],
     tarification: {
       prixVenteFcfa: 520000,
@@ -89,7 +89,7 @@ const produits = [
     stockTotal: 5,
     stockDisponible: 5,
     estDisponible: true,
-    imageUrl: "/assets/img/product-4.jpg",
+    imageUrl: "/assets/img/C32.png",
     images: [],
     tarification: {
       prixVenteFcfa: 650000,
@@ -121,7 +121,7 @@ const produits = [
     stockTotal: 5,
     stockDisponible: 5,
     estDisponible: true,
-    imageUrl: "/assets/img/product-5.jpg",
+    imageUrl: "/assets/img/B12.jpg",
     images: [],
     tarification: {
       prixVenteFcfa: 860000,
@@ -153,7 +153,7 @@ const produits = [
     stockTotal: 5,
     stockDisponible: 5,
     estDisponible: true,
-    imageUrl: "/assets/img/product-6.jpg",
+    imageUrl: "/assets/img/E52.png",
     images: [],
     tarification: {
       prixVenteFcfa: 970000,
