@@ -437,6 +437,33 @@ dialog[open] {
   padding: 0 2px;
 }
 
+.video-card__coming {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #0f0f12;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.36);
+  border: 1px dashed rgba(199, 154, 42, 0.30);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.video-card__coming-icon {
+  color: rgba(199, 154, 42, 0.55);
+}
+
+.video-card__coming-label {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(199, 154, 42, 0.55);
+}
+
 @media (max-width: 639px) {
   .section-videos .uk-grid {
     row-gap: 24px !important;
