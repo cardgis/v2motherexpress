@@ -121,7 +121,7 @@ const produits = [
     stockTotal: 5,
     stockDisponible: 5,
     estDisponible: true,
-    imageUrl: "/assets/img/B12.jpg",
+    imageUrl: "/assets/img/B12.png",
     images: [],
     tarification: {
       prixVenteFcfa: 860000,
