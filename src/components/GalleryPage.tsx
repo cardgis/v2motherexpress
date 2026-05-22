@@ -4,14 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 
 const IMAGES = [
-  { thumb: '/assets/img/img-gallery-1.jpg', full: '/assets/img/img-gallery-1-big.jpg', span: 2 },
-  { thumb: '/assets/img/img-gallery-2.jpg', full: '/assets/img/img-gallery-2-big.jpg', span: 1 },
-  { thumb: '/assets/img/img-gallery-3.jpg', full: '/assets/img/img-gallery-3-big.jpg', span: 1 },
-  { thumb: '/assets/img/img-gallery-4.jpg', full: '/assets/img/img-gallery-4-big.jpg', span: 2 },
-  { thumb: '/assets/img/img-gallery-5.jpg', full: '/assets/img/img-gallery-5-big.jpg', span: 1 },
-  { thumb: '/assets/img/img-gallery-6.jpg', full: '/assets/img/img-gallery-6-big.jpg', span: 1 },
-  { thumb: '/assets/img/img-gallery-7.jpg', full: '/assets/img/img-gallery-7-big.jpg', span: 1 },
-  { thumb: '/assets/img/img-gallery-8.jpg', full: '/assets/img/img-gallery-8-big.jpg', span: 3 },
+  { thumb: '/assets/img/header1.png',         full: '/assets/img/header1.png',         span: 2 },
+  { thumb: '/assets/img/header2.jpg',         full: '/assets/img/header2.jpg',         span: 1 },
+  { thumb: '/assets/img/header3.jpg',         full: '/assets/img/header3.jpg',         span: 1 },
+  { thumb: '/assets/img/chezlamother.jpg',    full: '/assets/img/chezlamother.jpg',    span: 2 },
+  { thumb: '/assets/img/about-gallery-1.jpg', full: '/assets/img/about-gallery-1.jpg', span: 1 },
+  { thumb: '/assets/img/about-gallery-2.jpg', full: '/assets/img/about-gallery-2.jpg', span: 1 },
+  { thumb: '/assets/img/B12.jpg',             full: '/assets/img/B12.jpg',             span: 1 },
+  { thumb: '/assets/img/img-about.jpg',       full: '/assets/img/img-about.jpg',       span: 2 },
 ];
 
 export function GalleryPage() {

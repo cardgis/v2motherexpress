@@ -1,6 +1,6 @@
 const HERO_SLIDES = [
   {
-    image: "/assets/img/img-home-slideshow.jpg",
+    image: "/assets/img/header1.png",
     alt: "La Mother Express - balade 1",
     title: "La liberté, ça se conduit.",
     subtitle: "Location & vente de scooters au Sénégal",
@@ -8,7 +8,7 @@ const HERO_SLIDES = [
     alignment: "left",
   },
   {
-    image: "/assets/img/img-home-slideshow-2.jpg",
+    image: "/assets/img/header2.jpg",
     alt: "La Mother Express - balade 2",
     title: "Partenaire officiel Revoo Sénégal",
     subtitle: "Roule électrique, roule demain.",
@@ -16,7 +16,7 @@ const HERO_SLIDES = [
     alignment: "right",
   },
   {
-    image: "/assets/img/img-home-slideshow-3.jpg",
+    image: "/assets/img/header3.jpg",
     alt: "La Mother Express - balade 3",
     title: "Besoin d'un scooter aujourd'hui ?",
     subtitle: "Simple, rapide et fiable.",

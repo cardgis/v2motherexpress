@@ -1,21 +1,7 @@
-// Pour ajouter une vidéo : dépose le fichier .mp4 dans public/assets/videos/
-// puis mets à jour le tableau ci-dessous.
 const VIDEOS = [
   {
     src: "/assets/videos/video-1.mp4",
     title: "Revoo en action",
-  },
-  {
-    src: "/assets/videos/video-2.mp4",
-    title: "Balade à Dakar",
-  },
-  {
-    src: "/assets/videos/video-3.mp4",
-    title: "Autonomie & performance",
-  },
-  {
-    src: "/assets/videos/video-4.mp4",
-    title: "Témoignage client",
   },
 ] as const;
 
@@ -44,6 +30,7 @@ export function HomeVideosSection() {
                     <video
                       src={video.src}
                       controls
+                      muted
                       preload="metadata"
                       playsInline
                     />
