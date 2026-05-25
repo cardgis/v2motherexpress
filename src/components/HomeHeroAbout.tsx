@@ -1,7 +1,7 @@
 const HERO_SLIDES = [
   {
     image: "/assets/img/header1.png",
-    alt: "La Mother Express - balade 1",
+    alt: "Scooter électrique REVOO en balade au Sénégal — La Mother Express",
     title: "La liberté, ça se conduit.",
     subtitle: "Location & vente de scooters au Sénégal",
     count: "benn",
@@ -9,7 +9,7 @@ const HERO_SLIDES = [
   },
   {
     image: "/assets/img/header2.jpg",
-    alt: "La Mother Express - balade 2",
+    alt: "Partenaire officiel REVOO Sénégal — scooters électriques à Thiès et Mbour",
     title: "Partenaire officiel Revoo Sénégal",
     subtitle: "Roule électrique, roule demain.",
     count: "ñaar",
@@ -17,7 +17,7 @@ const HERO_SLIDES = [
   },
   {
     image: "/assets/img/header3.jpg",
-    alt: "La Mother Express - balade 3",
+    alt: "Location de scooter électrique au Sénégal — simple, rapide, fiable",
     title: "Besoin d'un scooter aujourd'hui ?",
     subtitle: "Simple, rapide et fiable.",
     count: "ñett",
@@ -105,7 +105,7 @@ export function HomeHeroAbout() {
               <img
                 className="section-about__img"
                 src="/assets/img/img-about.jpg"
-                alt="img-about"
+                alt="L'équipe La Mother Express — agence de scooters électriques au Sénégal"
               />
             </div>
             <div className="uk-width-2-3@m">
@@ -171,8 +171,8 @@ export function HomeHeroAbout() {
                   </div>
                   <div className="section-about__gallery" data-reveal style={{ '--reveal-delay': '0.15s' } as React.CSSProperties}>
                     <div className="uk-grid uk-grid-small uk-child-width-1-2@s" data-uk-grid>
-                      <div><img className="uk-width-1-1" src="/assets/img/about-gallery-1.jpg" alt="about-gallery" width="800" height="600" loading="lazy" /></div>
-                      <div><img className="uk-width-1-1" src="/assets/img/about-gallery-2.jpg" alt="about-gallery" width="800" height="600" loading="lazy" /></div>
+                      <div><img className="uk-width-1-1" src="/assets/img/about-gallery-1.jpg" alt="Scooter électrique REVOO en ville au Sénégal" width="800" height="600" loading="lazy" /></div>
+                      <div><img className="uk-width-1-1" src="/assets/img/about-gallery-2.jpg" alt="Client en location de scooter électrique La Mother Express" width="800" height="600" loading="lazy" /></div>
                     </div>
                   </div>
                 </div>
