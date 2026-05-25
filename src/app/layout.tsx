@@ -41,6 +41,9 @@ export const metadata: Metadata = {
     description:
       "Location et vente de scooters électriques REVOO. Agences à Thiès et Mbour.",
   },
+  verification: {
+    google: "zaaBJFQ9RgO3MWPxiDTQtj4Fa3A2mB1iKKsk_WA8FdE",
+  },
   robots: {
     index: true,
     follow: true,
