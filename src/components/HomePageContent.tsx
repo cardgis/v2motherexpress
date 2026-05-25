@@ -18,9 +18,9 @@ export function HomePageContent({ produits, inventoriesByProductId }: HomePageCo
       <main className="page-main">
         <HomeHeroAbout />
         <ProductExplorer produits={produits} inventoriesByProductId={inventoriesByProductId} variant="section" />
+        <HomeCTASection />
         <ContactInfoSection />
         <HomeVideosSection />
-        <HomeCTASection />
       </main>
       <HomeFooterSections />
     </div>
