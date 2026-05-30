@@ -43,7 +43,7 @@ export function AboutContent() {
 
           <p className="about-body" data-reveal data-reveal-delay="80">
             Celle dont le nom nourrit, rassemble, et fait avancer. Ici au Sénégal,
-            on l'appelle <strong>La Mother</strong>  pas par hasard. C'est elle qui tient
+            on l'appelle <strong>La Mother</strong>, pas par hasard. C'est elle qui tient
             la maison, qui connaît chaque visage, qui sert avec le cœur. C'est
             autour d'elle que tout commence.
           </p>

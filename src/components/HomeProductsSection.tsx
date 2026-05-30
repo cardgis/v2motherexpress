@@ -34,7 +34,7 @@ export function HomeProductsSection({ produits, inventoriesByProductId }: HomePr
           className="section-title uk-text-center"
           data-reveal
         >
-          <span>Emmener les balades a un niveau superieur</span>
+          <span>Emmener les balades à un niveau supérieur</span>
           <h3 className="uk-h2">Notre flotte REVOO</h3>
           <span className="section-title-bar" />
         </div>
@@ -44,7 +44,7 @@ export function HomeProductsSection({ produits, inventoriesByProductId }: HomePr
             data-reveal
             style={{ '--reveal-delay': '0.12s' } as React.CSSProperties}
           >
-            <p>Des scooters électriques adaptés à chaque besoin, du modèle urbain au véhicule sportif.<br /> Location flexibles ou achat avec financement disponible à Dakar, Mbour et Thiès.</p>
+            <p>Des scooters électriques adaptés à chaque besoin, du modèle urbain au véhicule sportif.<br /> Location flexible ou achat avec financement disponible à Dakar, Mbour et Thiès.</p>
           </div>
           <div className="products-card-grid">
             {produits.map((product, index) => {

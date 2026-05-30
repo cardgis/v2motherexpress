@@ -111,14 +111,14 @@ export function HomeHeroAbout() {
             <div className="uk-width-2-3@m">
               <div className="section-about__content">
                 <div className="section-title" data-reveal>
-                  <span>Emmener les balades a un niveau superieur</span>
+                  <span>Emmener les balades à un niveau supérieur</span>
                   <h3 className="uk-h2">Électrique, écologique<br /> et accessible</h3>
                   <span className="section-title-bar" />
                 </div>
                 <div className="section-content">
                   <p data-reveal style={{ '--reveal-delay': '0.1s' } as React.CSSProperties}>
-                    Découvrez nos scooters électriques REVOO, conçues pour les routes sénégalaises.
-                    Performantes, silencieuses et faciles à entretenir, elles offrent une mobilité durable
+                    Découvrez nos scooters électriques REVOO, conçus pour les routes sénégalaises.
+                    Performants, silencieux et faciles à entretenir, ils offrent une mobilité durable
                     à un prix compétitif avec des options de location ou d'achat adaptées à votre budget.
                   </p>
                   <div className="uk-margin-medium">
@@ -141,7 +141,7 @@ export function HomeHeroAbout() {
                           </div>
                           <div className="block-icon__desc">
                             <div className="block-icon__title">Design Ergonomique</div>
-                            <div className="block-icon__text">Confortable et pratique, optimisée pour une conduite agréable en tous terrains urbains et semi-ruraux.</div>
+                            <div className="block-icon__text">Confortable et pratique, optimisé pour une conduite agréable en tous terrains urbains et semi-ruraux.</div>
                           </div>
                         </div>
                       </div>
