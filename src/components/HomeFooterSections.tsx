@@ -90,20 +90,20 @@ export function HomeFooterSections() {
                   <ul className="latest-news-list">
                     <li>
                       <div className="latest-news-item">
-                        <div className="latest-news-item__thumb"><img src="/assets/img/news-thumb-1.jpg" alt="Flotte REVOO disponible à la location — La Mother Express" width="120" height="80" loading="lazy" /></div>
-                        <div className="latest-news-item__info"><a className="latest-news-item__title" href="/">Flotte REVOO disponible</a><div className="latest-news-item__date">Dernière mise à jour</div></div>
+                        <div className="latest-news-item__thumb"><img src="/assets/img/header1.png" alt="Flotte REVOO disponible à la location — La Mother Express" width="120" height="80" loading="lazy" /></div>
+                        <div className="latest-news-item__info"><span className="latest-news-item__title">Flotte REVOO disponible</span><div className="latest-news-item__date">Dernière mise à jour</div></div>
                       </div>
                     </li>
                     <li>
                       <div className="latest-news-item">
-                        <div className="latest-news-item__thumb"><img src="/assets/img/news-thumb-2.jpg" alt="Offres de location scooter flexibles au Sénégal" width="120" height="80" loading="lazy" /></div>
-                        <div className="latest-news-item__info"><a className="latest-news-item__title" href="/">Offres de location flexibles</a><div className="latest-news-item__date">Dernière mise à jour</div></div>
+                        <div className="latest-news-item__thumb"><img src="/assets/img/header2.jpg" alt="Offres de location scooter flexibles au Sénégal" width="120" height="80" loading="lazy" /></div>
+                        <div className="latest-news-item__info"><span className="latest-news-item__title">Offres de location flexibles</span><div className="latest-news-item__date">Dernière mise à jour</div></div>
                       </div>
                     </li>
                     <li>
                       <div className="latest-news-item">
-                        <div className="latest-news-item__thumb"><img src="/assets/img/news-thumb-3.jpg" alt="Livraison de scooter électrique partout au Sénégal" width="120" height="80" loading="lazy" /></div>
-                        <div className="latest-news-item__info"><a className="latest-news-item__title" href="/">Livraison partout au Sénégal</a><div className="latest-news-item__date">Dernière mise à jour</div></div>
+                        <div className="latest-news-item__thumb"><img src="/assets/img/header3.jpg" alt="Livraison de scooter électrique partout au Sénégal" width="120" height="80" loading="lazy" /></div>
+                        <div className="latest-news-item__info"><span className="latest-news-item__title">Livraison possible</span><div className="latest-news-item__date">Dernière mise à jour</div></div>
                       </div>
                     </li>
                   </ul>

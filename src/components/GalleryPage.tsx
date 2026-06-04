@@ -7,9 +7,9 @@ const IMAGES = [
   { thumb: '/assets/img/header1.png',  full: '/assets/img/header1.png',  span: 2, alt: 'Scooter électrique REVOO en balade au Sénégal — La Mother Express' },
   { thumb: '/assets/img/header2.jpg',  full: '/assets/img/header2.jpg',  span: 1, alt: 'Partenaire officiel REVOO Sénégal — flotte de scooters électriques' },
   { thumb: '/assets/img/header3.jpg',  full: '/assets/img/header3.jpg',  span: 1, alt: 'Location de scooter électrique à Thiès et Mbour — La Mother Express' },
-  { thumb: '/assets/img/E52.png',      full: '/assets/img/E52.png',      span: 1, alt: 'Scooter électrique REVOO E52 — disponible à la location et à la vente au Sénégal' },
-  { thumb: '/assets/img/B12.png',      full: '/assets/img/B12.png',      span: 2, alt: 'Scooter électrique REVOO B12 — design urbain, autonomie 100 km' },
-  { thumb: '/assets/img/A10.png',      full: '/assets/img/A10.png',      span: 1, alt: 'Scooter électrique REVOO A10 — compact et économique au Sénégal' },
+  { thumb: '/assets/img/E52.png',      full: '/assets/img/E52.png',      span: 2, alt: 'Scooter électrique REVOO E52 — disponible à la location et à la vente au Sénégal' },
+  { thumb: '/assets/img/gallery1.png',  full: '/assets/img/gallery1.png',  span: 2, alt: 'La Mother Express — scooters électriques REVOO au Sénégal' },
+  { thumb: '/assets/img/gallery2.png',  full: '/assets/img/gallery2.png',  span: 1, alt: 'La Mother Express — agence de location de scooters électriques' },
   { thumb: '/assets/img/A12.png',      full: '/assets/img/A12.png',      span: 2, alt: 'Scooter électrique REVOO A12 — performant et silencieux' },
   { thumb: '/assets/img/C32.png',      full: '/assets/img/C32.png',      span: 1, alt: 'Scooter électrique REVOO C32 — haut de gamme, location Thiès et Mbour' },
 ];
