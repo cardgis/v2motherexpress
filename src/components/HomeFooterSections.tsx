@@ -25,7 +25,7 @@ export function HomeFooterSections() {
                   </div>
                 </div>
                 <div className="uk-margin-medium">
-                  <p>Location et vente de scooters au Sénégal — flotte thermique et électrique, livrés où vous êtes.</p>
+                  <p>Location et vente de scooters au Sénégal — flotte électrique, livrés où vous êtes.</p>
                 </div>
                 <div className="uk-margin-medium">
                   <div className="support">

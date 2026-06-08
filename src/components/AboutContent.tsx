@@ -54,7 +54,7 @@ export function AboutContent() {
             L'aventure a d'abord pris la forme d'une table. <strong>Chez La Mother</strong>, un
             restaurant où l'on mange comme à la maison avec les saveurs du
             terroir, la chaleur du foyer, et cette générosité qui ne se commande
-            pas. Un lieu où Thiès se retrouve autour d'un plat, d'un
+            pas.Thiès se retrouve autour d'un plat, d'un
             sourire, d'une histoire partagée.
           </p>
         </div>
