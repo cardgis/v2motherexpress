@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: "Location & Vente de Scooters Électriques REVOO au Sénégal",
   description:
     "Louez ou achetez un scooter électrique REVOO dès aujourd'hui. Agences à Thiès et Mbour. Autonomie jusqu'à 140 km, livraison possible. Réservez en quelques minutes.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "La Mother Express — Scooters Électriques REVOO, Thiès & Mbour",
     description:

@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "Notre Histoire",
   description:
     "La Mother Express, c'est une femme, une table, et l'envie d'aller plus loin — sur deux roues électriques au Sénégal. Découvrez notre histoire et notre mission pour une mobilité durable.",
+  alternates: {
+    canonical: "/about",
+  },
   openGraph: {
     title: "Notre Histoire — La Mother Express",
     description:

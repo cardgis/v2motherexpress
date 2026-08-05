@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "Contact · Agences Thiès & Mbour",
   description:
     "Trouvez nos agences à Thiès et Mbour. Appelez-nous, envoyez un email ou venez directement. La Mother Express — votre location de scooter électrique au Sénégal.",
+  alternates: {
+    canonical: "/contact",
+  },
   openGraph: {
     title: "Nos Agences — Thiès & Mbour | La Mother Express",
     description:

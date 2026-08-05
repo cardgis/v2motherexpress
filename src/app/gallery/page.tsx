@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "Galerie Photos",
   description:
     "Découvrez notre univers en images : scooters électriques REVOO en action, balades au Sénégal et vie de nos agences à Thiès et Mbour.",
+  alternates: {
+    canonical: "/gallery",
+  },
   openGraph: {
     title: "Galerie — Scooters Électriques REVOO au Sénégal",
     description:

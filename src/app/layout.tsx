@@ -26,6 +26,9 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "La Mother Express" }],
   creator: "La Mother Express",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     type: "website",
     locale: "fr_SN",
