@@ -53,10 +53,17 @@ export function HomeHeroAbout() {
                         <div className="slideshow-item__decor">DemRek</div>
                         <div className="slideshow-item__content">
                           <div className="slideshow-item__title">
-                            <div className="uk-h2">
-                              {slide.title}
-                              <br /> {slide.subtitle}
-                            </div>
+                            {index === 0 ? (
+                              <h1 className="uk-h2">
+                                {slide.title}
+                                <br /> {slide.subtitle}
+                              </h1>
+                            ) : (
+                              <div className="uk-h2">
+                                {slide.title}
+                                <br /> {slide.subtitle}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
