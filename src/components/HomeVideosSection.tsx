@@ -1,4 +1,20 @@
-const VIDEOS = [
+'use client';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+type Video = {
+  src: string;
+  title: string;
+  /** Démarre sans le son (l'utilisateur peut le réactiver via les contrôles). Défaut : true. */
+  muted?: boolean;
+};
+
+const VIDEOS: Video[] = [
+  {
+    src: "/assets/videos/WhatsApp_Video_2026-08-03_at_18_09_51.mp4",
+    title: "Nos scooters électriques en action",
+    muted: false,
+  },
   {
     src: "/assets/videos/landscape_video-1.mp4",
     title: "Revoo en action",
@@ -13,7 +29,51 @@ const VIDEOS = [
   },
 ];
 
+function Chevron({ direction }: { direction: "prev" | "next" }) {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none"
+      stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points={direction === "prev" ? "15 18 9 12 15 6" : "9 18 15 12 9 6"} />
+    </svg>
+  );
+}
+
 export function HomeVideosSection() {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [atStart, setAtStart] = useState(true);
+  const [atEnd, setAtEnd] = useState(false);
+
+  const sync = useCallback(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    setAtStart(el.scrollLeft <= 1);
+    setAtEnd(el.scrollLeft >= max - 1);
+  }, []);
+
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    sync();
+    el.addEventListener("scroll", sync, { passive: true });
+    const observer = new ResizeObserver(sync);
+    observer.observe(el);
+    return () => {
+      el.removeEventListener("scroll", sync);
+      observer.disconnect();
+    };
+  }, [sync]);
+
+  /** Décale d'exactement une carte : l'écart entre deux items inclut déjà le gap. */
+  const scrollByCard = (direction: 1 | -1) => {
+    const el = trackRef.current;
+    if (!el) return;
+    const [first, second] = Array.from(el.children) as HTMLElement[];
+    const step = second ? second.offsetLeft - first.offsetLeft : el.clientWidth;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollBy({ left: direction * step, behavior: reduced ? "auto" : "smooth" });
+  };
+
   return (
     <div className="section-videos">
       <div className="uk-section-large uk-container">
@@ -23,27 +83,48 @@ export function HomeVideosSection() {
           <span className="section-title-bar" />
         </div>
         <div className="section-content">
-          <div className="uk-grid uk-grid-medium uk-child-width-1-3@m uk-child-width-1-1@s" data-uk-grid>
-            {VIDEOS.map((video, index) => (
-              <div
-                key={video.src}
-                data-reveal
-                style={{ '--reveal-delay': `${index * 0.10}s` } as React.CSSProperties}
-              >
-                <div className="video-card">
-                  <div className="video-card__embed">
-                    <video
-                      src={video.src}
-                      controls
-                      muted
-                      preload="metadata"
-                      playsInline
-                    />
+          {/* data-reveal sur le conteneur et non sur chaque carte : une carte hors
+              du cadre visible du carrousel n'intersecte jamais le viewport et
+              resterait bloquée à opacity 0. */}
+          <div className="videos-carousel" data-reveal>
+            <button
+              type="button"
+              className="videos-carousel__arrow videos-carousel__arrow--prev"
+              onClick={() => scrollByCard(-1)}
+              disabled={atStart}
+              aria-label="Vidéos précédentes"
+            >
+              <Chevron direction="prev" />
+            </button>
+
+            <div className="videos-carousel__track" ref={trackRef}>
+              {VIDEOS.map((video) => (
+                <div className="videos-carousel__item" key={video.src}>
+                  <div className="video-card">
+                    <div className="video-card__embed">
+                      <video
+                        src={video.src}
+                        controls
+                        muted={video.muted ?? true}
+                        preload="metadata"
+                        playsInline
+                      />
+                    </div>
+                    <div className="video-card__title">{video.title}</div>
                   </div>
-                  <div className="video-card__title">{video.title}</div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            <button
+              type="button"
+              className="videos-carousel__arrow videos-carousel__arrow--next"
+              onClick={() => scrollByCard(1)}
+              disabled={atEnd}
+              aria-label="Vidéos suivantes"
+            >
+              <Chevron direction="next" />
+            </button>
           </div>
         </div>
       </div>

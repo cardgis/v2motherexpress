@@ -416,6 +416,74 @@ dialog[open] {
   gap: 14px;
 }
 
+/* ── Carrousel vidéos — 3 cartes visibles, défilement à la carte ── */
+.videos-carousel {
+  position: relative;
+}
+
+.videos-carousel__track {
+  display: flex;
+  gap: 30px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.videos-carousel__track::-webkit-scrollbar {
+  display: none;
+}
+
+.videos-carousel__item {
+  flex: 0 0 calc((100% - 60px) / 3);
+  scroll-snap-align: start;
+}
+
+.videos-carousel__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid rgba(199, 154, 42, 0.45);
+  border-radius: 50%;
+  background: rgba(15, 15, 18, 0.92);
+  color: #c79a2a;
+  cursor: pointer;
+  transition: background 0.25s ease, transform 0.25s ease, opacity 0.25s ease;
+}
+
+.videos-carousel__arrow:hover:not(:disabled) {
+  background: #c79a2a;
+  color: #0f0f12;
+}
+
+.videos-carousel__arrow:disabled {
+  opacity: 0.28;
+  cursor: default;
+  pointer-events: none;
+}
+
+.videos-carousel__arrow--prev { left: -23px; }
+.videos-carousel__arrow--next { right: -23px; }
+
+@media (max-width: 959px) {
+  .videos-carousel__item { flex-basis: calc((100% - 30px) / 2); }
+  /* Plus de marge hors container à cette largeur : on ramène les flèches sur les cartes */
+  .videos-carousel__arrow--prev { left: 6px; }
+  .videos-carousel__arrow--next { right: 6px; }
+}
+
+@media (max-width: 639px) {
+  .videos-carousel__track { gap: 20px; }
+  .videos-carousel__item { flex-basis: 100%; }
+}
+
 .video-card__embed {
   position: relative;
   aspect-ratio: 16 / 9;
