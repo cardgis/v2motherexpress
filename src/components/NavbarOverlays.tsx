@@ -82,7 +82,7 @@ export function NavbarOverlays({ menuOpen, searchOpen, onCloseMenu, onCloseSearc
           <div className="navbar-overlay__search-top">
             <div>
               <p className="navbar-overlay__eyebrow">Recherche rapide</p>
-              <h2 className="navbar-overlay__title">Trouvez un scooter, un service ou une adresse</h2>
+              <p className="navbar-overlay__title">Trouvez un scooter, un service ou une adresse</p>
             </div>
             <button className="navbar-overlay__close" type="button" onClick={onCloseSearch} aria-label="Fermer la recherche">
               ×

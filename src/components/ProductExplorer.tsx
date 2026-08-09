@@ -93,9 +93,18 @@ export default function ProductExplorer({ produits, inventoriesByProductId, vari
       <div className="lme-explorer__inner">
         <header className="lme-explorer__head">
           <span className="lme-explorer__eyebrow">La Mother Express</span>
-          <h2 className="lme-explorer__title">
-            {variant === "section" ? "Nos Best-Sellers" : "Notre flotte REVOO"}
-          </h2>
+          {variant === "section" ? (
+            <h2 className="lme-explorer__title">Nos Best-Sellers</h2>
+          ) : (
+            <>
+              <h1 className="lme-explorer__title lme-explorer__title--page">
+                Location et vente de scooters électriques au Sénégal
+              </h1>
+              <p className="lme-explorer__sub">
+                Notre flotte REVOO, disponible à Thiès et à Mbour.
+              </p>
+            </>
+          )}
         </header>
 
         <nav className="lme-tabs" role="tablist" aria-label="Modèles">
@@ -212,6 +221,9 @@ export default function ProductExplorer({ produits, inventoriesByProductId, vari
         .lme-explorer__head { text-align: center; margin-bottom: 28px; }
         .lme-explorer__eyebrow { display: inline-block; font-size: 0.72rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
         .lme-explorer__title { font-family: "Oswald", sans-serif; font-size: clamp(1.9rem, 4.5vw, 3.1rem); font-weight: 700; letter-spacing: -0.02em; margin: 0; color: #111111; }
+        /* Titre de page : plus long que "Nos Best-Sellers", on borne la largeur pour garder 2 lignes max */
+        .lme-explorer__title--page { font-size: clamp(1.7rem, 3.6vw, 2.6rem); max-width: 20ch; margin-inline: auto; }
+        .lme-explorer__sub { font-size: clamp(0.95rem, 1.6vw, 1.05rem); color: #555555; margin: 12px auto 0; max-width: 46ch; }
 
         .lme-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 28px; }
         .lme-tab { appearance: none; cursor: pointer; background: transparent; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 9px 20px; font-size: 0.9rem; font-weight: 600; transition: color .25s, border-color .25s, background .25s, box-shadow .25s; }

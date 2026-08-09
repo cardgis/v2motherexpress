@@ -19,7 +19,7 @@ export function HomePageContent({ produits, inventoriesByProductId }: HomePageCo
         <HomeHeroAbout />
         <ProductExplorer produits={produits} inventoriesByProductId={inventoriesByProductId} variant="section" />
         <HomeCTASection />
-        <ContactInfoSection />
+        <ContactInfoSection headingLevel={2} />
         <HomeVideosSection />
       </main>
       <HomeFooterSections />

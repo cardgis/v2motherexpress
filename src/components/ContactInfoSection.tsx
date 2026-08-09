@@ -52,14 +52,21 @@ function MapEmbed({ src, title, directionsUrl }: { src: string; title: string; d
   );
 }
 
-export function ContactInfoSection() {
+type ContactInfoSectionProps = {
+  /** 1 sur /contact (titre principal de la page), 2 sur l'accueil où le h1 est le hero. */
+  headingLevel?: 1 | 2;
+};
+
+export function ContactInfoSection({ headingLevel = 1 }: ContactInfoSectionProps) {
+  const Heading = headingLevel === 1 ? "h1" : "h2";
+
   return (
     <section className="section-contact-info">
       <div className="contact-info-container">
 
         <div className="contact-info-header">
           <p className="contact-eyebrow">Où nous trouver</p>
-          <h1 className="contact-heading">Nos agences</h1>
+          <Heading className="contact-heading">Nos agences</Heading>
         </div>
 
         <div className="contact-branches-grid">

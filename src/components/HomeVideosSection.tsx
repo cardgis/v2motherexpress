@@ -19,7 +19,7 @@ export function HomeVideosSection() {
       <div className="uk-section-large uk-container">
         <div className="section-title uk-text-center" data-reveal>
           <span>La Mother Express en mouvement</span>
-          <h3 className="uk-h2">Nos vidéos</h3>
+          <h2 className="uk-h2">Nos vidéos</h2>
           <span className="section-title-bar" />
         </div>
         <div className="section-content">

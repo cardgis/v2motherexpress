@@ -173,10 +173,16 @@ body {
   text-transform: uppercase;
 }
 
+/* <p> et non un titre : ce libellé d'UI précède le h1 dans le DOM (Header monté
+   avant <main>) et cassait la hiérarchie Hn de toutes les pages.
+   font-family/color/font-weight reprennent ce que UIKit appliquait via h1..h6. */
 .navbar-overlay__title {
   margin: 0;
   font-size: clamp(24px, 3vw, 38px);
   line-height: 1.1;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  font-weight: 400;
+  color: #333;
 }
 
 .navbar-search-form {
