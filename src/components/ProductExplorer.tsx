@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import type { ProduitHome, InventoryHome } from "@/types";
 import { money } from "@/lib/formatters";
+import { responsiveImage } from "@/lib/img";
 
 type Props = {
   produits: ProduitHome[];
@@ -137,7 +138,7 @@ export default function ProductExplorer({ produits, inventoriesByProductId, vari
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               key={p.id}
-              src={imgSrc}
+              {...responsiveImage(imgSrc, "(max-width: 900px) 100vw, 60vw")}
               alt={`Scooter électrique ${p.nom}`}
               className="lme-stage__moto is-anim"
             />

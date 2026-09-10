@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { responsiveImage } from '@/lib/img';
+
+// Vignettes : 3 colonnes desktop (dont certaines sur 2), 2 en tablette, 1 en mobile.
+const THUMB_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 66vw';
 
 const IMAGES = [
   { thumb: '/assets/img/header1.png',  full: '/assets/img/header1.png',  span: 2, alt: 'Scooter électrique REVOO en balade au Sénégal — La Mother Express' },
@@ -68,7 +72,7 @@ export function GalleryPage() {
               aria-label={`Voir la photo ${i + 1}`}
             >
               <img
-                src={img.thumb}
+                {...responsiveImage(img.thumb, THUMB_SIZES)}
                 alt={img.alt}
                 loading={i < 3 ? 'eager' : 'lazy'}
                 decoding="async"
@@ -109,7 +113,7 @@ export function GalleryPage() {
           <div className="gallery-lightbox__stage">
             <img
               key={lightbox}
-              src={IMAGES[lightbox].full}
+              {...responsiveImage(IMAGES[lightbox].full, '100vw')}
               alt={IMAGES[lightbox].alt}
               className="gallery-lightbox__img"
             />

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Tarification, ProduitHome, InventoryHome } from "@/types";
 import { money } from "@/lib/formatters";
+import { responsiveImage } from "@/lib/img";
 
 type ProductCardProps = {
   product: ProduitHome;
@@ -69,7 +70,7 @@ export function ProductCard({ product, availabilityText, inventories, isOpen, on
       </div>
 
       <div className="product-item__media uk-inline-clip uk-inline">
-        <img src={imgSrc} alt={product.nom} width={800} height={600} loading="lazy" decoding="async" />
+        <img {...responsiveImage(imgSrc, "(max-width: 640px) 100vw, 400px")} alt={product.nom} width={800} height={600} loading="lazy" decoding="async" />
         <button
           type="button"
           className="product-item__hover-trigger"
@@ -110,7 +111,7 @@ export function ProductCard({ product, availabilityText, inventories, isOpen, on
 
             {/* ── IMAGE en haut, pleine largeur ── */}
             <div className="product-panel__image">
-              <img src={imgSrc} alt={product.nom} />
+              <img {...responsiveImage(imgSrc, "(max-width: 900px) 100vw, 860px")} alt={product.nom} />
               <div className="product-panel__image-grad" aria-hidden="true" />
               <button type="button" className="product-panel__close" aria-label="Fermer" onClick={onClose}>×</button>
               <div className="product-panel__image-info">

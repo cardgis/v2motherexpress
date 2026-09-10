@@ -1,3 +1,5 @@
+import { responsiveImage } from "@/lib/img";
+
 const HERO_SLIDES = [
   {
     image: "/assets/img/header1.png",
@@ -37,11 +39,12 @@ export function HomeHeroAbout() {
                 className={`slideshow-item hero-slider__slide hero-slider__slide--${index + 1}`}
               >
                 <img
-                  src={slide.image}
+                  {...responsiveImage(slide.image, "100vw")}
                   alt={slide.alt}
                   width="1600"
                   height="900"
                   loading={index === 0 ? "eager" : "lazy"}
+                  fetchPriority={index === 0 ? "high" : undefined}
                   decoding="async"
                   className="hero-slider__image"
                 />
