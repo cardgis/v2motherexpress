@@ -1,14 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
 import { responsiveImage } from '@/lib/img';
 
 export function HomeFooterSections() {
   const year = new Date().getFullYear();
-
-  useEffect(() => {
-    (window as Window & { FontAwesome?: { dom?: { i2svg?: () => void } } }).FontAwesome?.dom?.i2svg?.();
-  }, []);
 
   return (
     <>
