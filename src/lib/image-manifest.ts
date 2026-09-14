@@ -164,5 +164,14 @@ export const IMAGE_MANIFEST: Record<string, ImageVariants> = {
     "widths": [
       70
     ]
+  },
+  "/assets/img/promo-location-scooters.jpg": {
+    "base": "/assets/img/promo-location-scooters",
+    "widths": [
+      400,
+      768,
+      1200,
+      1280
+    ]
   }
 };

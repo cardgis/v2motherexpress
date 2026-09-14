@@ -4,6 +4,7 @@ import { HomeVideosSection } from "@/components/HomeVideosSection";
 import { HomeFooterSections } from "@/components/HomeFooterSections";
 import { ContactInfoSection } from "@/components/ContactInfoSection";
 import { HomeCTASection } from "@/components/HomeCTASection";
+import { HomePromoSection } from "@/components/HomePromoSection";
 import { ScrollReveal } from "@/components/ScrollReveal";
 
 type HomePageContentProps = {
@@ -17,6 +18,7 @@ export function HomePageContent({ produits, inventoriesByProductId }: HomePageCo
       <ScrollReveal />
       <main className="page-main">
         <HomeHeroAbout />
+        <HomePromoSection />
         <ProductExplorer produits={produits} inventoriesByProductId={inventoriesByProductId} variant="section" />
         <HomeCTASection />
         <ContactInfoSection headingLevel={2} />
