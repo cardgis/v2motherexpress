@@ -1,8 +1,13 @@
 import type { MetadataRoute } from "next";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://lamotherexpress.com";
+import { DOMAINE_PROVISOIRE, SITE_URL } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
+  // Domaine provisoire : on refuse TOUTE exploration. Le raisonnement est dans
+  // `lib/site.ts`, auprès de la constante.
+  if (DOMAINE_PROVISOIRE) {
+    return { rules: [{ userAgent: "*", disallow: "/" }] };
+  }
+
   return {
     rules: [
       {

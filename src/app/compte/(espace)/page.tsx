@@ -21,6 +21,7 @@ import { StatutBadge } from "@/components/ui/Badge";
 import { LienBouton } from "@/components/ui/Bouton";
 import { EtatVide } from "@/components/ui/EtatVide";
 import { Alerte } from "@/components/ui/Alerte";
+import { lienPublic } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Mon espace",
@@ -77,7 +78,7 @@ export default async function EspaceClientPage() {
   const aRetirer = reservations.find((r) => r.statut === "EN_ATTENTE_RETRAIT");
   const qrRetrait = aRetirer
     ? await QRCode.toDataURL(
-        `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/gerant/retrait/${aRetirer.id}`,
+        lienPublic(`/gerant/retrait/${aRetirer.id}`),
         { width: 320, margin: 1, errorCorrectionLevel: "M" },
       )
     : null;

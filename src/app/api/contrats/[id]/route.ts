@@ -5,6 +5,7 @@ import { apposerSignature, creerJetonSignature, ErreurSignature } from "@/lib/co
 import { ErreurGeneration, transmettreAuClient } from "@/lib/contrats";
 import { decoderTracePng } from "@/lib/fichiers";
 import { adresseIp, userAgent } from "@/lib/requete";
+import { lienPublic } from "@/lib/site";
 
 /**
  * Actions du gérant sur un contrat : transmission au client, émission du lien
@@ -17,8 +18,7 @@ import { adresseIp, userAgent } from "@/lib/requete";
 type Contexte = { params: Promise<{ id: string }> };
 
 function lienSignature(jeton: string): string {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  return `${base}/signer/${jeton}`;
+  return lienPublic(`/signer/${jeton}`);
 }
 
 export async function POST(request: Request, { params }: Contexte) {

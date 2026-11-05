@@ -63,3 +63,8 @@ next-env.d.ts
 # Bloc de variables non secrètes, prêt à coller dans Vercel. Régénérable à la
 # main ; hors version pour ne pas figer des valeurs qui changeront.
 /vercel-variables.txt
+
+# Adresse de connexion DIRECTE à Neon, déposée le temps d'une migration puis
+# supprimée. Ne doit jamais entrer en version : elle contient le mot de passe
+# de la base de production.
+/.neon-direct.url

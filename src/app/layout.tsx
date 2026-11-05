@@ -5,10 +5,14 @@ import RouteBoundary from "@/components/RouteBoundary";
 import DisableBfcache from "@/components/DisableBfcache";
 import "./globals.css";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://lamotherexpress.com";
+import { DOMAINE_PROVISOIRE, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  // `robots.txt` empêche l'EXPLORATION, pas l'INDEXATION : une adresse citée
+  // ailleurs peut être indexée sans que son contenu soit lu. Sur un domaine
+  // provisoire, il faut donc aussi la directive qui l'interdit explicitement.
+  ...(DOMAINE_PROVISOIRE ? { robots: { index: false, follow: false } } : {}),
   title: {
     default: "La Mother Express — Location & Vente Scooters Électriques Sénégal",
     template: "%s — La Mother Express",
