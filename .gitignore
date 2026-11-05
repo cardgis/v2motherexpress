@@ -29,9 +29,15 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
+# Fichiers d'environnement : aucun ne part en version, SAUF le modèle.
+#
+# `.env.example` ne contient que des gabarits, et il porte la documentation
+# qu'on ne retrouve nulle part ailleurs : le piège de l'en-tête Dexchange, le
+# caractère obligatoire de STORAGE_PATH_SALT, le tiret de « LM-EXPRESS ».
+# Sans lui dans le dépôt, un poste neuf repart sans rien. Le dépôt étant
+# PRIVÉ, le publier ne révèle rien à des tiers.
 .env*
+!.env.example
 
 # vercel
 .vercel
