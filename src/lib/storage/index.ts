@@ -123,3 +123,41 @@ export async function blobExiste(chemin: string): Promise<boolean> {
 export function sha256(octets: Uint8Array | Buffer): string {
   return createHash("sha256").update(octets).digest("hex");
 }
+
+/**
+ * Le stockage est-il configuré pour fonctionner ? Aucun appel réseau.
+ *
+ * Existe parce que l'absence d'une variable ne se découvrait qu'au premier
+ * téléversement — c'est-à-dire chez un gérant, pendant un retrait, avec un
+ * client en face. La sonde de santé l'utilise pour répondre 503 avant que
+ * quiconque ne s'y heurte.
+ *
+ * Renvoie le NOM de la variable manquante, jamais sa valeur. L'appelant décide
+ * de ce qu'il en divulgue : la sonde publique n'en dit rien, les journaux oui.
+ */
+export function manqueAuStockage(): string | null {
+  const nom = process.env.STORAGE_DRIVER ?? "local";
+  const absente = (variable: string) => !process.env[variable]?.trim();
+
+  // Le chiffrement est obligatoire en production, quel que soit le driver.
+  if (process.env.NODE_ENV === "production" && absente("STORAGE_CLES_CHIFFREMENT")) {
+    return "STORAGE_CLES_CHIFFREMENT";
+  }
+
+  switch (nom) {
+    case "local":
+      return null;
+    case "vercel":
+      if (absente("BLOB_READ_WRITE_TOKEN")) return "BLOB_READ_WRITE_TOKEN";
+      if (process.env.NODE_ENV === "production" && absente("STORAGE_PATH_SALT")) {
+        return "STORAGE_PATH_SALT";
+      }
+      return null;
+    case "s3":
+      return ["S3_ENDPOINT", "S3_BUCKET", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY"].find(absente) ?? null;
+    case "azure":
+      return ["AZURE_STORAGE_CONNECTION_STRING", "AZURE_STORAGE_CONTAINER"].find(absente) ?? null;
+    default:
+      return "STORAGE_DRIVER";
+  }
+}
