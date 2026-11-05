@@ -11,11 +11,16 @@
  * vers `http://localhost:3000/signer/…`. Le gérant aurait vu son contrat
  * transmis, le client un lien mort, et personne n'aurait su pourquoi.
  */
-
-const BRUT = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+// `.trim()` ET la barre finale retirée, une fois pour toutes et à la source.
+// Une adresse se colle depuis un tableau de bord, et elle arrive avec ce que
+// le presse-papier a ramassé : un espace, un « / » de fin. Normaliser ici
+// évite que chaque appelant s'en souvienne — c'est l'oubli d'un seul qui
+// produirait un « //sitemap.xml » ou un lien de signature malformé.
+const BRUT = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "");
 
 /** `https://lamotherexpress.com` en dernier recours : vrai domaine, pas localhost. */
-export const SITE_URL = BRUT || (process.env.NODE_ENV === "production" ? "https://lamotherexpress.com" : "http://localhost:3000");
+export const SITE_URL =
+  BRUT || (process.env.NODE_ENV === "production" ? "https://lamotherexpress.com" : "http://localhost:3000");
 
 /**
  * Un domaine `*.vercel.app` est PROVISOIRE : il ne doit pas être indexé.
@@ -84,5 +89,6 @@ export function lienPublic(chemin: string): string {
       "NEXT_PUBLIC_SITE_URL",
     );
   }
-  return `${SITE_URL.replace(/\/$/, "")}${chemin.startsWith("/") ? chemin : `/${chemin}`}`;
+  // `SITE_URL` est déjà normalisée à la source : rien à retirer ici.
+  return `${SITE_URL}${chemin.startsWith("/") ? chemin : `/${chemin}`}`;
 }
