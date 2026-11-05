@@ -49,3 +49,7 @@ next-env.d.ts
 # Documents d'aperçu régénérables par `npm run apercu:contrats` — ils servent à
 # valider la mise en page, pas à être versionnés.
 /apercu-contrats
+
+# Secrets de production générés par `npm run generer:secrets`. Ne doit JAMAIS
+# entrer en version : c'est le seul endroit où ils existent en clair.
+/secrets-production.txt

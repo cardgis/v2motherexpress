@@ -25,6 +25,7 @@
     "verif:sms": "tsx scripts/verif-sms.ts",
     "verif:solde": "tsx scripts/verif-solde-sms.ts",
     "verif:prod": "tsx scripts/verif-prod.ts",
+    "generer:secrets": "tsx scripts/generer-secrets.ts",
     "e2e": "tsx scripts/e2e.ts",
     "verif:concurrence": "tsx scripts/verif-concurrence.ts",
     "cron:expiration": "tsx scripts/expirer-reservations.ts",
