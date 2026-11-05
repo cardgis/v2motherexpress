@@ -5,7 +5,7 @@ import { apposerSignature, creerJetonSignature, ErreurSignature } from "@/lib/co
 import { ErreurGeneration, transmettreAuClient } from "@/lib/contrats";
 import { decoderTracePng } from "@/lib/fichiers";
 import { adresseIp, userAgent } from "@/lib/requete";
-import { lienPublic } from "@/lib/site";
+import { ErreurConfiguration, lienPublic } from "@/lib/site";
 
 /**
  * Actions du gérant sur un contrat : transmission au client, émission du lien
@@ -98,6 +98,13 @@ export async function POST(request: Request, { params }: Contexte) {
   } catch (error) {
     if (error instanceof ErreurSignature || error instanceof ErreurGeneration) {
       return NextResponse.json({ error: error.message }, { status: 409 });
+    }
+    // Faute d'exploitation : 503 et non 500, parce que le gérant n'y peut rien
+    // et que le service redeviendra disponible dès la configuration corrigée.
+    // Le journal nomme la variable ; l'écran ne la nomme pas.
+    if (error instanceof ErreurConfiguration) {
+      console.error(`[contrats/:id] configuration manquante : ${error.variable}`);
+      return NextResponse.json({ error: error.message }, { status: 503 });
     }
     console.error("[contrats/:id]", error);
     return NextResponse.json({ error: "Opération impossible." }, { status: 500 });
