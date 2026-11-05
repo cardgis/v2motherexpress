@@ -18,14 +18,12 @@ export type ProduitHome = {
   vitesseMaxKmh?: number | null;
   autonomieKm?: number | null;
   batterie?: string | null;
-  estDisponible: boolean;
   tarification?: Tarification | null;
 };
 
+/** Présence d'un modèle dans un point de vente, pour l'affichage vitrine. */
 export type InventoryHome = {
   produitId: string;
-  isAvailable: boolean;
-  availableQuantity: number;
   store?: { name?: string | null } | null;
 };
 

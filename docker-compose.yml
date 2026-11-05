@@ -1,0 +1,67 @@
+# Services locaux — développement et tests de la V2 uniquement.
+# La production tourne ailleurs : ne jamais pointer une migration V2 dessus
+# tant que le lot n'a pas été validé en local.
+#
+#   docker compose up -d                     base PostgreSQL seule
+#   docker compose --profile s3 up -d        + MinIO (stockage compatible S3,
+#                                              même API qu'OVHcloud / Scaleway / AWS)
+#   docker compose --profile azure up -d     + Azurite (émulateur Azure Blob)
+#   docker compose down                      arrête (les données sont conservées)
+#   docker compose down -v                   arrête ET efface tous les volumes
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: lme-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lme
+      POSTGRES_PASSWORD: lme_dev
+      POSTGRES_DB: lme_dev
+    ports:
+      # 5433 en local pour ne pas entrer en conflit avec un PostgreSQL déjà installé
+      - "5433:5432"
+    volumes:
+      - lme_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lme -d lme_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: quay.io/minio/minio:latest
+    profiles: ["s3"]
+    container_name: lme-minio-dev
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: lme
+      MINIO_ROOT_PASSWORD: lme_dev_minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - lme_minio:/data
+
+  # Crée le bucket privé au premier démarrage.
+  minio-init:
+    image: quay.io/minio/mc:latest
+    profiles: ["s3"]
+    depends_on: [minio]
+    entrypoint: >
+      /bin/sh -c "until mc alias set local http://minio:9000 lme lme_dev_minio; do sleep 1; done;
+      mc mb --ignore-existing local/lme-documents && mc anonymous set none local/lme-documents"
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    profiles: ["azure"]
+    container_name: lme-azurite-dev
+    command: azurite-blob --blobHost 0.0.0.0 --blobPort 10000 --loose
+    ports:
+      - "10000:10000"
+    volumes:
+      - lme_azurite:/data
+
+volumes:
+  lme_pgdata:
+  lme_minio:
+  lme_azurite:

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 const BEST_SELLER_SLUGS = ["revoo-e52", "revoo-b12", "revoo-a10"];
 
 export async function getHomeProductsData() {
-  const [produits, inventories] = await Promise.all([
+  const [produits, inventories, nombreModeles] = await Promise.all([
     prisma.produit.findMany({
       where: { slug: { in: BEST_SELLER_SLUGS } },
       include: { tarification: true },
@@ -12,6 +12,9 @@ export async function getHomeProductsData() {
       include: { store: true },
       orderBy: [{ produitId: "asc" }, { createdAt: "asc" }],
     }),
+    // Nombre réel de modèles au catalogue : l'accueil n'en montre qu'une
+    // sélection, le texte d'appel annonce la gamme complète.
+    prisma.produit.count({ where: { estActif: true } }),
   ]);
 
   const ordered = BEST_SELLER_SLUGS
@@ -24,7 +27,7 @@ export async function getHomeProductsData() {
     return acc;
   }, {});
 
-  return { produits: ordered, inventoriesByProductId };
+  return { produits: ordered, inventoriesByProductId, nombreModeles };
 }
 
 export async function getAllProductsData() {

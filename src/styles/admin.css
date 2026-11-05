@@ -1,0 +1,285 @@
+/*
+ * Administration — tableaux de chiffres, graphiques, filtres, impression.
+ *
+ * Complète `espace.css` (mêmes jetons `--lme-*`, même préfixe `lme-`).
+ * Chargée par le layout `/admin` uniquement.
+ */
+
+/* ── Tuiles chiffrées ───────────────────────────────────────────────────── */
+
+.lme-app .lme-tuile__detail {
+  margin-top: 6px;
+  color: var(--lme-texte-3);
+  font-size: 13.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Filtres ────────────────────────────────────────────────────────────── */
+
+.lme-app .lme-filtres {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 16px;
+  padding: 16px;
+  border: 1px solid var(--lme-bord);
+  border-radius: 14px;
+  background: var(--lme-surface);
+}
+
+.lme-app .lme-filtres > .lme-champ {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.lme-app .lme-filtres[aria-busy="true"] {
+  opacity: 0.7;
+}
+
+.lme-app .lme-onglets--defilant {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+/* Dans une pile (grille), un enfant ne descend jamais sous la largeur de son
+   contenu par défaut : les cinq onglets du suivi élargissaient ainsi toute la
+   page de 7 px sur téléphone. Autorisé à rétrécir, chaque bloc large (onglets,
+   tableau, graphique) défile dans son propre cadre. */
+.lme-app .lme-pile > * {
+  min-width: 0;
+}
+
+/* ── Tableaux ───────────────────────────────────────────────────────────── */
+
+.lme-app .lme-tableau-conteneur {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--lme-bord);
+  border-radius: 14px;
+  background: var(--lme-surface);
+}
+
+.lme-app .lme-tableau {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lme-app .lme-tableau caption {
+  padding: 12px 14px 0;
+  color: var(--lme-texte-3);
+  font-size: 13px;
+  text-align: left;
+}
+
+.lme-app .lme-tableau th,
+.lme-app .lme-tableau td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--lme-bord);
+  text-align: left;
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+.lme-app .lme-tableau thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--lme-neutre-fond);
+  color: var(--lme-texte-2);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.lme-app .lme-tableau tbody tr:hover {
+  background: #fafbfc;
+}
+
+.lme-app .lme-tableau tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.lme-app .lme-tableau tfoot td,
+.lme-app .lme-tableau tfoot th {
+  border-top: 2px solid var(--lme-bord-fort);
+  border-bottom: 0;
+  background: var(--lme-neutre-fond);
+  font-weight: 800;
+}
+
+.lme-app .lme-tableau .lme-nombre {
+  text-align: right;
+}
+
+.lme-app .lme-tableau .lme-secondaire {
+  display: block;
+  color: var(--lme-texte-3);
+  font-size: 12.5px;
+}
+
+/* ── Graphique mensuel ──────────────────────────────────────────────────── */
+
+.lme-app .lme-graphique {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+/* Sur téléphone le graphique défile : il s'ouvre sur les mois les PLUS RÉCENTS
+   (à droite), ceux qu'on vient consulter. Le sens de lecture du dessin reste
+   de gauche à droite. */
+.lme-app .lme-graphique__zone {
+  max-width: 100%;
+  overflow-x: auto;
+  direction: rtl;
+}
+
+.lme-app .lme-graphique__zone svg {
+  display: block;
+  width: 100%;
+  min-width: 560px;
+  height: auto;
+  direction: ltr;
+}
+
+.lme-app .lme-legende {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 0;
+  padding: 0;
+  color: var(--lme-texte-2);
+  font-size: 13.5px;
+  list-style: none;
+}
+
+.lme-app .lme-legende li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lme-app .lme-legende__pastille {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.lme-app .lme-graphique details summary {
+  width: fit-content;
+  color: var(--lme-or-texte);
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.lme-app .lme-graphique details[open] summary {
+  margin-bottom: 10px;
+}
+
+/* ── Barres horizontales (par modèle) ───────────────────────────────────── */
+
+.lme-app .lme-barres {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lme-app .lme-barre {
+  display: grid;
+  grid-template-columns: minmax(96px, 30%) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.lme-app .lme-barre__nom {
+  overflow: hidden;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lme-app .lme-barre__piste {
+  display: flex;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--lme-neutre-fond);
+}
+
+.lme-app .lme-barre__valeur {
+  min-width: 2ch;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* ── Impression (réunions) ──────────────────────────────────────────────── */
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 12mm;
+  }
+
+  .lme-app .lme-entete,
+  .lme-app .lme-nav-basse,
+  .lme-app .lme-evitement,
+  .lme-app .lme-filtres,
+  .lme-app .lme-entete-page__actions,
+  .lme-app .lme-fil,
+  .lme-app .lme-sans-impression {
+    display: none !important;
+  }
+
+  :root:has(.lme-app),
+  .lme-app {
+    background: #fff !important;
+  }
+
+  .lme-app .lme-contenu {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .lme-app .lme-page {
+    animation: none !important;
+  }
+
+  .lme-app .lme-carte,
+  .lme-app .lme-tuile {
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  .lme-app .lme-tableau-conteneur,
+  .lme-app .lme-graphique__zone {
+    overflow: visible !important;
+  }
+
+  .lme-app .lme-graphique__zone svg {
+    min-width: 0;
+  }
+
+  .lme-app .lme-tableau th,
+  .lme-app .lme-tableau td {
+    padding: 6px 8px;
+    white-space: normal;
+  }
+
+  .lme-app .lme-tableau thead th {
+    position: static;
+  }
+
+  .lme-app .lme-graphique details > *:not(summary) {
+    display: block;
+  }
+}

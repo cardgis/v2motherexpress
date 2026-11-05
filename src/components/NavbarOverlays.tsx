@@ -1,24 +1,21 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { LIEN_RESERVER } from '@/lib/suite';
 
 type NavbarOverlaysProps = {
   menuOpen: boolean;
-  searchOpen: boolean;
   onCloseMenu: () => void;
-  onCloseSearch: () => void;
 };
 
-export function NavbarOverlays({ menuOpen, searchOpen, onCloseMenu, onCloseSearch }: NavbarOverlaysProps) {
-  const searchInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (searchOpen) {
-      setTimeout(() => searchInputRef.current?.focus(), 50);
-    }
-  }, [searchOpen]);
-
+/**
+ * Menu du site vitrine.
+ *
+ * Le panneau de recherche a été retiré : il n'interrogeait rien — le champ ne
+ * menait à aucun résultat — et ses trois raccourcis (catalogue, à propos, nous
+ * trouver) sont déjà dans la barre de navigation et dans ce menu.
+ */
+export function NavbarOverlays({ menuOpen, onCloseMenu }: NavbarOverlaysProps) {
   return (
     <>
       <div
@@ -43,13 +40,20 @@ export function NavbarOverlays({ menuOpen, searchOpen, onCloseMenu, onCloseSearc
             </button>
           </div>
           <div className="navbar-overlay__content">
+            <div className="menu-acces">
+              <Link href={LIEN_RESERVER} className="menu-acces__reserver" onClick={onCloseMenu}>
+                Réserver en ligne
+              </Link>
+              <Link href="/compte/connexion" className="menu-acces__compte" onClick={onCloseMenu}>
+                Mon espace client
+              </Link>
+            </div>
             <nav aria-label="Navigation mobile">
               <ul className="navbar-overlay__nav uk-nav uk-nav-default uk-nav-parent-icon">
                 <li><Link href="/" onClick={onCloseMenu}>Accueil</Link></li>
                 <li><Link href="/produits" onClick={onCloseMenu}>Catalogue motos</Link></li>
                 <li><Link href="/about" onClick={onCloseMenu}>À PROPOS</Link></li>
                 <li><Link href="/gallery" onClick={onCloseMenu}>GALERIE</Link></li>
-                <li><Link href="/" onClick={onCloseMenu}>Louer / Acheter</Link></li>
                 <li><Link href="/contact" onClick={onCloseMenu}>NOUS TROUVER</Link></li>
               </ul>
             </nav>
@@ -70,44 +74,6 @@ export function NavbarOverlays({ menuOpen, searchOpen, onCloseMenu, onCloseSearc
         </div>
       </div>
 
-      <div
-        id="nav-search"
-        className={`navbar-overlay navbar-overlay--search${searchOpen ? ' is-open' : ''}`}
-        style={{ zIndex: 1300 }}
-        onClick={(e) => {
-          if (!(e.target as Element).closest('.navbar-overlay__panel--search')) onCloseSearch();
-        }}
-      >
-        <div className="navbar-overlay__panel navbar-overlay__panel--search uk-card uk-card-default">
-          <div className="navbar-overlay__search-top">
-            <div>
-              <p className="navbar-overlay__eyebrow">Recherche rapide</p>
-              <p className="navbar-overlay__title">Trouvez un scooter, un service ou une adresse</p>
-            </div>
-            <button className="navbar-overlay__close" type="button" onClick={onCloseSearch} aria-label="Fermer la recherche">
-              ×
-            </button>
-          </div>
-          <form className="navbar-search-form uk-search uk-search-large">
-            <span className="navbar-search-form__icon" aria-hidden="true">⌕</span>
-            <input
-              ref={searchInputRef}
-              className="uk-search-input navbar-search-form__input"
-              type="search"
-              placeholder="Rechercher un scooter, une marque, un service..."
-            />
-          </form>
-          <div className="navbar-overlay__quick-links" aria-label="Raccourcis de recherche">
-            <Link href="/produits" onClick={onCloseSearch}>Catalogue motos</Link>
-            <Link href="/about" onClick={onCloseSearch}>À PROPOS</Link>
-            <Link href="/" onClick={onCloseSearch}>LOUER/ACHETER</Link>
-            <Link href="/contact" onClick={onCloseSearch}>NOUS TROUVER</Link>
-          </div>
-          <div className="navbar-overlay__hint">
-            Astuce : utilisez des mots-clés simples comme marque, modèle ou ville.
-          </div>
-        </div>
-      </div>
     </>
   );
 }

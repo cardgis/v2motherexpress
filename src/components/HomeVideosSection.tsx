@@ -40,8 +40,31 @@ function Chevron({ direction }: { direction: "prev" | "next" }) {
 
 export function HomeVideosSection() {
   const trackRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
+  /**
+   * Les vidéos (jusqu'à 9 Mo chacune) ne commencent à se charger qu'à
+   * l'approche de leur section. Sans cela, un visiteur qui ne descend pas
+   * jusqu'en bas les téléchargeait quand même : 16 Mo sur un forfait mobile.
+   */
+  const [proche, setProche] = useState(false);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || proche) return;
+    const observateur = new IntersectionObserver(
+      (entrees) => {
+        if (entrees.some((e) => e.isIntersecting)) {
+          setProche(true);
+          observateur.disconnect();
+        }
+      },
+      { rootMargin: "600px 0px" },
+    );
+    observateur.observe(el);
+    return () => observateur.disconnect();
+  }, [proche]);
 
   const sync = useCallback(() => {
     const el = trackRef.current;
@@ -75,7 +98,7 @@ export function HomeVideosSection() {
   };
 
   return (
-    <div className="section-videos">
+    <div className="section-videos" ref={sectionRef}>
       <div className="uk-section-large uk-container">
         <div className="section-title uk-text-center" data-reveal>
           <span>La Mother Express en mouvement</span>
@@ -106,7 +129,7 @@ export function HomeVideosSection() {
                         src={video.src}
                         controls
                         muted={video.muted ?? true}
-                        preload="metadata"
+                        preload={proche ? "metadata" : "none"}
                         playsInline
                       />
                     </div>

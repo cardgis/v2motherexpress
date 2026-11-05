@@ -1,0 +1,12 @@
+# Rien de secret ni de volumineux n'entre dans l'image.
+.git
+.next
+node_modules
+src/generated
+.storage
+.env*
+!.env.example
+coverage
+*.log
+Dockerfile
+docker-compose.yml

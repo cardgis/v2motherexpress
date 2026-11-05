@@ -16,12 +16,15 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### Admin access
+### Administration
 
-- Admin login page: `/admin/login`
-- Catalogue admin page: `/catalogue`
-- Seeded admin credentials come from `ADMIN_EMAIL` and `ADMIN_PASSWORD`
-	- Defaults used by the seed script: `admin@mother.local` / `ChangeMe123!`
+- Un seul compte administrateur, désigné par
+  `npm run admin:designer -- "<mobile ou e-mail>" "Prénom NOM"`.
+- Il se connecte sur `/compte/connexion` avec cet identifiant (code à usage
+  unique) et arrive sur `/admin` : chiffres, feuille de suivi, boutiques et
+  équipes, catalogue.
+- L'ancien accès par e-mail et mot de passe (`/admin/login`, `/catalogue`)
+  n'existe plus.
 
 ### Database sync
 

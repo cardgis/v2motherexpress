@@ -1,0 +1,69 @@
+import { NextResponse } from "next/server";
+import { exigerGerantApi } from "@/lib/auth";
+import { ajouterPhoto, ErreurRetrait, ANGLES_ATTENDUS } from "@/lib/retrait";
+import { typeReel, type TypeFichier } from "@/lib/fichiers";
+import type { AngleHandover } from "@/generated/prisma";
+
+/**
+ * Photos de l'état des lieux, prises depuis le téléphone du gérant.
+ *
+ * Les images sont compressées côté navigateur avant l'envoi : en 3G
+ * sénégalaise, une photo brute de 5 Mo ne passe pas. Le plafond ci-dessous
+ * n'est qu'un garde-fou serveur. Le format est lu dans les octets.
+ */
+
+const TAILLE_MAX_OCTETS = 8 * 1024 * 1024;
+const FORMATS_ACCEPTES: TypeFichier[] = ["image/jpeg", "image/png", "image/webp"];
+
+type Contexte = { params: Promise<{ id: string }> };
+
+export async function POST(request: Request, { params }: Contexte) {
+  const gerant = await exigerGerantApi();
+  if (!gerant) {
+    return NextResponse.json({ error: "Accès réservé au back-office." }, { status: 403 });
+  }
+
+  if (Number(request.headers.get("content-length") ?? 0) > TAILLE_MAX_OCTETS + 64 * 1024) {
+    return NextResponse.json({ error: "Photo trop lourde." }, { status: 413 });
+  }
+
+  const { id } = await params;
+
+  try {
+    const formulaire = await request.formData();
+    const fichier = formulaire.get("photo");
+    const angle = String(formulaire.get("angle") ?? "") as AngleHandover;
+
+    if (!(fichier instanceof File)) {
+      return NextResponse.json({ error: "Photo manquante." }, { status: 400 });
+    }
+    if (!ANGLES_ATTENDUS.includes(angle)) {
+      return NextResponse.json({ error: "Angle de prise de vue inconnu." }, { status: 400 });
+    }
+    if (fichier.size > TAILLE_MAX_OCTETS) {
+      return NextResponse.json(
+        { error: "Photo trop lourde. Reprenez-la en qualité moindre." },
+        { status: 413 },
+      );
+    }
+
+    const octets = new Uint8Array(await fichier.arrayBuffer());
+    const mimeType = typeReel(octets);
+    if (!mimeType || !FORMATS_ACCEPTES.includes(mimeType)) {
+      return NextResponse.json(
+        { error: "Format non accepté. Utilisez JPEG, PNG ou WebP." },
+        { status: 415 },
+      );
+    }
+
+    const resultat = await ajouterPhoto({ gerant, reservationId: id, angle, octets, mimeType });
+
+    return NextResponse.json({ angle: resultat.angle });
+  } catch (error) {
+    if (error instanceof ErreurRetrait) {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
+    console.error("[gerant/retrait/photo]", error);
+    return NextResponse.json({ error: "Envoi de la photo impossible." }, { status: 500 });
+  }
+}

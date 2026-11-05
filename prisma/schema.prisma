@@ -31,6 +31,9 @@ model Produit {
   locations       Location[]
   ventes          Vente[]
   inventories     Inventory[]
+  // V2 — le catalogue reste la source de vérité des modèles et des prix
+  vehicules       Vehicule[]
+  reservations    Reservation[]
   updatedById     String?
   updatedBy       AdminUser? @relation("ProductUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   createdAt       DateTime  @default(now())
@@ -113,6 +116,8 @@ model Store {
   city         String?
   isActive     Boolean      @default(true)
   inventories   Inventory[]
+  // V2 — Boutique porte les données contractuelles (code de référence, adresse)
+  boutique     Boutique?
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 }
@@ -183,4 +188,850 @@ enum StatutLocation {
 enum AdminRole {
   ADMIN
   SUPER_ADMIN
+}
+
+// ===========================================================================
+// V2 — Réservation en ligne → KYC → contrat pré-rempli → signature → retrait
+//
+// Ajout strictement additif : les modèles V1 ci-dessus (Produit, Store,
+// AdminUser, Location, Vente, Inventory) ne sont pas modifiés, le site en
+// production continue de fonctionner à l'identique.
+//
+// Deux points d'ancrage sur l'existant :
+//   Boutique  1-1  Store    — Store reste le référentiel des points de vente
+//   Vehicule   n-1  Produit — le catalogue admin reste la source des modèles
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// COMPTES & BOUTIQUES
+// ---------------------------------------------------------------------------
+
+/// Un compte s'ouvre avec un numéro de téléphone OU une adresse e-mail, les
+/// deux étant des identifiants vérifiés par code à usage unique. L'e-mail
+/// permet aux visiteurs étrangers sans numéro joignable par SMS d'ouvrir un
+/// compte. Une contrainte CHECK en base (voir la migration
+/// `identifiant_email_international_modele_contrat`) interdit un compte
+/// dépourvu des deux.
+model User {
+  id           String    @id @default(cuid())
+  /// Toujours en minuscules, normalisé par `src/lib/identifiant.ts`.
+  email        String?   @unique
+  /// Format E.164, tous pays : +221771234567, +33612345678.
+  telephone    String?   @unique
+  telVerifie   Boolean   @default(false)
+  nomAffichage String?
+  role         Role      @default(CLIENT)
+  actif        Boolean   @default(true)
+
+  /// Incrémenté pour révoquer d'un coup toutes les sessions ouvertes
+  /// (déconnexion, compte compromis). Le jeton de session porte cette version :
+  /// un jeton d'une version antérieure est refusé.
+  versionSession Int     @default(0)
+
+  boutiqueId String? // renseigné pour les GERANT et les COMMERCIAL
+  boutique   Boutique? @relation(fields: [boutiqueId], references: [id])
+
+  customer Customer?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastLoginAt DateTime?
+
+  @@index([boutiqueId])
+}
+
+enum Role {
+  CLIENT
+  /// Rattaché à une boutique : valide les dossiers, signe, remet les motos.
+  GERANT
+  /// Rattaché à une boutique : consulte seulement (dossiers, contrats, flotte).
+  COMMERCIAL
+  /// Compte unique, désigné par `npm run admin:designer` : toutes les boutiques.
+  ADMIN
+}
+
+model Boutique {
+  id String @id @default(cuid())
+
+  // Ancrage sur le référentiel V1 des points de vente
+  storeId String @unique
+  store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  code      String  @unique // "THS", "MBR" — utilisé dans les références de contrat
+  adresse   String
+  telephone String
+
+  /// Nom complet du gérant qui signe pour le Bailleur, tel qu'il doit
+  /// apparaître sur les actes : « NASSALAN Frédéric Olivier ».
+  /// Varie d'une boutique à l'autre — ne jamais coder en dur.
+  representantNom String
+  actif     Boolean @default(true)
+
+  users        User[]
+  vehicules    Vehicule[]
+  reservations Reservation[]
+  compteurs    CompteurReference[]
+}
+
+/// Séquence des références LME-{année}-{codeBoutique}-{séquence}.
+/// Incrément atomique en base : deux réservations simultanées ne peuvent pas
+/// obtenir le même numéro.
+model CompteurReference {
+  id         String   @id @default(cuid())
+  boutiqueId String
+  boutique   Boutique @relation(fields: [boutiqueId], references: [id], onDelete: Cascade)
+  annee      Int
+  dernier    Int      @default(0)
+
+  @@unique([boutiqueId, annee])
+}
+
+// ---------------------------------------------------------------------------
+// AUTHENTIFICATION PAR CODE À USAGE UNIQUE
+// ---------------------------------------------------------------------------
+
+/// Un code OTP n'est jamais stocké en clair : seul son HMAC est conservé.
+/// Sert autant à la connexion qu'à la signature du contrat.
+///
+/// Cette table sert AUSSI de journal pour la limitation de débit (par
+/// destinataire, par adresse IP, et plafond global de SMS) : les compteurs
+/// vivent en base, ils sont donc partagés entre toutes les instances du
+/// serveur sans dépendre d'un Redis.
+model OtpCode {
+  id           String     @id @default(cuid())
+  /// Téléphone E.164 ou e-mail en minuscules.
+  destinataire String
+  codeHash     String
+  canal        CanalOtp   @default(CONSOLE)
+  but          ButOtp     @default(CONNEXION)
+
+  /// Renseigné pour les OTP de signature : relie le code au contrat signé
+  contractId String?
+
+  expiresAt  DateTime
+  tentatives Int       @default(0)
+  consommeAt DateTime?
+  ip         String?
+  createdAt  DateTime  @default(now())
+
+  @@index([destinataire, but, createdAt])
+  @@index([ip, createdAt])
+  @@index([canal, createdAt])
+  @@index([expiresAt])
+}
+
+enum CanalOtp {
+  SMS
+  WHATSAPP
+  EMAIL
+  CONSOLE // driver de développement : le code sort dans les logs serveur
+}
+
+enum ButOtp {
+  CONNEXION
+  SIGNATURE
+}
+
+// ---------------------------------------------------------------------------
+// PROFIL CLIENT & PIÈCES JUSTIFICATIVES
+// ---------------------------------------------------------------------------
+
+model Customer {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // ── Champs du dossier KYC ────────────────────────────────────────────────
+  // Tous nullables À DESSEIN. Le client remplit son dossier sur mobile en 3G
+  // instable : chaque étape est enregistrée au fil de l'eau et la saisie
+  // reprend où elle s'est arrêtée après une coupure. Un dossier partiel est
+  // donc un état normal, marqué par statutKyc = INCOMPLET.
+  //
+  // La complétude n'est PAS garantie par la base mais par dossierComplet()
+  // dans src/lib/dossier.ts, seul point de passage vers A_VERIFIER.
+
+  // État civil
+  prenom        String?
+  nom           String?
+  dateNaissance DateTime?
+  lieuNaissance String?
+  nationalite   String    @default("Sénégalaise")
+
+  // Identité
+  typePiece           TypePiece?
+  numeroPiece         String?
+  pieceDateExpiration DateTime?
+  numeroPermis        String?
+  permisDateObtention DateTime?
+
+  // Coordonnées
+  adresse    String?
+  quartier   String?
+  ville      String?
+  profession String?
+
+  /// Téléphone porté au contrat, pour un client connecté par e-mail.
+  /// NON vérifié : il ne sert jamais d'identifiant de connexion ni de canal
+  /// pour un code — sans quoi quelqu'un pourrait déclarer le numéro d'un tiers
+  /// et capter ses accès. Un client connecté par téléphone ne le renseigne pas.
+  telephoneContact String?
+
+  statutKyc     StatutKyc @default(INCOMPLET)
+  kycVerifiePar String? // userId du gérant
+  kycVerifieAt  DateTime?
+  kycMotifRejet String?
+
+  /// Consentement explicite horodaté au dépôt des pièces (loi n° 2008-12)
+  consentementAt DateTime?
+
+  documents    CustomerDocument[]
+  reservations Reservation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([numeroPiece])
+  @@index([statutKyc])
+}
+
+enum TypePiece {
+  CNI
+  PASSEPORT
+  CARTE_SEJOUR
+  CARTE_CONSULAIRE
+}
+
+enum StatutKyc {
+  INCOMPLET // il manque des pièces
+  A_VERIFIER // dossier complet, en attente du gérant
+  VALIDE
+  REJETE
+}
+
+model CustomerDocument {
+  id         String       @id @default(cuid())
+  customerId String
+  customer   Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  type       TypeDocument
+
+  blobPath     String // chemin dans le conteneur PRIVÉ, jamais d'URL publique
+  mimeType     String
+  tailleOctets Int
+  sha256       String // détecte les remplacements silencieux
+
+  uploadedAt DateTime @default(now())
+
+  // Purge CDP : `purgeApres` est posé à la clôture du contrat,
+  // un cron supprime le blob et renseigne `purgeAt`.
+  purgeApres DateTime?
+  purgeAt    DateTime?
+
+  @@index([customerId, type])
+  @@index([purgeApres])
+}
+
+enum TypeDocument {
+  PIECE_RECTO
+  PIECE_VERSO
+  PERMIS_RECTO
+  PERMIS_VERSO
+  JUSTIFICATIF_DOMICILE
+  SELFIE
+  AUTRE
+}
+
+// ---------------------------------------------------------------------------
+// FLOTTE & RÉSERVATION
+// ---------------------------------------------------------------------------
+
+model Vehicule {
+  id         String   @id @default(cuid())
+  boutiqueId String
+  boutique   Boutique @relation(fields: [boutiqueId], references: [id])
+
+  // Le modèle vient du catalogue V1 plutôt que d'un enum figé
+  produitId String
+  produit   Produit @relation(fields: [produitId], references: [id])
+
+  numeroChassis   String  @unique
+  immatriculation String? @unique
+  /// Certificat de Mise en Circulation, ex. « 2026 14V 12239 ».
+  /// Figure sur le contrat de vente échelonnée (article 2).
+  cmc             String?
+  couleur         String?
+
+  statut       StatutVehicule @default(DISPONIBLE)
+  reservations Reservation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([boutiqueId, statut])
+  @@index([produitId])
+}
+
+enum StatutVehicule {
+  DISPONIBLE
+  RESERVE
+  EN_LOCATION
+  MAINTENANCE
+  VENDU
+  HORS_SERVICE
+}
+
+model Reservation {
+  id        String @id @default(cuid())
+  reference String @unique // LME-2026-THS-0142
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  boutiqueId String
+  boutique   Boutique @relation(fields: [boutiqueId], references: [id])
+
+  // Modèle demandé à la réservation ; le véhicule physique est attribué ensuite
+  produitId  String
+  produit    Produit   @relation(fields: [produitId], references: [id])
+  vehiculeId String?
+  vehicule   Vehicule? @relation(fields: [vehiculeId], references: [id])
+
+  formule Formule
+
+  dateDebut DateTime?
+  dateFin   DateTime?
+  /// Jours effectivement facturés — règle des 6 jours sur 7, jamais dateFin - dateDebut
+  nbJours   Int?
+
+  /// Valeurs portées sur l'acte, saisies par le gérant à la génération.
+  ///
+  /// Elles priment sur la fiche du véhicule : le gérant connaît la machine
+  /// qu'il remet, y compris quand elle n'est pas encore inscrite à la flotte
+  /// ou que sa carte grise vient d'arriver. Laissées vides, l'acte reprend le
+  /// véhicule attribué, et à défaut imprime « Néant ».
+  numeroSerieContrat     String?
+  immatriculationContrat String?
+  /// « Marque / Modèle » imprimé à l'article 2. Laissé vide, l'acte reprend le
+  /// modèle réservé au catalogue. Ne change NI le tarif NI la moto attribuée :
+  /// c'est une valeur d'impression, au même titre que le numéro de série.
+  modeleContrat          String?
+  /// Cases cochées à l'article « Modalités de paiement » des deux actes.
+  /// Vide : les cases restent vierges, comme sur les contrats papier.
+  modesPaiementContrat   ModePaiement[] @default([])
+
+  /// VENTE ÉCHELONNÉE — état porté aux articles 2 et 9 de l'acte.
+  ///
+  /// L'acte imprimait « Neuf » en dur et ne cochait aucune des deux cases de
+  /// l'article 9. Les motos vendues sont neuves : c'est la valeur par défaut,
+  /// et les contrats déjà établis s'impriment donc à l'identique.
+  etatVenteContrat EtatVehiculeVente @default(NEUF)
+
+  /// Date portée par « Fait à …, le … » au bas de l'acte.
+  ///
+  /// Sans elle, le document portait la date de GÉNÉRATION : un acte préparé le
+  /// lundi et signé le jeudi affichait lundi. Le gérant fixe donc la date à
+  /// laquelle l'acte est réellement signé ; à défaut, celle du jour.
+  dateSignatureContrat   DateTime?
+
+  /// LOCATION JOURNALIÈRE — valeurs propres à cet acte, saisies par le gérant.
+  ///
+  /// Le contrat journalier demande bien plus que les deux autres : des heures,
+  /// une caution, un kilométrage, une zone. Aucune ne se déduit du catalogue —
+  /// elles se conviennent au comptoir, au moment de la remise des clés.
+  /// « 08h30 », tel que saisi sur l'acte.
+  heureDepart       String?
+  heureRetour       String?
+  /// Article 6 : kilométrage inclus, et forfait facturé au-delà.
+  limiteKm          Int?
+  forfaitKmSupp     Int?
+  /// Article 8 : périmètre hors duquel la moto ne doit pas sortir.
+  zoneUtilisation   String?
+  /// Article 15 : état général constaté au départ.
+  etatGeneralDepart String?
+
+  // Montants en FCFA — entiers, jamais de flottant sur de l'argent
+  montantTotal         Int
+  montantAcompte       Int  @default(0)
+  montantCaution       Int  @default(0)
+  redevanceJournaliere Int?
+
+  /// Clé de l'offre retenue dans src/lib/offres.ts, ex. « A10_AVEC_ENGAGEMENT ».
+  /// Conservée pour retrouver les conditions exactes appliquées, même si la
+  /// grille tarifaire évolue par la suite.
+  offreCle             String?
+  /// Durée du contrat d'accession, en mois. S'imprime sur l'acte (article 3) :
+  /// elle doit être stockée, jamais redéduite d'un tarif.
+  dureeMois            Int?
+
+  /// Location-accession A10 : remise de 500 F/j liée à l'engagement de 12 mois,
+  /// due sur tous les jours loués en cas de rupture anticipée imputable au client.
+  engagementMois       Int?
+  differentielSiRupture Int?
+
+  statut   StatutReservation @default(BROUILLON)
+  contract Contract?
+  handover Handover?
+  /// État des lieux de sortie. Absent tant que le contrat n'est pas clos, et
+  /// pour une accession menée à terme : la moto reste alors au client.
+  restitution Restitution?
+
+  echeances     Echeance[]
+  encaissements Encaissement[]
+
+  /// Début du suivi des versements : le plus tard entre le scellement du
+  /// contrat et la mise en service du suivi. Les versements encaissés avant la
+  /// mise en ligne ne sont pas repris ; sans cette date, un contrat signé des
+  /// mois plus tôt afficherait un retard qu'il n'a pas.
+  suiviDepuis DateTime?
+
+  /// ANNULATION par la boutique, avant scellement. Décision d'Alexandre du
+  /// 2026-09-29 : le client qui se désiste appelle ou passe, il n'annule pas
+  /// lui-même.
+  ///
+  /// Portée par la RÉSERVATION et non par le contrat : une annulation peut
+  /// survenir avant qu'aucun contrat n'existe, et un `ContractEvent` seul
+  /// perdrait la trace dans ce cas précis. Le motif est obligatoire — un
+  /// dossier annulé sans raison écrite ne se distingue pas d'une fausse
+  /// manœuvre.
+  annuleLe        DateTime?
+  annuleParUserId String?
+  annuleMotif     String?
+
+  /// Passé ce délai sans retrait, un cron libère le véhicule
+  /// (`npm run cron:expiration`, `src/lib/expiration.ts`).
+  expireLe DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([boutiqueId, statut])
+  @@index([customerId])
+  @@index([expireLe])
+}
+
+enum Formule {
+  LOCATION_JOURNALIERE
+  LOCATION_ACCESSION
+  VENTE_ECHELONNEE
+}
+
+/// Les deux seuls choix offerts par l'article 9 du contrat de vente.
+enum EtatVehiculeVente {
+  NEUF
+  OCCASION
+}
+
+/// Ordre d'impression fixé dans `src/lib/modes-paiement.ts`.
+enum ModePaiement {
+  ESPECES
+  WAVE
+  ORANGE_MONEY
+  VIREMENT
+}
+
+enum StatutReservation {
+  BROUILLON
+  EN_ATTENTE_DOSSIER // KYC incomplet
+  EN_ATTENTE_VALIDATION // KYC à vérifier par le gérant
+  EN_ATTENTE_SIGNATURE
+  EN_ATTENTE_RETRAIT // signé des deux côtés, moto réservée
+  ACTIVE // moto retirée
+  TERMINEE
+  /// Arrêté par un constat de restitution : retour d'une location journalière,
+  /// ou rupture anticipée d'une accession. À distinguer de TERMINEE, qui dit
+  /// qu'un contrat s'est BIEN fini — vente soldée, accession menée à son terme.
+  ARRETEE
+  ANNULEE
+  CADUQUE // pièce non conforme au retrait, ou délai dépassé
+}
+
+// ---------------------------------------------------------------------------
+// CONTRAT
+// ---------------------------------------------------------------------------
+
+model ContractTemplate {
+  id      String @id @default(cuid())
+  code    String // "LOCATION_JOURNALIERE"
+  version Int // incrémenté à chaque modification des clauses
+  libelle String
+
+  blobPath String // le PDF AcroForm de référence
+  champs   Json // mapping { champPdf: cheminDonnee }
+  actif    Boolean @default(true)
+
+  contracts Contract[]
+  createdAt DateTime   @default(now())
+
+  @@unique([code, version])
+}
+
+model Contract {
+  id            String      @id @default(cuid())
+  reference     String      @unique
+  reservationId String      @unique
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+  templateId    String
+  template      ContractTemplate @relation(fields: [templateId], references: [id])
+
+  /// Snapshot FIGÉ des données au moment de la génération.
+  /// Si le client change d'adresse plus tard, le contrat signé ne bouge pas.
+  donnees Json
+
+  /// Coordonnées où incruster les tracés, calculées à la composition.
+  /// Propres à CE document : une adresse longue peut décaler une page, les
+  /// emplacements ne sont donc pas déductibles du modèle seul.
+  emplacementsSignature Json?
+
+  pdfDraftPath  String?
+  hashDraft     String? // SHA-256 du PDF présenté à la signature
+  pdfSignedPath String?
+  hashSigned    String? // SHA-256 du PDF scellé final
+
+  statut StatutContrat @default(BROUILLON)
+
+  // Jeton d'accès signature — lien opaque envoyé par WhatsApp/SMS
+  signTokenHash String?
+  signTokenExp  DateTime?
+
+  signatures Signature[]
+  events     ContractEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([statut])
+}
+
+enum StatutContrat {
+  BROUILLON
+  A_SIGNER_CLIENT
+  A_SIGNER_GERANT
+  SIGNE
+  EN_ATTENTE_RETRAIT
+  RETIRE
+  CADUC
+  ANNULE
+}
+
+model Signature {
+  id         String         @id @default(cuid())
+  contractId String
+  contract   Contract       @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  role       RoleSignataire
+
+  signataireUserId String
+  signataireNom    String // figé : le nom peut changer, la preuve non
+
+  imagePath   String // PNG du tracé, conteneur privé
+  imageSha256 String
+
+  signedAt  DateTime @default(now())
+  ip        String
+  userAgent String
+
+  // Le maillon qui relie le tracé à une personne : le code a été reçu sur ce
+  // téléphone OU à cette adresse e-mail, selon l'identifiant du compte.
+  otpVerifie Boolean   @default(false)
+  otpCanal   CanalOtp?
+  telephone  String?
+  email      String?
+
+  @@unique([contractId, role])
+}
+
+enum RoleSignataire {
+  CLIENT
+  GERANT
+}
+
+/// Piste d'audit. Chaque transition d'état écrit un événement, sans exception.
+model ContractEvent {
+  id         String   @id @default(cuid())
+  contractId String
+  contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  // GENERE, OUVERT, LU_INTEGRALEMENT, OTP_ENVOYE, OTP_VALIDE, SIGNE_CLIENT,
+  // SIGNE_GERANT, SCELLE, TELECHARGE, PIECE_VERIFIEE, RETIRE
+  type         String
+  acteurUserId String?
+  ip           String?
+  userAgent    String?
+  metadata     Json?
+  createdAt    DateTime @default(now())
+
+  @@index([contractId, createdAt])
+  /// Chiffres de l'administration : date de scellement des contrats.
+  @@index([type, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// RETRAIT EN BOUTIQUE — vérification physique de la pièce + état des lieux
+// ---------------------------------------------------------------------------
+
+model Handover {
+  id            String      @id @default(cuid())
+  reservationId String      @unique
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+
+  gerantUserId String
+  gerantNom    String
+
+  // Vérification de la pièce d'identité — le cœur du dispositif
+  pieceVerifiee   Boolean   @default(false)
+  pieceConforme   Boolean?
+  pieceMotifRefus String?
+  pieceVerifieeAt DateTime?
+
+  // État des lieux au départ — champs repris du constat d'état fourni par
+  // le client (voir docs/modeles-contrats.md).
+  compteurKm     Int?
+  heureRemise    String? // « 14h30 », tel que saisi sur le constat
+  /// Niveau de charge en pourcentage. Suivi interne : ne figure PAS sur le
+  /// constat d'origine, qui ne parle que de l'état de la batterie.
+  niveauBatterie Int?
+
+  carrosserie       EtatElement?
+  freinsPneus       EtatElement?
+  batterieChargeur  EtatElement?
+  accessoires       EtatAccessoires?
+  accessoiresPrecision String?
+
+  casqueRemis    Boolean         @default(false)
+  chargeurRemis  Boolean         @default(false)
+  observations   String?
+  photos         HandoverPhoto[]
+
+  // PV de remise généré et signé sur place
+  pvPdfPath           String?
+  pvHashSigned        String?
+  signatureClientPath String?
+  signatureGerantPath String?
+
+  statut      StatutHandover @default(EN_ATTENTE)
+  completedAt DateTime?
+  createdAt   DateTime       @default(now())
+
+  @@index([statut])
+}
+
+enum StatutHandover {
+  EN_ATTENTE
+  PIECE_REFUSEE
+  COMPLETE
+}
+
+/// Les trois états proposés par le constat de remise.
+enum EtatElement {
+  NEUF
+  OCCASION
+  DEGRADATIONS
+}
+
+enum EtatAccessoires {
+  COMPLETS
+  MANQUANTS
+}
+
+model HandoverPhoto {
+  id         String   @id @default(cuid())
+  handoverId String
+  handover   Handover @relation(fields: [handoverId], references: [id], onDelete: Cascade)
+
+  angle    AngleHandover
+  blobPath String
+  sha256   String
+  prisAt   DateTime           @default(now())
+
+  @@index([handoverId])
+}
+
+enum AngleHandover {
+  AVANT
+  ARRIERE
+  GAUCHE
+  DROITE
+  COMPTEUR
+  CHASSIS
+}
+
+// ---------------------------------------------------------------------------
+// VERSEMENTS — ce qui est DÛ, ce qui est REÇU
+//
+// `Reservation.montantTotal` dit ce que le client doit ; rien ne disait ce
+// qu'il a versé. D'où deux tables, et jamais un cumul posé sur la réservation :
+// un solde se recalcule à tout moment, un historique ne se reconstitue pas.
+// ---------------------------------------------------------------------------
+
+/// Échéance figée à la signature, comme le snapshot du contrat : si la grille
+/// tarifaire change ensuite, un échéancier déjà signé ne bouge pas.
+///
+/// N'existe que pour les formules qui en prévoient une : la VENTE ÉCHELONNÉE
+/// (60 % à la signature puis 4 × 10 %) et la LOCATION JOURNALIÈRE (une échéance
+/// unique, réglée au retrait). La location-accession n'en a aucune — l'acte ne
+/// prévoit pas de mensualité mais une redevance journalière due six jours sur
+/// sept, dont le dû se calcule à la date du jour.
+model Echeance {
+  id            String      @id @default(cuid())
+  reservationId String
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  /// 1 = acompte à la signature.
+  numero Int
+  /// « Acompte à la signature (60 %) », tel qu'il s'imprime sur l'acte et le reçu.
+  libelle String
+  /// FCFA entiers. La somme des échéances égale toujours le total, au franc près.
+  montantDu  Int
+  echeanceLe DateTime
+
+  encaissements Encaissement[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([reservationId, numero])
+  @@index([echeanceLe])
+}
+
+/// Un versement reçu, une ligne par versement.
+///
+/// Rien n'est jamais effacé : une erreur de saisie s'annule avec un motif et
+/// la ligne reste visible. C'est de l'argent — la trace vaut plus que la
+/// propreté du tableau. Seul l'administrateur annule.
+model Encaissement {
+  id            String      @id @default(cuid())
+  reservationId String
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+
+  /// Renseigné pour une vente (l'échéance que le versement solde) ; vide pour
+  /// une location-accession, dont les versements sont libres.
+  echeanceId String?
+  echeance   Echeance? @relation(fields: [echeanceId], references: [id])
+
+  /// FCFA entiers, jamais de flottant sur de l'argent.
+  montant Int
+  recuLe  DateTime
+  mode    ModePaiement
+  /// N° de transaction Wave, bordereau de virement… saisi tel quel.
+  reference String?
+
+  /// Qui a encaissé. Le nom est figé : une personne peut changer de nom ou
+  /// quitter l'entreprise, la preuve ne bouge pas.
+  saisiParUserId String
+  saisiParNom    String
+
+  /// Annulation motivée, réservée à l'administrateur. Jamais une suppression.
+  annuleLe        DateTime?
+  annuleParUserId String?
+  annuleMotif     String?
+
+  /// Reçu remis au client (attestation de versement).
+  /// Référence dérivée de celle du dossier : « LME-2026-THS-0142-V2 ».
+  recuRef     String? @unique
+  recuPdfPath String?
+
+  createdAt DateTime @default(now())
+
+  @@index([reservationId, recuLe])
+  @@index([recuLe])
+}
+
+// ---------------------------------------------------------------------------
+// RESTITUTION — fin de contrat, état des lieux de sortie
+//
+// Pendant du `Handover` : mêmes photos, mêmes accessoires, mais les états
+// proposés changent et trois champs s'ajoutent — le motif de la fin, les
+// dommages, et les sommes arrêtées au retour.
+//
+// Table distincte plutôt qu'un `type` sur `Handover` : ce dernier est unique
+// par réservation et porte la vérification de la pièce d'identité, qui n'a
+// aucun sens au retour. Les mélanger obligerait à rendre nullable ce qui est
+// aujourd'hui garanti.
+// ---------------------------------------------------------------------------
+
+model Restitution {
+  id            String      @id @default(cuid())
+  reservationId String      @unique
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+
+  /// Qui reçoit le véhicule et signe pour le Bailleur. Nom figé : une personne
+  /// peut quitter l'entreprise, la preuve ne bouge pas.
+  gerantUserId String
+  gerantNom    String
+
+  motif          MotifRestitution @default(FIN_NORMALE)
+  motifPrecision String?
+
+  /// Renseignés à la clôture. Le dossier existe avant, pour porter les photos.
+  dateRestitution  DateTime?
+  /// « 14h30 », tel que saisi sur le constat.
+  heureRestitution String?
+  compteurKm       Int?
+  niveauBatterie   Int?
+
+  carrosserie          EtatRestitution?
+  freinsPneus          EtatRestitution?
+  batterieChargeur     EtatRestitution?
+  accessoires          EtatAccessoires?
+  accessoiresPrecision String?
+
+  dommagesConstates Boolean @default(false)
+  dommagesPrecision String?
+
+  /// Sommes arrêtées au retour, en FCFA entiers, jamais de flottant.
+  ///
+  /// Le constat ne crée aucune obligation : il récapitule ce que le contrat
+  /// prévoit déjà. Seul `differentielRupture` se calcule, l'article 5 de
+  /// l'accession avec engagement en donnant la formule — d'où le nombre de
+  /// jours retenus, conservé pour pouvoir refaire le calcul des mois plus tard.
+  redevancesImpayees  Int?
+  coutReparations     Int?
+  differentielRupture Int?
+  differentielJours   Int?
+
+  observations String?
+  photos       RestitutionPhoto[]
+
+  /// Constat généré et signé sur place par les deux parties.
+  pvPdfPath           String?
+  pvHashSigned        String?
+  signatureClientPath String?
+  signatureGerantPath String?
+
+  statut      StatutRestitution @default(EN_COURS)
+  completedAt DateTime?
+  createdAt   DateTime          @default(now())
+
+  @@index([statut])
+}
+
+/// Les angles sont ceux de la remise : c'est la comparaison des deux séries
+/// qui prouve une dégradation, elle exige les mêmes points de vue.
+model RestitutionPhoto {
+  id            String      @id @default(cuid())
+  restitutionId String
+  restitution   Restitution @relation(fields: [restitutionId], references: [id], onDelete: Cascade)
+
+  angle    AngleHandover
+  blobPath String
+  sha256   String
+  prisAt   DateTime      @default(now())
+
+  @@index([restitutionId])
+}
+
+/// États proposés au RETOUR. Ils diffèrent de ceux de la remise : on ne
+/// demande pas si la moto est neuve, mais si son usure est normale.
+enum EtatRestitution {
+  BON_ETAT
+  USURE_NORMALE
+  DEGRADATIONS
+}
+
+enum MotifRestitution {
+  FIN_NORMALE
+  RUPTURE_ANTICIPEE
+  DEFAUT_DE_PAIEMENT
+  AUTRE
+}
+
+enum StatutRestitution {
+  EN_COURS
+  COMPLETE
 }

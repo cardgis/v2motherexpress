@@ -2,19 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import type { Tarification, ProduitHome, InventoryHome } from "@/types";
+import type { Tarification, ProduitHome } from "@/types";
 import { money } from "@/lib/formatters";
 
 type ProductCardProps = {
   product: ProduitHome;
+  /** Déjà calculé par l'appelant à partir des stocks par boutique. */
   availabilityText: string;
-  inventories: InventoryHome[];
   isOpen: boolean;
   onOpen: () => void;
   onClose: () => void;
 };
 
-export function ProductCard({ product, availabilityText, inventories, isOpen, onOpen, onClose }: ProductCardProps) {
+export function ProductCard({ product, availabilityText, isOpen, onOpen, onClose }: ProductCardProps) {
   const [remoteTarif, setRemoteTarif] = useState<Tarification | null>(null);
 
   useEffect(() => {
@@ -31,8 +31,8 @@ export function ProductCard({ product, availabilityText, inventories, isOpen, on
       try {
         const res = await fetch('/api/produits');
         if (!res.ok) return;
-        const list = await res.json();
-        const p = list.find((x: any) => x.id === product.id);
+        const list: Array<{ id: string; tarification?: Tarification | null }> = await res.json();
+        const p = list.find((x) => x.id === product.id);
         if (alive) setRemoteTarif(p?.tarification ?? null);
       } catch {}
     })();
@@ -40,10 +40,6 @@ export function ProductCard({ product, availabilityText, inventories, isOpen, on
   }, [isOpen, product.id]);
 
   const imgSrc = (product.imageUrl || "/assets/img/product-2.jpg").replace(/^assets\//, "/assets/");
-  const availableStores = inventories
-    .filter((inv) => inv.isAvailable && inv.availableQuantity > 0)
-    .map((inv) => inv.store?.name)
-    .filter((name): name is string => Boolean(name));
 
   const tarif = (key: keyof Tarification) =>
     money((remoteTarif?.[key] ?? product.tarification?.[key]) as number | undefined);
@@ -143,7 +139,7 @@ export function ProductCard({ product, availabilityText, inventories, isOpen, on
                       <div className="product-panel__price-gold">{tarif("tarif24hFcfa")}</div>
                     </div>
                     <div className="product-panel__price-secondary">
-                      <div className="product-panel__price-label">Prix d'achat</div>
+                      <div className="product-panel__price-label">Prix d&apos;achat</div>
                       <div className="product-panel__price-white">{tarif("prixVenteFcfa")}</div>
                     </div>
                   </div>

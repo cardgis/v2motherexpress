@@ -41,3 +41,11 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# Pièces d'identité, contrats et signatures stockés en local (driver de dev).
+# Ne doit JAMAIS être versionné.
+/.storage
+
+# Documents d'aperçu régénérables par `npm run apercu:contrats` — ils servent à
+# valider la mise en page, pas à être versionnés.
+/apercu-contrats

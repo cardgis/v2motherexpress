@@ -1,5 +1,8 @@
-import "dotenv/config";
+import dotenv from "dotenv";
 import { Pool } from "pg";
+
+// Même priorité que prisma.config.ts : la base locale d'abord.
+dotenv.config({ path: [".env.local", ".env"] });
 import { randomUUID, randomBytes, scryptSync } from "crypto";
 
 const connectionString = process.env.DATABASE_URL!;
@@ -224,7 +227,7 @@ async function main() {
           produit.moteurType ?? null,
           produit.batterie ?? null,
           produit.categorie,
-          ((produit as any).annee ?? 2024),
+          "annee" in produit && typeof produit.annee === "number" ? produit.annee : 2024,
           produit.vitesseMaxKmh,
           produit.autonomieKm,
           produit.stockTotal,

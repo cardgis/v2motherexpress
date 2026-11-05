@@ -26,7 +26,7 @@ export function AboutContent() {
         <p className="about-eyebrow">Notre Histoire</p>
         <h1 className="about-hero__title">
           <span className="about-hero__line about-hero__line--1">La Mother,</span>
-          <span className="about-hero__line about-hero__line--2">c'est avant tout</span>
+          <span className="about-hero__line about-hero__line--2">c&apos;est avant tout</span>
           <span className="about-hero__line about-hero__line--3">
             <span className="about-hero__em">une femme.</span>
           </span>
@@ -43,19 +43,19 @@ export function AboutContent() {
 
           <p className="about-body" data-reveal data-reveal-delay="80">
             Celle dont le nom nourrit, rassemble, et fait avancer. Ici au Sénégal,
-            on l'appelle <strong>La Mother</strong>, pas par hasard. C'est elle qui tient
-            la maison, qui connaît chaque visage, qui sert avec le cœur. C'est
-            autour d'elle que tout commence.
+            on l&apos;appelle <strong>La Mother</strong>, pas par hasard. C&apos;est elle qui tient
+            la maison, qui connaît chaque visage, qui sert avec le cœur. C&apos;est
+            autour d&apos;elle que tout commence.
           </p>
 
           <div className="about-separator" data-reveal data-reveal-delay="120" aria-hidden="true" />
 
           <p className="about-body" data-reveal data-reveal-delay="80">
-            L'aventure a d'abord pris la forme d'une table. <strong>Chez La Mother</strong>, un
-            restaurant où l'on mange comme à la maison avec les saveurs du
+            L&apos;aventure a d&apos;abord pris la forme d&apos;une table. <strong>Chez La Mother</strong>, un
+            restaurant où l&apos;on mange comme à la maison avec les saveurs du
             terroir, la chaleur du foyer, et cette générosité qui ne se commande
-            pas. Thiès se retrouve autour d'un plat, d'un
-            sourire, d'une histoire partagée.
+            pas. Thiès se retrouve autour d&apos;un plat, d&apos;un
+            sourire, d&apos;une histoire partagée.
           </p>
         </div>
 
@@ -76,17 +76,17 @@ export function AboutContent() {
 
         {/* ── PULL QUOTE ── */}
         <div className="about-pullquote" data-reveal>
-          <span>Puis est venue l'envie<br />d'aller plus loin.</span>
+          <span>Puis est venue l&apos;envie<br />d&apos;aller plus loin.</span>
           <em>Littéralement.</em>
         </div>
 
         <p className="about-body" data-reveal data-reveal-delay="80">
-          La Mother Express, c'est le même esprit familial, ancré, sincère 
+          La Mother Express, c&apos;est le même esprit familial, ancré, sincère
           mais sur deux roues. Une extension naturelle, portée par la même
-          conviction : entreprendre ici, pour les gens d'ici, avec ce que la
-          terre et l'époque offrent de meilleur. Aujourd'hui, cette époque,
-          c'est l'électrique. <strong>Propre. Silencieux. Économique.</strong> Et
-          résolument sénégalais dans sa manière d'être vécu.
+          conviction : entreprendre ici, pour les gens d&apos;ici, avec ce que la
+          terre et l&apos;époque offrent de meilleur. Aujourd&apos;hui, cette époque,
+          c&apos;est l&apos;électrique. <strong>Propre. Silencieux. Économique.</strong> Et
+          résolument sénégalais dans sa manière d&apos;être vécu.
         </p>
 
         {/* ── HIGHLIGHT REVOO ── */}

@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import type { ProduitHome, InventoryHome } from "@/types";
 import { money } from "@/lib/formatters";
+import { lienReserver } from "@/lib/suite";
+import { ImageProduit } from "@/components/ImageProduit";
 
 type Props = {
   produits: ProduitHome[];
@@ -68,18 +71,23 @@ export default function ProductExplorer({ produits, inventoriesByProductId, vari
   const imgSrc = (p.imageUrl || "/assets/img/product-2.jpg").replace(/^assets\//, "/assets/");
 
   const inventories = inventoriesByProductId[p.id] ?? [];
+  // « La Mother Express Thiès » → « Thiès » : la marque est déjà partout sur
+  // la page, et le nom complet faisait déborder la pastille sur téléphone.
   const availableStores = inventories
-    .filter((inv) => inv.isAvailable && inv.availableQuantity > 0)
-    .map((inv) => inv.store?.name)
+    .map((inv) => inv.store?.name?.replace(/^La Mother Express\s+/i, ""))
     .filter((n): n is string => Boolean(n));
-  const availabilityText = !p.estDisponible
-    ? "Indisponible"
-    : availableStores.length
-      ? `Disponible — ${availableStores.join(" · ")}`
-      : "Disponible";
+  // La « disponibilité » du produit a été retirée du catalogue : un modèle
+  // actif est proposé partout où la boutique le référence, et c'est la flotte
+  // qui tranche au moment de la réservation.
+  const availabilityText = availableStores.length
+    ? `Disponible à ${availableStores.join(" · ")}`
+    : "Disponible";
 
-  const waRent = `https://wa.me/+221772320235?text=${encodeURIComponent(`Bonjour, je souhaite louer le scooter ${p.nom}. Pouvez-vous me donner les disponibilités ?`)}`;
-  const waBuy = `https://wa.me/+221772320235?text=${encodeURIComponent(`Bonjour, je suis intéressé par l'achat du scooter ${p.nom}. Pouvez-vous me donner plus d'informations ?`)}`;
+  // Louer ou acheter ouvre la réservation en ligne, ce modèle déjà choisi — la
+  // même porte d'entrée que le bouton « Réserver » du bandeau. WhatsApp reste
+  // accessible par le bouton flottant pour une question.
+  const lienLouer = lienReserver(p.slug, "location");
+  const lienAcheter = lienReserver(p.slug, "achat");
 
   const rentLabel = p.tarification?.tarif24hFcfa
     ? `Location 24h : ${money(p.tarification.tarif24hFcfa)}`
@@ -129,18 +137,18 @@ export default function ProductExplorer({ produits, inventoriesByProductId, vari
             <span className="lme-stage__count">
               <b>{pad(index + 1)}</b> / {pad(total)}
             </span>
-            <span className={`lme-stage__avail${!p.estDisponible ? " is-unavailable" : ""}`}>
-              {availabilityText}
-            </span>
+            <span className="lme-stage__avail">{availabilityText}</span>
 
             {/* key force le re-mount → relance l'animation */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              key={p.id}
-              src={imgSrc}
-              alt={`Scooter électrique ${p.nom}`}
-              className="lme-stage__moto is-anim"
-            />
+            <div key={p.id} className="lme-stage__cadre is-anim">
+              <ImageProduit
+                src={imgSrc}
+                alt={`Scooter électrique ${p.nom}`}
+                sizes="(max-width: 860px) 92vw, 1100px"
+                // Sur /produits, la fiche est le haut de la page ; sur l'accueil, le bandeau passe avant.
+                prioritaire={variant === "page" && index === 0}
+              />
+            </div>
 
             <button className="lme-arrow lme-arrow--prev" onClick={() => go(index - 1)} aria-label="Modèle précédent">
               <ChevronLeft />
@@ -184,12 +192,12 @@ export default function ProductExplorer({ produits, inventoriesByProductId, vari
                 <span className="lme-price--buy">{buyLabel}</span>
               </div>
               <div className="lme-actions">
-                <a className="lme-btn lme-btn--primary" href={waRent} target="_blank" rel="noopener noreferrer">
+                <Link className="lme-btn lme-btn--primary" href={lienLouer}>
                   Louer <ArrowIcon />
-                </a>
-                <a className="lme-btn lme-btn--ghost" href={waBuy} target="_blank" rel="noopener noreferrer">
+                </Link>
+                <Link className="lme-btn lme-btn--ghost" href={lienAcheter}>
                   Acheter <ArrowIcon />
-                </a>
+                </Link>
               </div>
             </div>
           </div>
@@ -234,14 +242,13 @@ export default function ProductExplorer({ produits, inventoriesByProductId, vari
         .lme-viewport { position: relative; width: 100%; height: clamp(360px, 52vw, 560px); display: flex; align-items: center; justify-content: center; background: #ffffff; }
         .lme-stage__glow { display: none; }
         .lme-stage__watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: "Oswald", sans-serif; font-size: clamp(5rem, 18vw, 14rem); font-weight: 800; color: rgba(0,0,0,0.04); letter-spacing: -0.05em; pointer-events: none; user-select: none; white-space: nowrap; }
-        .lme-stage__moto { position: relative; z-index: 1; max-width: 95%; max-height: 95%; width: 95%; object-fit: contain; }
-        .lme-stage__moto.is-anim { animation: lme-pop .55s cubic-bezier(.2,.7,.2,1) both; }
+        .lme-stage__cadre { position: absolute; inset: 2.5%; z-index: 1; }
+        .lme-stage__cadre.is-anim { animation: lme-pop .55s cubic-bezier(.2,.7,.2,1) both; }
         @keyframes lme-pop { from { opacity: 0; transform: scale(.94) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         .lme-stage__badge { position: absolute; top: 22px; left: 26px; z-index: 3; font-family: "Oswald", sans-serif; font-size: clamp(1.4rem, 3.5vw, 2.2rem); font-weight: 700; letter-spacing: -0.01em; color: #111111; }
         .lme-stage__count { position: absolute; top: 30px; right: 28px; z-index: 3; font-size: 0.85rem; color: var(--muted); font-weight: 600; }
         .lme-stage__count b { color: var(--accent); }
         .lme-stage__avail { position: absolute; bottom: 22px; left: 26px; z-index: 3; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #16a34a; background: rgba(22,163,74,0.10); border: 1px solid rgba(22,163,74,0.25); border-radius: 999px; padding: 4px 12px; }
-        .lme-stage__avail.is-unavailable { color: #dc2626; background: rgba(220,38,38,0.08); border-color: rgba(220,38,38,0.22); }
 
         .lme-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 4; cursor: pointer; width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.05); border: 1px solid var(--line); color: #111111; transition: background .25s, border-color .25s, transform .15s, color .25s; }
         .lme-arrow:hover { background: linear-gradient(135deg, var(--accent), var(--accent-deep)); color: #1a1206; border-color: transparent; }
@@ -285,7 +292,7 @@ export default function ProductExplorer({ produits, inventoriesByProductId, vari
           .lme-arrow { width: 44px; height: 44px; }
           .lme-arrow--prev { left: 10px; }
           .lme-arrow--next { right: 10px; }
-          .lme-stage__moto { max-width: 96%; width: 96%; }
+          .lme-stage__cadre { inset: 2%; }
         }
       `}</style>
     </section>

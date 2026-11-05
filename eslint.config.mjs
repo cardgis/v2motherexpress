@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Client Prisma généré : régénéré à chaque `prisma generate`, jamais édité
+    // à la main. Le linter n'a rien à y dire et noyait les vraies erreurs.
+    "src/generated/**",
+    // Bibliothèques tierces minifiées servies telles quelles (jQuery, UIkit,
+    // Slick…) : ce n'est pas notre code, on ne le corrige pas, on le met à jour.
+    "public/**",
   ]),
 ]);
 

@@ -1,27 +1,25 @@
+import Link from "next/link";
+import { LIEN_RESERVER } from "@/lib/suite";
+
 const HERO_SLIDES = [
   {
-    image: "/assets/img/header1.png",
+    // Versions WebP compressées (voir public/assets/img) : 1,9 Mo → quelques centaines de Ko.
+    image: "/assets/img/header1-1920.webp",
     alt: "Scooter électrique REVOO en balade au Sénégal — La Mother Express",
     title: "La liberté, ça se conduit.",
     subtitle: "Location & vente de scooters au Sénégal",
-    count: "benn",
-    alignment: "left",
   },
   {
-    image: "/assets/img/header2.jpg",
+    image: "/assets/img/header2-1920.webp",
     alt: "Partenaire officiel REVOO Sénégal — scooters électriques à Thiès et Mbour",
     title: "Partenaire officiel Revoo Sénégal",
     subtitle: "Roule électrique, roule demain.",
-    count: "ñaar",
-    alignment: "right",
   },
   {
-    image: "/assets/img/header3.jpg",
+    image: "/assets/img/header3-1920.webp",
     alt: "Location de scooter électrique au Sénégal — simple, rapide, fiable",
     title: "Besoin d'un scooter aujourd'hui ?",
     subtitle: "Simple, rapide et fiable.",
-    count: "ñett",
-    alignment: "left",
   },
 ] as const;
 
@@ -35,20 +33,25 @@ export function HomeHeroAbout() {
               <article
                 key={slide.image}
                 className={`slideshow-item hero-slider__slide hero-slider__slide--${index + 1}`}
+                // Les diapositives suivantes répètent le message : les lecteurs
+                // d'écran ne lisent que la première, porteuse du titre de la page.
+                aria-hidden={index === 0 ? undefined : true}
               >
                 <img
                   src={slide.image}
-                  alt={slide.alt}
+                  alt={index === 0 ? slide.alt : ""}
                   width="1600"
                   height="900"
                   loading={index === 0 ? "eager" : "lazy"}
+                  // La première image est la plus grande de la page : le
+                  // navigateur la télécharge avant le reste.
+                  fetchPriority={index === 0 ? "high" : "low"}
                   decoding="async"
                   className="hero-slider__image"
                 />
                 <div className="uk-position-center uk-position-small">
                   <div className="uk-container">
                     <div className="uk-grid" data-uk-grid>
-                      {slide.alignment === "right" && <div className="uk-width-2-5@m uk-visible@l"></div>}
                       <div className="uk-width-3-5@m">
                         <div className="slideshow-item__decor">DemRek</div>
                         <div className="slideshow-item__content">
@@ -56,24 +59,40 @@ export function HomeHeroAbout() {
                             {index === 0 ? (
                               <h1 className="uk-h2">
                                 {slide.title}
-                                <br /> {slide.subtitle}
+                                <span className="hero-sous-titre">{slide.subtitle}</span>
                               </h1>
                             ) : (
                               <div className="uk-h2">
                                 {slide.title}
-                                <br /> {slide.subtitle}
+                                <span className="hero-sous-titre">{slide.subtitle}</span>
                               </div>
                             )}
                           </div>
                         </div>
                       </div>
-                      {slide.alignment === "left" && <div className="uk-width-2-5@m uk-visible@l"></div>}
+                      <div className="uk-width-2-5@m uk-visible@l"></div>
                     </div>
                   </div>
                 </div>
               </article>
             ))}
           </div>
+
+          {/* Boutons communs aux trois diapositives : présents une seule fois,
+              ils restent atteignables au clavier quelle que soit l'image affichée. */}
+          <div className="hero-actions">
+            <div className="uk-container">
+              <div className="hero-actions__groupe">
+                <Link href={LIEN_RESERVER} className="hero-actions__bouton hero-actions__bouton--principal">
+                  Réserver en ligne
+                </Link>
+                <Link href="/produits" className="hero-actions__bouton hero-actions__bouton--secondaire">
+                  Voir les modèles
+                </Link>
+              </div>
+            </div>
+          </div>
+
           <div className="slideshow-nav" aria-label="Navigation du slider">
             <div className="slideshow-nav__arrow" aria-hidden="true">
               <span data-uk-slidenav-previous></span>
@@ -103,7 +122,6 @@ export function HomeHeroAbout() {
           <div className="hero-scroll-cue__line" />
         </div>
       </div>
-
     </>
   );
 }

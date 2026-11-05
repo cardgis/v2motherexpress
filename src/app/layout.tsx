@@ -118,7 +118,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr">
+    // `data-scroll-behavior` : globals.css pose `scroll-behavior: smooth` sur
+    // `html`, et Next.js a besoin de cet attribut pour le NEUTRALISER pendant un
+    // changement de route. Sans lui, chaque navigation anime un défilement vers
+    // le haut, ce qui donne une impression de page qui saute.
+    //
+    // `suppressHydrationWarning` : les extensions de navigateur écrivent sur la
+    // balise racine AVANT que React n'hydrate — ici `xk-pk-bridge` sous Chrome,
+    // rien sous Edge. React comparait, trouvait un attribut qu'il n'avait pas
+    // écrit, et avertissait à chaque chargement. Le coût de cette mesure est
+    // nul : cette balise ne porte que deux attributs FIXES, donc rien de notre
+    // fait ne peut y différer. Et la portée est l'ÉLÉMENT SEUL — un vrai
+    // désaccord d'hydratation ailleurs dans l'arbre sera toujours signalé.
+    <html lang="fr" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <link rel="stylesheet" href="/assets/css/uikit.min.css" />
         <link rel="stylesheet" href="/assets/css/slick.css" />
