@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { responsiveImage } from "@/lib/img";
 import { LIEN_RESERVER } from "@/lib/suite";
 
 const HERO_SLIDES = [
@@ -38,7 +39,7 @@ export function HomeHeroAbout() {
                 aria-hidden={index === 0 ? undefined : true}
               >
                 <img
-                  src={slide.image}
+                  {...responsiveImage(slide.image, "100vw")}
                   alt={index === 0 ? slide.alt : ""}
                   width="1600"
                   height="900"

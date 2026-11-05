@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import Link from 'next/link';
 import { LIEN_RESERVER } from '@/lib/suite';
 
@@ -58,10 +58,6 @@ const A_LA_UNE = [
 
 export function HomeFooterSections() {
   const year = new Date().getFullYear();
-
-  useEffect(() => {
-    (window as Window & { FontAwesome?: { dom?: { i2svg?: () => void } } }).FontAwesome?.dom?.i2svg?.();
-  }, []);
 
   const reseaux = RESEAUX.filter((r) => r.url);
 

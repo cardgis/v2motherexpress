@@ -3,9 +3,9 @@
 ## Stack
 - **Next.js 16** App Router, React 19, TypeScript
 - **Prisma** + PostgreSQL (pg)
-- **UIKit** (CSS/JS via CDN dans `public/assets/`)
-- **jQuery** + Slick slider (via CDN)
-- Scripts chargés dans `src/app/layout.tsx` via `<Script strategy="afterInteractive">`
+- **UIKit 3.6.3** (CSS/JS dans `public/assets/`) — sans dépendance jQuery
+- Seuls scripts chargés dans `src/app/layout.tsx` : `uikit.min.js` et `uikit-icons.min.js` (`<Script strategy="afterInteractive">`)
+- **Plus de jQuery, Slick, ion.rangeSlider, FontAwesome ni `main.js`** — voir « Scripts morts » plus bas
 
 ## Routes
 | Route | Page |
@@ -452,3 +452,66 @@ site.
 **Sans vérification du domaine, aucun e-mail ne part**, quel que soit le
 fournisseur — le relais SMTP seul ne suffit pas. C'est un préalable
 administratif, pas du code. Compter jusqu'à 48 heures de propagation DNS.
+## Images — pipeline WebP
+
+**Ne jamais utiliser `next/image`.** Il consomme le quota Vercel « Image Optimization —
+Transformations », et il entre en conflit avec la mise en page CSS du thème UIKit.
+
+Les variantes responsive sont **pré-générées au build**, pas à la volée :
+
+```bash
+npm run optimize:images   # scripts/optimize-images.mjs
+```
+
+Le script parcourt `public/assets/img`, écrit des `<nom>-<largeur>.webp` à côté des
+originaux (jamais d'upscale), et régénère `src/lib/image-manifest.ts`.
+
+**À relancer après tout ajout d'image, et à commiter** — les `.webp` sont des assets
+versionnés, pas des artefacts de build.
+
+### Afficher une image
+
+```tsx
+import { responsiveImage } from "@/lib/img";
+
+<img {...responsiveImage("/assets/img/header1.png", "100vw")} alt="…" />
+```
+
+`responsiveImage(src, sizes)` renvoie `{ src, srcSet, sizes }`. Si l'image est absente du
+manifest (upload admin, URL externe), elle renvoie la source d'origine intacte — l'affichage
+ne casse jamais.
+
+Le second argument décrit la **largeur d'affichage réelle**, pas la taille du fichier. Sans
+lui le navigateur suppose `100vw` et télécharge la plus grande variante. C'est ce qui faisait
+télécharger `header1.png` en entier (1,85 MB) pour une vignette de 120 px dans le footer.
+
+**Garder des `<img>` simples — pas de `<picture>`.** Le DOM reste identique à celui du thème,
+donc aucun risque vis-à-vis des sélecteurs CSS UIKit ni du bug d'interactivité SPA ci-dessus.
+L'avertissement ESLint `@next/next/no-img-element` est attendu et assumé.
+
+## Scripts morts (supprimés)
+
+`jquery.min.js`, `slick.min.js`, `ion.rangeSlider.min.js`, `main.js` et
+`fontawesome.all.min.js` ont été retirés de `layout.tsx` — 1,39 MB par page pour du code qui
+ne s'exécutait jamais. Les fichiers existent encore dans `public/assets/` mais ne sont pas
+chargés.
+
+Vérification faite sélecteur par sélecteur : aucune cible de `main.js` n'existe dans
+l'application (`.gallery-slider`, `.gallery-slider-nav`, `#range-price`, `#range-mileage`,
+`#page-preloader`). jQuery ne servait plus qu'à ces scripts morts, et était chargé en
+`beforeInteractive` — il bloquait le rendu pour rien. Les icônes sociales du footer sont en
+SVG inline depuis longtemps, FontAwesome ne dessinait plus rien.
+
+**Ne pas les recharger.** Si une fonctionnalité du thème est réintroduite, la réécrire en
+React plutôt que de rebrancher jQuery.
+
+## Contexte Vercel
+
+Le site a été coupé (`402 DEPLOYMENT_DISABLED`) en septembre 2026 après un dépassement du
+quota Fast Data Transfer : 303 GB pour 100 GB autorisés. Cause identifiée — un scraper via
+Londres (`lhr1`), 650K requêtes soit 76,8 % du trafic, contre 18,8 % pour Paris et 2,3 % pour
+Le Cap qui constituent le public réel.
+
+Traité par : **Bot Protection en mode challenge** (Firewall Vercel), la conversion WebP et la
+suppression des scripts morts. Toute régression sur le poids des pages a un coût direct et
+immédiat sur ce quota.

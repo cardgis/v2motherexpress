@@ -2266,6 +2266,127 @@ dialog[open] {
   }
 }
 
+/* ── Section « Offre du moment » (accueil) ── */
+.section-promo {
+  background: linear-gradient(135deg, #0a0a12 0%, #14141f 60%, #0f0f18 100%);
+  padding: clamp(56px, 8vw, 100px) 20px;
+}
+
+.promo__inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: clamp(32px, 5vw, 64px);
+  align-items: center;
+}
+
+.promo__eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #c79a2a;
+  margin-bottom: 16px;
+}
+
+.promo__title {
+  font-size: clamp(2rem, 4.2vw, 3rem);
+  font-weight: 900;
+  line-height: 1.1;
+  color: #fff;
+  margin: 0 0 20px;
+}
+
+.promo__title--gold {
+  color: #c79a2a;
+}
+
+.promo__desc {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #a0a0b0;
+  margin: 0 0 28px;
+}
+
+.promo__desc strong {
+  color: #e0e0e8;
+}
+
+.promo__offers {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px;
+  display: grid;
+  gap: 12px;
+}
+
+.promo__offer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 18px;
+  border-left: 3px solid #c79a2a;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 0 10px 10px 0;
+}
+
+.promo__offer-head {
+  color: #f4d27a;
+  font-weight: 700;
+}
+
+.promo__offer-head strong {
+  color: #fff;
+}
+
+.promo__offer-gift {
+  font-size: 0.9rem;
+  color: #a0a0b0;
+}
+
+.promo__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(180deg, #f4d27a 0%, #c79a2a 100%);
+  color: #0a0a12;
+  font-weight: 800;
+  padding: 16px 30px;
+  border-radius: 50px;
+  text-decoration: none;
+  box-shadow: 0 8px 32px rgba(199, 154, 42, 0.35);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.promo__btn:hover,
+.promo__btn:focus-visible {
+  color: #0a0a12;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(199, 154, 42, 0.5);
+}
+
+.promo__media {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(199, 154, 42, .22),
+    0 24px 64px rgba(0, 0, 0, .55);
+}
+
+.promo__image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 859px) {
+  .promo__inner {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ── prefers-reduced-motion — neutralise tout ── */
 @media (prefers-reduced-motion: reduce) {
   .hero-particles,
@@ -2282,6 +2403,7 @@ dialog[open] {
   .video-card,
   .social-list__link,
   .floating-contact__whatsapp,
+  .promo__btn,
   .section-gallery img,
   .section-gallery .uk-grid > div > div::after {
     transition: none !important;

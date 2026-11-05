@@ -1,4 +1,5 @@
 import { AboutReveal } from './AboutReveal';
+import { responsiveImage } from '@/lib/img';
 
 function Particles() {
   return (
@@ -61,7 +62,7 @@ export function AboutContent() {
 
         <figure className="about-split__image" data-reveal data-reveal-delay="160">
           <img
-            src="/assets/img/chezlamother.jpg"
+            {...responsiveImage('/assets/img/chezlamother.jpg', '(max-width: 900px) 100vw, 45vw')}
             alt="Chez La Mother — cuisine sénégalaise traditionnelle"
             width={840}
             height={840}

@@ -4,6 +4,7 @@ import { HomeVideosSection } from "@/components/HomeVideosSection";
 import { HomeFooterSections } from "@/components/HomeFooterSections";
 import { ContactInfoSection } from "@/components/ContactInfoSection";
 import { HomeCTASection } from "@/components/HomeCTASection";
+import { HomePromoSection } from "@/components/HomePromoSection";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import type { InventoryHome, ProduitHome } from "@/types";
 import "@/styles/accueil.css";
@@ -21,6 +22,7 @@ export function HomePageContent({ produits, inventoriesByProductId, nombreModele
       <ScrollReveal />
       <main className="page-main">
         <HomeHeroAbout />
+        <HomePromoSection />
         <ProductExplorer produits={produits} inventoriesByProductId={inventoriesByProductId} variant="section" />
         <HomeCTASection nombreModeles={nombreModeles} />
         <ContactInfoSection headingLevel={2} />

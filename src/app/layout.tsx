@@ -133,9 +133,6 @@ export default function RootLayout({
     <html lang="fr" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <link rel="stylesheet" href="/assets/css/uikit.min.css" />
-        <link rel="stylesheet" href="/assets/css/slick.css" />
-        <link rel="stylesheet" href="/assets/css/slick-theme.css" />
-        <link rel="stylesheet" href="/assets/css/ion.rangeSlider.css" />
         <link rel="stylesheet" href="/assets/css/main.css" />
         <style>{`body,.page-home{font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}`}</style>
         <script
@@ -150,13 +147,12 @@ export default function RootLayout({
           {children}
           <DisableBfcache />
         </RouteBoundary>
-        <Script src="/assets/js/jquery.min.js" strategy="beforeInteractive" />
+        {/* UIKit 3 est sans dépendance jQuery. Les scripts du thème d'origine
+            (jquery, slick, ion.rangeSlider, main.js, fontawesome) ont été
+            retirés : aucun des sélecteurs qu'ils ciblent n'existe plus dans
+            l'application, et les icônes sociales sont désormais en SVG inline. */}
         <Script src="/assets/js/uikit.min.js" strategy="afterInteractive" />
         <Script src="/assets/js/uikit-icons.min.js" strategy="afterInteractive" />
-        <Script src="/assets/js/slick.min.js" strategy="afterInteractive" />
-        <Script src="/assets/js/ion.rangeSlider.min.js" strategy="afterInteractive" />
-        <Script src="/assets/js/main.js" strategy="afterInteractive" />
-        <Script src="/assets/js/fontawesome.all.min.js" strategy="lazyOnload" />
       </body>
     </html>
   );
