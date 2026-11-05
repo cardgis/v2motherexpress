@@ -1,38 +1,37 @@
 /**
- * Driver Vercel Blob — le stockage retenu pour la production (décision
- * d'Alexandre, 2026-11-05 : « je reste que sur vercel »).
+ * Driver Vercel Blob — le stockage de production (décision d'Alexandre,
+ * 2026-11-05 : « je reste que sur vercel »).
  *
- * ── Pourquoi c'est défendable ──────────────────────────────────────────────
- * Vercel Blob n'offre que des URL PUBLIQUES, non devinables. Trois couches le
- * rendent acceptable pour des pièces d'identité :
- *   1. le contenu est chiffré par l'application AVANT d'arriver ici
- *      (`index.ts` passe `chiffrer(...)` au pilote) : une URL qui fuiterait ne
- *      livrerait que du bruit, et la clé ne quitte jamais nos variables ;
- *   2. le type MIME est générisé en `application/octet-stream` : rien ne dit
- *      même qu'il s'agit d'un PDF ou d'une photo ;
- *   3. le chemin est préfixé par une empreinte salée, donc une URL connue ne
- *      permet pas de deviner ses voisines.
+ * ── Accès PRIVÉ, et c'est récent ───────────────────────────────────────────
+ * La version 2 du SDK permet `access: "private"` : le blob exige alors une
+ * authentification pour être lu, et son URL seule ne donne rien. La version
+ * précédente n'offrait que des URL publiques non devinables, ce qui obligeait
+ * à faire reposer toute la confidentialité sur le chiffrement applicatif.
  *
- * ── Ce qu'on perd quand même, et il faut le savoir ─────────────────────────
- * Un conteneur réellement privé (s3, azure) ne livrerait RIEN à une URL
- * devinée ; ici il livrerait du chiffré. La défense est donc d'une couche plus
- * mince — acceptable, pas équivalent. Si la CDP sénégalaise exigeait un jour un
- * stockage à accès restreint, `STORAGE_DRIVER="s3"` suffit, sans toucher au
- * code métier.
+ * Trois couches protègent donc désormais les pièces d'identité, là où il n'y
+ * en avait qu'une et demie :
+ *   1. l'accès au blob est refusé sans jeton ;
+ *   2. le contenu est chiffré par l'application AVANT d'arriver ici
+ *      (`index.ts` passe `chiffrer(...)`), et la clé ne quitte jamais nos
+ *      variables d'environnement ;
+ *   3. le type MIME est générisé en `application/octet-stream` : rien ne dit
+ *      même qu'il s'agit d'un PDF ou d'une photo.
+ *
+ * Le chemin reste préfixé d'une empreinte salée. Ce n'est plus la barrière
+ * principale — l'accès privé l'est — mais une couche qui ne coûte rien.
  */
 
 import { createHash } from "node:crypto";
 import type { DriverStockage } from "../types";
 
+/** Tous les appels partagent le même niveau d'accès : jamais public, ici. */
+const ACCES = "private" as const;
+
 /**
- * Préfixe dérivé d'un sel : même si une URL fuitait, elle ne permettrait pas
- * de deviner les chemins voisins.
- *
- * Sans sel, les chemins redeviennent PRÉVISIBLES — et sur des URL publiques,
- * prévisible veut dire énumérable : on pourrait aspirer tous les blobs chiffrés
- * sans jamais deviner une seule adresse. C'est pourquoi l'absence de sel est
- * une ERREUR en production, et non une dégradation silencieuse. En
- * développement, le repli reste commode et sans enjeu.
+ * Préfixe dérivé d'un sel, pour qu'un chemin connu ne permette pas de deviner
+ * ses voisins. Obligatoire en production : se dégrader en silence sur un
+ * stockage de pièces d'identité n'est pas acceptable, même quand l'accès privé
+ * rend l'énumération inoffensive.
  */
 function cle(chemin: string): string {
   const sel = process.env.STORAGE_PATH_SALT;
@@ -40,9 +39,7 @@ function cle(chemin: string): string {
   if (!sel) {
     if (process.env.NODE_ENV === "production") {
       throw new Error(
-        "STORAGE_PATH_SALT est obligatoire avec STORAGE_DRIVER=\"vercel\" : sans lui, " +
-          "les chemins des blobs sont prévisibles alors que leurs URL sont publiques. " +
-          "openssl rand -hex 16",
+        'STORAGE_PATH_SALT est obligatoire avec STORAGE_DRIVER="vercel". openssl rand -hex 16',
       );
     }
     return chemin;
@@ -54,17 +51,24 @@ function cle(chemin: string): string {
 
 export const driverVercel: DriverStockage = {
   async lire(chemin) {
-    const { head } = await import("@vercel/blob");
-    const infos = await head(cle(chemin));
-    const reponse = await fetch(infos.url, { signal: AbortSignal.timeout(15_000) });
-    if (!reponse.ok) throw new Error(`Blob illisible : ${chemin}`);
-    return { octets: new Uint8Array(await reponse.arrayBuffer()), mimeType: infos.contentType };
+    const { get } = await import("@vercel/blob");
+    const resultat = await get(cle(chemin), { access: ACCES });
+
+    // `null` : le blob n'existe pas. 304 : non modifié, donc sans corps — ce
+    // qui ne peut pas arriver ici puisqu'on n'envoie aucune requête
+    // conditionnelle, mais le type l'autorise et on ne devine pas.
+    if (!resultat || resultat.statusCode !== 200) {
+      throw new Error(`Blob illisible : ${chemin}`);
+    }
+
+    const octets = new Uint8Array(await new Response(resultat.stream).arrayBuffer());
+    return { octets, mimeType: resultat.blob.contentType };
   },
 
   async ecrire(chemin, octets, mimeType) {
     const { put } = await import("@vercel/blob");
     await put(cle(chemin), Buffer.from(octets), {
-      access: "public",
+      access: ACCES,
       contentType: mimeType,
       addRandomSuffix: false,
       allowOverwrite: true,
@@ -72,9 +76,9 @@ export const driverVercel: DriverStockage = {
   },
 
   async supprimer(chemin) {
-    const { del, head } = await import("@vercel/blob");
-    const infos = await head(cle(chemin)).catch(() => null);
-    if (infos) await del(infos.url);
+    const { del } = await import("@vercel/blob");
+    // `del` accepte un chemin : plus besoin de résoudre l'URL par `head`.
+    await del(cle(chemin));
   },
 
   async existe(chemin) {

@@ -274,36 +274,35 @@ qu'il tourne sur Vercel.
 ### Le stockage reste chez Vercel : `STORAGE_DRIVER="vercel"`
 
 Décision du 2026-11-05 — « je reste que sur vercel ». Aucun prestataire
-supplémentaire, donc une seule facture, un seul tableau de bord, un seul
-incident possible. Le pilote `drivers/vercel.ts` existait déjà et
-`@vercel/blob` était déjà installé : il n'y avait rien à écrire.
+supplémentaire, donc une seule facture et un seul tableau de bord. Le pilote
+`drivers/vercel.ts` existait déjà et `@vercel/blob` était déjà installé.
 
-**Vercel Blob n'offre que des URL publiques, non devinables.** Trois couches
-rendent cela acceptable pour des pièces d'identité :
+**Les blobs sont écrits en accès PRIVÉ**, découvert le 2026-11-05 en relisant le
+SDK : la version 2 accepte `access: "private"`, et un blob privé exige un jeton
+pour être lu. La version précédente n'offrait que des URL publiques non
+devinables, ce qui obligeait à faire reposer toute la confidentialité sur le
+chiffrement applicatif. Le pilote a été réécrit en conséquence — la lecture
+passe maintenant par `get(chemin, { access: "private" })` et son flux, non plus
+par un `fetch` de l'URL. Fait **avant** qu'aucun document n'existe, donc sans
+aucune migration.
 
-1. le contenu est **chiffré par l'application avant d'arriver au pilote** —
+Trois couches protègent donc les pièces d'identité :
+
+1. **l'accès au blob est refusé sans jeton** ;
+2. le contenu est **chiffré par l'application avant d'arriver au pilote** —
    `index.ts` lui passe `chiffrer(...)`, et la clé ne quitte jamais nos
    variables d'environnement ;
-2. le type MIME est générisé en `application/octet-stream` : rien ne dit même
-   qu'il s'agit d'un PDF ou d'une photo ;
-3. le chemin est préfixé d'une empreinte salée, donc une URL connue ne permet
-   pas de deviner ses voisines.
+3. le type MIME est générisé en `application/octet-stream` : rien ne dit même
+   qu'il s'agit d'un PDF ou d'une photo.
 
-**Ce qu'on perd, et qu'il faut assumer :** un conteneur réellement privé (s3,
-azure) ne livrerait RIEN à une URL devinée ; ici il livrerait du chiffré. La
-défense est d'une couche plus mince — acceptable, pas équivalent. Si la CDP
-sénégalaise exigeait un accès restreint, `STORAGE_DRIVER="s3"` suffit, sans
-toucher au code métier.
+`STORAGE_PATH_SALT` reste **obligatoire en production** et le pilote refuse de
+démarrer sans lui. Ce n'est plus la barrière principale depuis l'accès privé,
+mais se dégrader en silence sur un stockage de pièces d'identité n'est pas
+acceptable, et cette couche ne coûte rien.
 
-**`STORAGE_PATH_SALT` devient donc porteur, et il échouait en silence.** Le
-pilote retombait sur le chemin brut quand le sel manquait : sur des URL
-publiques, prévisible veut dire **énumérable**, et on aurait pu aspirer tous
-les blobs chiffrés sans deviner une seule adresse. Le pilote lève désormais une
-erreur en production, et `verif:prod` en fait un bloquant. En développement le
-repli reste commode et sans enjeu.
-
-`BLOB_READ_WRITE_TOKEN` est injecté automatiquement par Vercel : il ne se
-renseigne que pour travailler hors de la plateforme.
+`BLOB_READ_WRITE_TOKEN` est injecté automatiquement par Vercel dès que le
+stockage est créé dans l'onglet *Storage* : il ne se renseigne à la main que
+pour travailler hors de la plateforme.
 ## Avant de déployer : `npm run verif:prod`
 
 Ce contrôle répond à une seule question — si on démarre l'application avec cet

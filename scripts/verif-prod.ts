@@ -181,19 +181,19 @@ if (stockage === "local") {
     );
   }
 } else if (stockage === "vercel") {
-  // Retenu en production. Son acceptabilité repose ENTIÈREMENT sur deux
-  // variables : sans elles, des pièces d'identité se retrouveraient derrière
-  // des URL publiques, lisibles ou énumérables.
+  // Le pilote écrit en accès PRIVÉ depuis le 2026-11-05 : un blob n'est plus
+  // lisible sans jeton. Ces deux variables restent néanmoins nécessaires —
+  // l'une pour accéder au stockage, l'autre comme couche supplémentaire.
   const sel = valeur("STORAGE_PATH_SALT");
   const jeton = valeur("BLOB_READ_WRITE_TOKEN");
 
   if (!sel) {
     bloquant(
       'STORAGE_PATH_SALT absent avec STORAGE_DRIVER="vercel"',
-      "Vercel Blob n'expose que des URL PUBLIQUES. Sans sel, les chemins sont " +
-        "prévisibles, donc énumérables : on pourrait aspirer tous les blobs chiffrés " +
-        "sans deviner une seule adresse. Le pilote lève désormais une erreur en " +
-        "production plutôt que de se dégrader en silence. openssl rand -hex 16",
+      "Le pilote REFUSE de démarrer sans lui en production, plutôt que de se " +
+        "dégrader en silence sur un stockage de pièces d'identité. Il rend les " +
+        "chemins non devinables : l'accès privé est la barrière principale, le sel " +
+        "en est une seconde qui ne coûte rien. openssl rand -hex 16",
     );
   } else {
     ok("STORAGE_PATH_SALT", "présent — chemins non devinables");
@@ -209,8 +209,8 @@ if (stockage === "local") {
     ok("Accès Vercel Blob", surVercel ? "jeton injecté par la plateforme" : "jeton présent");
   }
 
-  console.log("    → rappel : les URL Blob sont publiques. C'est tenable UNIQUEMENT");
-  console.log("      parce que le contenu est chiffré avant d'y arriver.");
+  console.log("    → les blobs sont écrits en accès PRIVÉ : une URL seule ne donne");
+  console.log("      rien, et le contenu est chiffré par-dessus.");
 } else {
   ok(`STORAGE_DRIVER = ${stockage}`);
 }
