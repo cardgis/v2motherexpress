@@ -59,3 +59,7 @@ next-env.d.ts
 # Secrets de production générés par `npm run generer:secrets`. Ne doit JAMAIS
 # entrer en version : c'est le seul endroit où ils existent en clair.
 /secrets-production.txt
+
+# Bloc de variables non secrètes, prêt à coller dans Vercel. Régénérable à la
+# main ; hors version pour ne pas figer des valeurs qui changeront.
+/vercel-variables.txt

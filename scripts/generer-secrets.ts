@@ -60,7 +60,11 @@ function main() {
     return;
   }
 
-  const lignes = [
+  // Le fichier doit pouvoir être collé TEL QUEL dans l'import en masse de
+  // Vercel, qui attend du format .env et rejette toute ligne qui n'est ni un
+  // commentaire ni une affectation. D'où le préfixe « # » posé ici sur chaque
+  // ligne d'explication, plutôt que laissé à la vigilance de qui relit.
+  const entete = [
     "Secrets de production — La Mother Express V2",
     `Générés le ${new Date().toISOString().slice(0, 10)}`,
     "",
@@ -70,6 +74,10 @@ function main() {
     "SAUVEGARDEZ STORAGE_CLES_CHIFFREMENT HORS LIGNE : la perdre, c'est perdre",
     "toutes les pièces d'identité et tous les contrats déjà chiffrés.",
     "",
+  ].map((l) => (l === "" ? "" : `# ${l}`));
+
+  const lignes = [
+    ...entete,
     ...secrets.flatMap((s) => [`# ${s.note}`, `${s.nom}="${s.valeur}"`, ""]),
   ];
 
