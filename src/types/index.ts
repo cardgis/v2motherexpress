@@ -21,12 +21,6 @@ export type ProduitHome = {
   tarification?: Tarification | null;
 };
 
-/** Présence d'un modèle dans un point de vente, pour l'affichage vitrine. */
-export type InventoryHome = {
-  produitId: string;
-  store?: { name?: string | null } | null;
-};
-
 export interface User {
   id: string;
   name: string;

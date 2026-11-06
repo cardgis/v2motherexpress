@@ -21,12 +21,12 @@ export const metadata: Metadata = {
 };
 
 export default async function ProduitsPage() {
-  const { produits, inventoriesByProductId } = await getAllProductsData();
+  const { produits } = await getAllProductsData();
 
   return (
     <div className="page-home">
       <main className="page-main">
-        <ProductExplorer produits={produits} inventoriesByProductId={inventoriesByProductId} />
+        <ProductExplorer produits={produits} />
       </main>
       <HomeFooterSections />
     </div>

@@ -6,24 +6,23 @@ import { ContactInfoSection } from "@/components/ContactInfoSection";
 import { HomeCTASection } from "@/components/HomeCTASection";
 import { HomePromoSection } from "@/components/HomePromoSection";
 import { ScrollReveal } from "@/components/ScrollReveal";
-import type { InventoryHome, ProduitHome } from "@/types";
+import type { ProduitHome } from "@/types";
 import "@/styles/accueil.css";
 
 type HomePageContentProps = {
   produits: ProduitHome[];
-  inventoriesByProductId: Record<string, InventoryHome[]>;
   /** Modèles actifs au catalogue, annoncés par la section d'appel. */
   nombreModeles: number;
 };
 
-export function HomePageContent({ produits, inventoriesByProductId, nombreModeles }: HomePageContentProps) {
+export function HomePageContent({ produits, nombreModeles }: HomePageContentProps) {
   return (
     <div className="page-home">
       <ScrollReveal />
       <main className="page-main">
         <HomeHeroAbout />
         <HomePromoSection />
-        <ProductExplorer produits={produits} inventoriesByProductId={inventoriesByProductId} variant="section" />
+        <ProductExplorer produits={produits} variant="section" />
         <HomeCTASection nombreModeles={nombreModeles} />
         <ContactInfoSection headingLevel={2} />
         <HomeVideosSection />

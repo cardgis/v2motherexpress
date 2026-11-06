@@ -2,14 +2,13 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import type { ProduitHome, InventoryHome } from "@/types";
+import type { ProduitHome } from "@/types";
 import { money } from "@/lib/formatters";
 import { lienReserver } from "@/lib/suite";
 import { ImageProduit } from "@/components/ImageProduit";
 
 type Props = {
   produits: ProduitHome[];
-  inventoriesByProductId: Record<string, InventoryHome[]>;
   variant?: "page" | "section";
 };
 
@@ -48,7 +47,7 @@ const ChevronRight = () => (
   </svg>
 );
 
-export default function ProductExplorer({ produits, inventoriesByProductId, variant = "page" }: Props) {
+export default function ProductExplorer({ produits, variant = "page" }: Props) {
   const [index, setIndex] = useState(0);
   const total = produits.length;
 
@@ -69,19 +68,10 @@ export default function ProductExplorer({ produits, inventoriesByProductId, vari
   const pad = (n: number) => String(n).padStart(2, "0");
 
   const imgSrc = (p.imageUrl || "/assets/img/product-2.jpg").replace(/^assets\//, "/assets/");
+  // La disponibilité par boutique n'est plus affichée : elle provenait de
+  // `Inventory`, inventé par le script d'amorçage. Elle reviendra depuis
+  // `Vehicule`, qui détient la vérité. Raisonnement complet dans `home-data.ts`.
 
-  const inventories = inventoriesByProductId[p.id] ?? [];
-  // « La Mother Express Thiès » → « Thiès » : la marque est déjà partout sur
-  // la page, et le nom complet faisait déborder la pastille sur téléphone.
-  const availableStores = inventories
-    .map((inv) => inv.store?.name?.replace(/^La Mother Express\s+/i, ""))
-    .filter((n): n is string => Boolean(n));
-  // La « disponibilité » du produit a été retirée du catalogue : un modèle
-  // actif est proposé partout où la boutique le référence, et c'est la flotte
-  // qui tranche au moment de la réservation.
-  const availabilityText = availableStores.length
-    ? `Disponible à ${availableStores.join(" · ")}`
-    : "Disponible";
 
   // Louer ou acheter ouvre la réservation en ligne, ce modèle déjà choisi — la
   // même porte d'entrée que le bouton « Réserver » du bandeau. WhatsApp reste
@@ -137,7 +127,6 @@ export default function ProductExplorer({ produits, inventoriesByProductId, vari
             <span className="lme-stage__count">
               <b>{pad(index + 1)}</b> / {pad(total)}
             </span>
-            <span className="lme-stage__avail">{availabilityText}</span>
 
             {/* key force le re-mount → relance l'animation */}
             <div key={p.id} className="lme-stage__cadre is-anim">
@@ -248,7 +237,6 @@ export default function ProductExplorer({ produits, inventoriesByProductId, vari
         .lme-stage__badge { position: absolute; top: 22px; left: 26px; z-index: 3; font-family: "Oswald", sans-serif; font-size: clamp(1.4rem, 3.5vw, 2.2rem); font-weight: 700; letter-spacing: -0.01em; color: #111111; }
         .lme-stage__count { position: absolute; top: 30px; right: 28px; z-index: 3; font-size: 0.85rem; color: var(--muted); font-weight: 600; }
         .lme-stage__count b { color: var(--accent); }
-        .lme-stage__avail { position: absolute; bottom: 22px; left: 26px; z-index: 3; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #16a34a; background: rgba(22,163,74,0.10); border: 1px solid rgba(22,163,74,0.25); border-radius: 999px; padding: 4px 12px; }
 
         .lme-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 4; cursor: pointer; width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.05); border: 1px solid var(--line); color: #111111; transition: background .25s, border-color .25s, transform .15s, color .25s; }
         .lme-arrow:hover { background: linear-gradient(135deg, var(--accent), var(--accent-deep)); color: #1a1206; border-color: transparent; }
