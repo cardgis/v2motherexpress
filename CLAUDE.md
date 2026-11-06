@@ -303,6 +303,48 @@ acceptable, et cette couche ne coûte rien.
 `BLOB_READ_WRITE_TOKEN` est injecté automatiquement par Vercel dès que le
 stockage est créé dans l'onglet *Storage* : il ne se renseigne à la main que
 pour travailler hors de la plateforme.
+
+### Exploitation : forcer la relecture des variables d'environnement
+
+**Les variables Vercel sont liées au DÉPLOIEMENT, pas au projet.** Une variable
+ajoutée après coup n'atteint le site qu'à la construction suivante — et le
+bouton « Redeploy » du tableau de bord ne la fait pas toujours relire. Le
+2026-11-06, une demi-heure a été perdue à croire `BLOB_READ_WRITE_TOKEN`
+absente alors qu'elle était seulement non lue.
+
+Le geste qui marche, et qui déclenche une vraie construction :
+
+```bash
+git commit --allow-empty -m "chore: forcer un déploiement pour relire les variables"
+git push
+```
+
+Comptez une à deux minutes avant que le nouveau déploiement serve le trafic.
+
+### Exploitation : lire l'état réel plutôt que le journal
+
+Deux pièges se sont présentés le même jour, et ils se contournent de la même
+façon — en provoquant une trace fraîche au lieu de lire l'historique.
+
+**Le journal Vercel affiche un historique.** Des lignes antérieures à un
+correctif ressemblent à des erreurs actuelles. Pour obtenir une ligne
+horodatée MAINTENANT, appeler la sonde depuis l'extérieur :
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" https://<domaine>/api/sante
+```
+
+Chaque appel écrit sa ligne. Un **200** atteste la base ET la configuration du
+stockage ; un **503** fait écrire `[sante] stockage non configuré : <variable>`
+dans les journaux, où le nom de la variable manquante se lit directement. La
+réponse publique, elle, ne révèle rien.
+
+**Et ne pas conclure d'un `curl` qui échoue.** Un `000` signifie que rien n'a
+répondu — serveur arrêté, bascule de déploiement en cours —, et un `grep` sur
+une réponse vide compte zéro, ce qui ressemble à un succès. Vérifier qu'une
+page contient ce qu'elle doit contenir, pas seulement qu'elle ne contient plus
+ce qu'on a retiré.
+
 ## Avant de déployer : `npm run verif:prod`
 
 Ce contrôle répond à une seule question — si on démarre l'application avec cet
