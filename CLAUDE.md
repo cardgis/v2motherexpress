@@ -119,11 +119,23 @@ Toute gestion d'Escape ou de clic est désormais faite dans les composants React
 - Import : `import { prisma } from "@/lib/prisma"`
 
 ## Administration et rôles (V2)
-- Compte administrateur UNIQUE (`User.role = ADMIN`), désigné par
-  `npm run admin:designer -- "<mobile ou e-mail>" "Prénom NOM"` : tout autre
-  admin redevient client, sessions révoquées. Connexion par code comme les
-  autres comptes. L'ancien accès par mot de passe (`admin-auth.ts`,
-  `/admin/login`) est supprimé ; la table `AdminUser` reste pour l'historique.
+- **PLUSIEURS administrateurs** (`User.role = ADMIN`), désignés par
+  `npm run admin:designer -- "<mobile ou e-mail>" "Prénom NOM"`. Le projet n'en
+  autorisait qu'un jusqu'au 2026-11-06 ; Alexandre en a demandé deux, un pour
+  lui et un pour Didier, soit les deux responsables de l'entreprise. Rien ne
+  s'y opposait : aucune contrainte en base ne porte sur le rôle, et tout le
+  contrôle d'accès teste `role === "ADMIN"`. L'unicité n'était qu'une politique
+  inscrite dans le script.
+- **La désignation AJOUTE par défaut**, elle ne retire plus. L'opération
+  destructrice est devenue celle qu'on demande : `--exclusif` fait du compte
+  désigné le SEUL administrateur et révoque les sessions des autres — manœuvre
+  de reprise en main si un accès échappe. Sans ce changement, désigner le second
+  responsable aurait rétrogradé le premier sans l'avertir.
+- Le script affiche **la liste complète des administrateurs** à la fin, dans
+  tous les cas : une politique qui se voit vaut mieux qu'une règle qu'on
+  suppose. Connexion par code comme les autres comptes. L'ancien accès par mot
+  de passe (`admin-auth.ts`, `/admin/login`) est supprimé ; la table
+  `AdminUser` reste pour l'historique.
 - Contrôles : `exigerAdmin()` / `exigerAdminApi()` pour `/admin` ;
   `exigerEquipe()` pour les pages de CONSULTATION du back-office (gérant,
   commercial, admin) ; `exigerGerant()` pour les pages d'ACTION ;
