@@ -2,16 +2,35 @@
  * Chiffres de l'administration — ventes, locations, contrats en cours.
  *
  * ── Ce que compte chaque chiffre ───────────────────────────────────────────
- * Vente / location longue durée : un contrat SCELLÉ (signé par le client puis
- *   contresigné) dans la période, daté de son scellement. Un contrat devenu
- *   caduc (pièce non conforme au retrait) ou annulé n'est pas une vente.
- * Location courte durée : aucun acte n'existe encore pour cette formule ; on
- *   compte donc les réservations journalières reçues sur le site, datées de
- *   leur création, hors brouillons, annulations et caducités.
+ * Vente, location longue durée ET location courte durée : un contrat SCELLÉ
+ *   dans la période, daté de son scellement. « Scellé » veut dire signé par le
+ *   client PUIS contresigné par la boutique, l'acte final étant établi — c'est
+ *   l'événement `SCELLE` du contrat qui en fait foi. Un contrat devenu caduc
+ *   (pièce non conforme au retrait) ou annulé n'est ni une vente ni une
+ *   location.
  * En cours : l'état au moment de la consultation, quelle que soit la période.
+ *   Une réservation ACTIVE implique un contrat scellé, puisqu'on n'y arrive
+ *   qu'après le retrait du véhicule.
  *
- * Les montants sont CONTRACTUELS (prix de vente, valeur indicative des
- * redevances) : aucun encaissement n'est encore enregistré dans le système.
+ * ── Pourquoi la courte durée était comptée autrement (corrigé 2026-11-10) ──
+ * Elle l'était depuis les RÉSERVATIONS, au motif qu'« aucun acte n'existait
+ * encore pour cette formule ». L'acte journalier a été écrit depuis, et la
+ * justification est tombée sans que le calcul suive. Une réservation reçue
+ * gonflait donc le panneau comme une location aboutie, alors qu'elle peut
+ * n'aller jamais plus loin — demande d'Alexandre, et il avait raison.
+ *
+ * Cela corrigeait aussi un DOUBLE COMPTAGE dans le graphique d'évolution : sa
+ * première branche comptait tous les contrats scellés, journalières comprises,
+ * et une seconde y ajoutait les réservations journalières. Les deux séries
+ * atterrissaient sur la même courbe et s'additionnaient.
+ *
+ * Les montants sont CONTRACTUELS — prix de vente, valeur des redevances
+ * engagées — et non encaissés. C'est voulu : ce panneau mesure ce que la
+ * boutique a VENDU sur la période. Ce qui est réellement rentré se lit sur
+ * `/admin/versements`, qui s'appuie sur les tables `Echeance` et
+ * `Encaissement`. Deux écrans, deux questions : ne pas chercher à les
+ * rapprocher, un contrat signé en janvier et payé en mars appartient
+ * légitimement à janvier ici et à mars là-bas.
  *
  * ── Performance ────────────────────────────────────────────────────────────
  * Les regroupements se font en base (SQL paramétré) : le volume de contrats
@@ -102,7 +121,7 @@ export async function chargerTableauDeBord({
   const perimetre = boutiqueId ? { boutiqueId } : {};
   const intervalle = periode.debut && periode.fin ? { gte: periode.debut, lt: periode.fin } : undefined;
 
-  const [signes, courtes, evolution, recues, reservations, contrats, dossiers, flotte, boutiques] =
+  const [signes, evolution, recues, reservations, contrats, dossiers, flotte, boutiques] =
     await Promise.all([
       lire<Agregat>((p) => `
         WITH ${SCELLES}
@@ -117,17 +136,6 @@ export async function chargerTableauDeBord({
           ${dansBoutique(boutiqueId, p)}
         GROUP BY 1, 2, 3`),
 
-      lire<Agregat>((p) => `
-        SELECT r.formule::text AS formule, r."boutiqueId", r."produitId",
-               count(*)::int AS nombre,
-               coalesce(sum(r."montantTotal"), 0)::float8 AS montant
-        FROM "Reservation" r
-        WHERE r.formule = 'LOCATION_JOURNALIERE'
-          AND r.statut NOT IN ('BROUILLON', 'ANNULEE', 'CADUQUE')
-          ${dansPeriode('r."createdAt"', periode, p)}
-          ${dansBoutique(boutiqueId, p)}
-        GROUP BY 1, 2, 3`),
-
       lire<{ mois: string; formule: Formule; nombre: number }>((p) => `
         WITH ${SCELLES}
         SELECT to_char(date_trunc('month', s.signe_le), 'YYYY-MM') AS mois,
@@ -138,16 +146,7 @@ export async function chargerTableauDeBord({
         WHERE c.statut NOT IN ('CADUC', 'ANNULE')
           AND s.signe_le >= ${p(debutDouzeMois, "::timestamp")}
           ${dansBoutique(boutiqueId, p)}
-        GROUP BY 1, 2
-        UNION ALL
-        SELECT to_char(date_trunc('month', r."createdAt"), 'YYYY-MM'),
-               'LOCATION_JOURNALIERE', count(*)::int
-        FROM "Reservation" r
-        WHERE r.formule = 'LOCATION_JOURNALIERE'
-          AND r.statut NOT IN ('BROUILLON', 'ANNULEE', 'CADUQUE')
-          AND r."createdAt" >= ${p(debutDouzeMois, "::timestamp")}
-          ${dansBoutique(boutiqueId, p)}
-        GROUP BY 1`),
+        GROUP BY 1, 2`),
 
       prisma.reservation.count({
         where: { ...perimetre, statut: { not: "BROUILLON" }, ...(intervalle ? { createdAt: intervalle } : {}) },
@@ -214,7 +213,7 @@ export async function chargerTableauDeBord({
     actif: b.actif,
     ventes: somme(signes, (l) => l.boutiqueId === b.id && l.formule === "VENTE_ECHELONNEE"),
     longues: somme(signes, (l) => l.boutiqueId === b.id && l.formule === "LOCATION_ACCESSION"),
-    courtes: somme(courtes, (l) => l.boutiqueId === b.id),
+    courtes: somme(signes, (l) => l.boutiqueId === b.id && l.formule === "LOCATION_JOURNALIERE"),
     enCours: reservationsOu((g) => g.boutiqueId === b.id && g.statut === "ACTIVE"),
     motos: flotte.filter((f) => f.boutiqueId === b.id).reduce((n, f) => n + f._count._all, 0),
     motosDisponibles: flotte
@@ -223,7 +222,7 @@ export async function chargerTableauDeBord({
   }));
 
   // ── Par modèle ─────────────────────────────────────────────────────────────
-  const produitIds = [...new Set([...signes, ...courtes].map((l) => l.produitId))];
+  const produitIds = [...new Set(signes.map((l) => l.produitId))];
   const produits = produitIds.length
     ? await prisma.produit.findMany({ where: { id: { in: produitIds } }, select: { id: true, nom: true } })
     : [];
@@ -232,7 +231,7 @@ export async function chargerTableauDeBord({
     .map((p) => {
       const ventes = somme(signes, (l) => l.produitId === p.id && l.formule === "VENTE_ECHELONNEE").nombre;
       const longues = somme(signes, (l) => l.produitId === p.id && l.formule === "LOCATION_ACCESSION").nombre;
-      const courtesModele = somme(courtes, (l) => l.produitId === p.id).nombre;
+      const courtesModele = somme(signes, (l) => l.produitId === p.id && l.formule === "LOCATION_JOURNALIERE").nombre;
       return { id: p.id, nom: p.nom, ventes, longues, courtes: courtesModele, total: ventes + longues + courtesModele };
     })
     .sort((a, b) => b.total - a.total || a.nom.localeCompare(b.nom));
@@ -258,7 +257,7 @@ export async function chargerTableauDeBord({
     indicateurs: {
       ventes: somme(signes, (l) => l.formule === "VENTE_ECHELONNEE"),
       longues: somme(signes, (l) => l.formule === "LOCATION_ACCESSION"),
-      courtes: somme(courtes, () => true),
+      courtes: somme(signes, (l) => l.formule === "LOCATION_JOURNALIERE"),
       reservationsRecues: recues,
     },
     enCours,
