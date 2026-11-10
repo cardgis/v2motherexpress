@@ -215,6 +215,8 @@ restait bloquée indéfiniment.
 | `npm run verif:concurrence` | 8 gérants se disputent la même moto : un seul l'obtient |
 | `npm run verif:expiration` | le cron libère vraiment, et ne touche pas ce qui est dans les temps |
 | `npm run verif:annulation` | annulation, refus au-delà du scellement, et rejet du KYC |
+| `npm run verif:purge` | la purge des pièces : effacée, programmée, ou épargnée si un dossier court |
+| `npm run verif:statistiques` | une réservation ne compte pas comme une location aboutie |
 | `npm run verif:sms` | l'envoi SMS sur le vrai fournisseur, numéro par numéro |
 | `npm run verif:solde` | le solde prépayé Dexchange — code de sortie 1 sous le seuil |
 | `npm run verif:prod` | la CONFIGURATION avant déploiement — bloquants vs alertes, code de sortie 1 |
@@ -357,6 +359,52 @@ une réponse vide compte zéro, ce qui ressemble à un succès. Vérifier qu'une
 page contient ce qu'elle doit contenir, pas seulement qu'elle ne contient plus
 ce qu'on a retiré.
 
+
+## Purge des pièces d'identité (2026-11-10)
+
+Délai retenu par Alexandre : **48 heures après la clôture du dossier**. Passé ce
+délai, l'IMAGE de la pièce est effacée du stockage.
+
+`npm run cron:purge` (`--apercu` pour voir sans toucher), ou
+`/api/cron/purge` protégée par `CRON_SECRET` sur un hébergeur qui ne déclenche
+que par HTTP. Le cron Vercel est à 3 h 30, après celui d'expiration.
+
+**C'était la seconde moitié d'une promesse du schéma.** `CustomerDocument`
+portait déjà `purgeApres` et `purgeAt`, et **neuf requêtes de l'application
+filtraient déjà `where: { purgeAt: null }` **— la lecture était prête. Mais
+`purgeApres` n'était jamais posé et aucun blob n'était jamais supprimé. Même cas
+de figure que `Reservation.expireLe` avant le cron d'expiration : le schéma
+promet, les lectures honorent, l'écrivain manque.
+
+**Ce qu'on efface, ce qu'on garde.** L'image part ; le type, la taille, la date
+de dépôt et le **SHA-256** restent. Cette empreinte permet encore de confirmer
+qu'une pièce présentée plus tard est bien celle que le gérant a vue. Et
+l'identité elle-même survit dans le contrat scellé — nom, numéro de pièce,
+adresse — qui n'est jamais purgé. Ce qui disparaît est donc la photographie
+d'une carte d'identité : la donnée la plus sensible du système, la plus
+convoitée, et celle qui ne sert plus à rien une fois le dossier clos.
+
+**Les pièces appartiennent au CLIENT, pas à la réservation**, et c'est le point
+qui gouverne tout. Un client peut avoir plusieurs dossiers ; purger à la clôture
+de l'un supprimerait la pièce qu'un autre, encore en cours, exige au retrait. On
+ne purge donc que lorsque plus aucune réservation du client n'est vivante, et le
+délai court depuis la clôture de la DERNIÈRE. `BROUILLON` retient aussi la
+purge, bien qu'absent de `STATUTS_VIVANTS` : un dossier en constitution n'est
+pas un dossier clos.
+
+**Deux temps, pour que la purge se voie venir.** Le premier passage POSE
+`purgeApres` sans rien supprimer — le dossier affiche une date d'effacement à
+venir. Un passage ultérieur efface. Si le délai était déjà écoulé au premier
+passage, les deux temps se produisent dans la même exécution.
+
+**L'ordre des opérations compte** : le blob d'abord, la ligne ensuite. Si la
+suppression du blob échoue, la ligne reste non purgée et le prochain passage
+réessaie. Dans l'autre sens, on aurait une pièce déclarée effacée mais toujours
+présente dans le stockage — le pire des deux états.
+
+`npm run verif:purge` éprouve les trois cas qui comptent : dossier clos depuis
+longtemps (effacé), clos à l'instant (programmé), et clos **avec un autre dossier
+encore actif** (épargné). Ce dernier est la raison d'être du contrôle.
 ## Avant de déployer : `npm run verif:prod`
 
 Ce contrôle répond à une seule question — si on démarre l'application avec cet

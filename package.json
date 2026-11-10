@@ -30,7 +30,9 @@
     "e2e": "tsx scripts/e2e.ts",
     "verif:concurrence": "tsx scripts/verif-concurrence.ts",
     "cron:expiration": "tsx scripts/expirer-reservations.ts",
+    "cron:purge": "tsx scripts/purger-pieces.ts",
     "verif:expiration": "tsx scripts/verif-expiration.ts",
+    "verif:purge": "tsx scripts/verif-purge.ts",
     "verif:annulation": "tsx scripts/verif-annulation.ts",
     "optimize:images": "node scripts/optimize-images.mjs"
   },
