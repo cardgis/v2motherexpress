@@ -215,7 +215,7 @@ restait bloquée indéfiniment.
 | `npm run verif:concurrence` | 8 gérants se disputent la même moto : un seul l'obtient |
 | `npm run verif:expiration` | le cron libère vraiment, et ne touche pas ce qui est dans les temps |
 | `npm run verif:annulation` | annulation, refus au-delà du scellement, et rejet du KYC |
-| `npm run verif:purge` | la purge des pièces : effacée, programmée, ou épargnée si un dossier court |
+| `npm run verif:purge` | la purge des pièces : 48 h après le retrait complet, et épargnée si un dossier attend encore |
 | `npm run verif:statistiques` | une réservation ne compte pas comme une location aboutie |
 | `npm run verif:sms` | l'envoi SMS sur le vrai fournisseur, numéro par numéro |
 | `npm run verif:solde` | le solde prépayé Dexchange — code de sortie 1 sous le seuil |
@@ -360,51 +360,67 @@ page contient ce qu'elle doit contenir, pas seulement qu'elle ne contient plus
 ce qu'on a retiré.
 
 
-## Purge des pièces d'identité (2026-11-10)
+## Purge des pièces d'identité (2026-11-11)
 
-Délai retenu par Alexandre : **48 heures après la clôture du dossier**. Passé ce
-délai, l'IMAGE de la pièce est effacée du stockage.
+Règle retenue par Alexandre : **48 heures après le RETRAIT COMPLET** — contrat
+final signé des deux côtés, état des lieux fait, moto livrée. Passé ce délai,
+l'IMAGE de la pièce est effacée du stockage. `Handover.completedAt` marque cet
+instant.
 
-`npm run cron:purge` (`--apercu` pour voir sans toucher), ou
-`/api/cron/purge` protégée par `CRON_SECRET` sur un hébergeur qui ne déclenche
-que par HTTP. Le cron Vercel est à 3 h 30, après celui d'expiration.
+`npm run cron:purge` (`--apercu` pour voir sans toucher), ou `/api/cron/purge`
+protégée par `CRON_SECRET`. Cron Vercel à 3 h 30, après celui d'expiration.
+Délai ajustable par `PURGE_PIECES_HEURES`.
+
+**Le déclencheur, c'est la livraison et non la fin du contrat.** J'avais d'abord
+écrit la purge à la clôture du dossier ; Alexandre a corrigé, et il a raison.
+La pièce sert à une chose : vérifier au retrait que la personne à qui l'on
+confie une moto est bien celle qu'elle prétend. Ce service rendu, la garder
+pendant les vingt-quatre mois d'une accession ne protège personne et expose
+tout le monde.
 
 **C'était la seconde moitié d'une promesse du schéma.** `CustomerDocument`
 portait déjà `purgeApres` et `purgeAt`, et **neuf requêtes de l'application
-filtraient déjà `where: { purgeAt: null }` **— la lecture était prête. Mais
+filtraient déjà `where: { purgeAt: null }`** — la lecture était prête. Mais
 `purgeApres` n'était jamais posé et aucun blob n'était jamais supprimé. Même cas
 de figure que `Reservation.expireLe` avant le cron d'expiration : le schéma
 promet, les lectures honorent, l'écrivain manque.
 
 **Ce qu'on efface, ce qu'on garde.** L'image part ; le type, la taille, la date
-de dépôt et le **SHA-256** restent. Cette empreinte permet encore de confirmer
-qu'une pièce présentée plus tard est bien celle que le gérant a vue. Et
-l'identité elle-même survit dans le contrat scellé — nom, numéro de pièce,
-adresse — qui n'est jamais purgé. Ce qui disparaît est donc la photographie
-d'une carte d'identité : la donnée la plus sensible du système, la plus
-convoitée, et celle qui ne sert plus à rien une fois le dossier clos.
+de dépôt et le **SHA-256** restent — cette empreinte permet encore de confirmer
+qu'une pièce présentée plus tard est bien celle que le gérant a vue. `Handover`
+conserve `pieceVerifiee`, `pieceConforme`, `pieceVerifieeAt` et le nom du
+gérant : qui a vérifié, quand, avec quelle conclusion. Et l'identité survit dans
+le contrat scellé — nom, numéro de pièce, adresse — jamais purgé.
 
 **Les pièces appartiennent au CLIENT, pas à la réservation**, et c'est le point
-qui gouverne tout. Un client peut avoir plusieurs dossiers ; purger à la clôture
-de l'un supprimerait la pièce qu'un autre, encore en cours, exige au retrait. On
-ne purge donc que lorsque plus aucune réservation du client n'est vivante, et le
-délai court depuis la clôture de la DERNIÈRE. `BROUILLON` retient aussi la
-purge, bien qu'absent de `STATUTS_VIVANTS` : un dossier en constitution n'est
-pas un dossier clos.
+qui gouverne tout. Un client peut avoir plusieurs dossiers ; purger après la
+livraison de l'un supprimerait la pièce que le gérant doit encore examiner pour
+un autre. La purge n'intervient donc que lorsque PLUS AUCUN dossier du client
+n'est dans un état qui exige de la regarder : `BROUILLON`,
+`EN_ATTENTE_DOSSIER`, `EN_ATTENTE_VALIDATION`, `EN_ATTENTE_SIGNATURE`,
+`EN_ATTENTE_RETRAIT`. Le délai court depuis la livraison la PLUS RÉCENTE.
 
 **Deux temps, pour que la purge se voie venir.** Le premier passage POSE
-`purgeApres` sans rien supprimer — le dossier affiche une date d'effacement à
-venir. Un passage ultérieur efface. Si le délai était déjà écoulé au premier
-passage, les deux temps se produisent dans la même exécution.
+`purgeApres` sans rien supprimer. Un passage ultérieur efface. Si le délai était
+déjà écoulé au premier passage, les deux temps se produisent dans la même
+exécution.
 
 **L'ordre des opérations compte** : le blob d'abord, la ligne ensuite. Si la
 suppression du blob échoue, la ligne reste non purgée et le prochain passage
 réessaie. Dans l'autre sens, on aurait une pièce déclarée effacée mais toujours
 présente dans le stockage — le pire des deux états.
 
-`npm run verif:purge` éprouve les trois cas qui comptent : dossier clos depuis
-longtemps (effacé), clos à l'instant (programmé), et clos **avec un autre dossier
-encore actif** (épargné). Ce dernier est la raison d'être du contrôle.
+**Ce que la purge ne résout PAS : le volume.** Un dossier complet pèse 8 à 9 Mo,
+dont les pièces d'identité ne font qu'un quart. Le gros vient des **photos de
+constat** — minimum 4 à la remise, 4 à la restitution, 0,8 Mo chacune, et aucun
+plafond au nombre. Si le stockage devient un sujet, les leviers sont là :
+plafonner le nombre de photos, ou descendre la compression de 1600 à 1200
+pixels. La purge protège la confidentialité, pas la facture.
+
+`npm run verif:purge` éprouve les trois cas sur de vrais blobs : livré il y a
+dix jours (effacé), livré à l'instant (programmé), et livré **avec un second
+dossier en attente de retrait** (épargné, aucune date même posée).
+
 ## Avant de déployer : `npm run verif:prod`
 
 Ce contrôle répond à une seule question — si on démarre l'application avec cet
