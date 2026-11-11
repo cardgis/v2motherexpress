@@ -19,7 +19,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, Check, CircleCheck, LoaderCircle, TriangleAlert } from "lucide-react";
-import type { AngleHandover } from "@/generated/prisma";
+import type { AngleHandover, RoleSignataire } from "@/generated/prisma";
 import { dateFr } from "@/lib/formatters";
 import { FIL_RACINE, type BaseBackOffice } from "./espace-backoffice";
 import { EnTetePage } from "@/components/ui/EnTetePage";
@@ -67,7 +67,7 @@ export interface RetraitVu {
     reference: string;
     statut: string;
     /** Tracés apposés sur l'acte, montrés au gérant comme référence. */
-    signatures: { role: "CLIENT" | "GERANT"; signataireNom: string; signedAt: string | Date }[];
+    signatures: { role: RoleSignataire; signataireNom: string; signedAt: string | Date }[];
   } | null;
   handover: {
     statut: string;
@@ -621,7 +621,7 @@ function SignatureDeReference({
   signature,
 }: {
   retraitId: string;
-  role: "CLIENT" | "GERANT";
+  role: RoleSignataire;
   signature?: { signataireNom: string; signedAt: string | Date };
 }) {
   if (!signature) return null;

@@ -59,7 +59,9 @@ export async function creerJetonSignature(contractId: string): Promise<string> {
     select: { statut: true },
   });
 
-  if (contrat.statut !== "A_SIGNER_CLIENT") {
+  // Un lien est délivré à chaque signataire DISTANT, à son tour : le client
+  // d'abord, le témoin ensuite. Le gérant, lui, signe depuis sa session.
+  if (contrat.statut !== "A_SIGNER_CLIENT" && contrat.statut !== "A_SIGNER_TEMOIN") {
     throw new ErreurSignature(
       `Aucun lien de signature n'est possible pour un contrat en statut ${contrat.statut}.`,
     );
@@ -146,7 +148,16 @@ export async function apposerSignature(ctx: ContexteSignature) {
   });
 
   // ── Ordre et prérequis ───────────────────────────────────────────────────
-  const attendu = ctx.role === "CLIENT" ? "A_SIGNER_CLIENT" : "A_SIGNER_GERANT";
+  // Le client signe, puis le témoin reconnaît avoir pris connaissance de
+  // l'acte, puis la boutique contresigne. L'ordre n'est pas décoratif : le
+  // témoin ne peut attester d'un contrat que le client n'a pas encore accepté.
+  const ETAT_ATTENDU = {
+    CLIENT: "A_SIGNER_CLIENT",
+    TEMOIN: "A_SIGNER_TEMOIN",
+    GERANT: "A_SIGNER_GERANT",
+  } as const;
+
+  const attendu = ETAT_ATTENDU[ctx.role];
   if (contrat.statut !== attendu) {
     throw new ErreurSignature(
       `Signature ${ctx.role.toLowerCase()} refusée : le contrat est en statut ${contrat.statut}.`,
@@ -157,9 +168,11 @@ export async function apposerSignature(ctx: ContexteSignature) {
     throw new ErreurSignature("Ce contrat porte déjà votre signature.");
   }
 
-  // L'OTP est le maillon qui relie le tracé à une personne : sans lui, la
-  // signature du client n'a aucune valeur probatoire.
-  if (ctx.role === "CLIENT" && !ctx.otpVerifie) {
+  // L'OTP est le maillon qui relie le tracé à une personne. Exigé du client ET
+  // du témoin, tous deux signataires à distance : sans lui, leur tracé serait
+  // un dessin à côté d'un nom. Le gérant, lui, signe depuis une session
+  // authentifiée sur son propre poste.
+  if (ctx.role !== "GERANT" && !ctx.otpVerifie) {
     throw new ErreurSignature("Code de vérification non validé — signature refusée.");
   }
 
@@ -269,9 +282,13 @@ export async function apposerSignature(ctx: ContexteSignature) {
       data: {
         pdfSignedPath: cheminPdf,
         hashSigned: empreinte,
-        statut: ctx.role === "CLIENT" ? "A_SIGNER_GERANT" : "SIGNE",
-        // Le lien de signature est consommé dès que le client a signé.
-        ...(ctx.role === "CLIENT" ? { signTokenHash: null, signTokenExp: null } : {}),
+        // Qui doit signer ensuite. Le client passe la main au témoin, le
+        // témoin à la boutique, et la contre-signature du gérant scelle.
+        statut: ctx.role === "CLIENT" ? "A_SIGNER_TEMOIN" : ctx.role === "TEMOIN" ? "A_SIGNER_GERANT" : "SIGNE",
+        // Le lien est CONSOMMÉ dès qu'il a servi, pour les deux signataires
+        // distants. Celui du témoin est créé séparément, par le flux qui le
+        // lui envoie : aucun lien ne survit à la signature qu'il a permise.
+        ...(ctx.role === "GERANT" ? {} : { signTokenHash: null, signTokenExp: null }),
       },
     }),
     prisma.contractEvent.create({
@@ -294,7 +311,11 @@ export async function apposerSignature(ctx: ContexteSignature) {
   // La contre-signature du gérant clôt la séquence : on scelle dans la foulée.
   if (ctx.role === "GERANT") return scellerContrat(contrat.id, ctx.signataireUserId);
 
-  return { statut: "A_SIGNER_GERANT" as const, empreinte, chemin: cheminPdf };
+  return {
+    statut: ctx.role === "CLIENT" ? ("A_SIGNER_TEMOIN" as const) : ("A_SIGNER_GERANT" as const),
+    empreinte,
+    chemin: cheminPdf,
+  };
 }
 
 // ---------------------------------------------------------------------------
