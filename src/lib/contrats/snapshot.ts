@@ -41,6 +41,14 @@ export interface SnapshotContrat {
    */
   bailleurAdresseBoutique: string;
 
+  /**
+   * Témoin de l'acte, saisi par le gérant à la génération. `null` pour les
+   * contrats produits avant l'introduction du témoin : l'instantané est FIGÉ,
+   * on ne réécrit jamais le passé. La chaîne de signature saute l'étape du
+   * témoin quand ce champ est vide.
+   */
+  temoinNom: string | null;
+
   // Le Locataire / Acheteur — seuls champs du client qui s'impriment
   clientNomComplet: string;
   clientNumeroPiece: string;
@@ -251,6 +259,7 @@ export async function construireSnapshot(reservationId: string): Promise<Snapsho
     // « Fait à …, le … » : la date fixée par le gérant, et non celle où l'acte
     // a été composé — les deux diffèrent dès qu'un contrat est préparé la veille.
     dateSignature: dateCourte(r.dateSignatureContrat ?? new Date()),
+    temoinNom: r.temoinNomContrat ?? null,
 
     montantTotalIndicatif: fcfa(
       joursFactures && r.redevanceJournaliere

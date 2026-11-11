@@ -53,6 +53,7 @@ const COMMUN = {
 /** Locataire repris du contrat SARR Abdoulaye. */
 const LOCATAIRE = {
   clientNomComplet: "SARR Abdoulaye",
+  temoinNom: "NDIAYE Moussa",
   clientNumeroPiece: "1 07 20011011 000060",
   clientAdresse: "Grand Mbour",
   clientTelephone: "+221 78 455 92 90",
@@ -138,6 +139,7 @@ const CAS: { fichier: string; libelle: string; snapshot: SnapshotContrat }[] = [
     libelle: "Vente avec paiement echelonne - 60 % + 4 x 10 %",
     snapshot: {
       ...COMMUN,
+      temoinNom: "NDIAYE Moussa",
       reference: "LME-2026-MBR-0004",
       formule: "VENTE_ECHELONNEE",
       bailleurRepresentant: "NASSALAN Frédéric Olivier",
@@ -166,6 +168,9 @@ const CAS: { fichier: string; libelle: string; snapshot: SnapshotContrat }[] = [
     libelle: "Location journaliere - 3 jours, caution et zone d'utilisation",
     snapshot: {
       ...COMMUN,
+      // Volontairement SANS témoin : vérifie que l'acte n'affiche alors aucun
+      // cadre vide ni texte orphelin.
+      temoinNom: null,
       reference: "LME-2026-THS-0210",
       formule: "LOCATION_JOURNALIERE",
       bailleurRepresentant: "MENDY Lazare Evariste",

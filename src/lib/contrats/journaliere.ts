@@ -24,6 +24,7 @@
 import { ActePdf } from "./mise-en-page";
 import type { SnapshotContrat } from "./snapshot";
 import type { ActeCompose } from "./accession";
+import { texteTemoin } from "./temoin";
 
 export async function composerContratJournaliere(s: SnapshotContrat): Promise<ActeCompose> {
   const doc = await ActePdf.creer();
@@ -178,12 +179,23 @@ export async function composerContratJournaliere(s: SnapshotContrat): Promise<Ac
   doc.espace(10);
   const client = doc.blocSignature("LE LOCATAIRE", `Nom : ${s.clientNomComplet}`);
 
+  // Le témoin n'apparaît que si le gérant en a désigné un. Un contrat produit
+  // avant l'introduction du témoin n'en porte pas, et son instantané étant
+  // figé, il ne doit pas en faire apparaître un vide.
+  const temoin = s.temoinNom
+    ? (() => {
+        doc.espace(10);
+        doc.texte(texteTemoin("Locataire"), { taille: 9.5, apres: 8 });
+        return doc.blocSignature("LE TÉMOIN", `Nom : ${s.temoinNom}`);
+      })()
+    : undefined;
+
   return {
     octets: await doc.octets({
       titre: "Contrat de location journalière",
       reference: s.reference,
     }),
-    emplacements: { client, gerant },
+    emplacements: { client, gerant, temoin },
     pages: doc.nombreDePages,
   };
 }

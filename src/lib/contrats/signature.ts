@@ -177,6 +177,12 @@ export async function apposerSignature(ctx: ContexteSignature) {
   }
 
   const snapshot = contrat.donnees as unknown as SnapshotContrat;
+  // Qui doit signer après le client : le témoin s'il en existe un, la boutique
+  // sinon. Un acte produit avant l'introduction du témoin — ou généré sans en
+  // désigner — ne doit pas rester bloqué à attendre une signature que personne
+  // ne peut apposer.
+  const apresClient = snapshot.temoinNom ? ("A_SIGNER_TEMOIN" as const) : ("A_SIGNER_GERANT" as const);
+
 
   if (ctx.role === "CLIENT" && snapshot.avecEngagement) {
     const saisie = (ctx.mention ?? "").trim().replace(/\s+/g, " ").toLowerCase();
@@ -284,7 +290,7 @@ export async function apposerSignature(ctx: ContexteSignature) {
         hashSigned: empreinte,
         // Qui doit signer ensuite. Le client passe la main au témoin, le
         // témoin à la boutique, et la contre-signature du gérant scelle.
-        statut: ctx.role === "CLIENT" ? "A_SIGNER_TEMOIN" : ctx.role === "TEMOIN" ? "A_SIGNER_GERANT" : "SIGNE",
+        statut: ctx.role === "CLIENT" ? apresClient : ctx.role === "TEMOIN" ? "A_SIGNER_GERANT" : "SIGNE",
         // Le lien est CONSOMMÉ dès qu'il a servi, pour les deux signataires
         // distants. Celui du témoin est créé séparément, par le flux qui le
         // lui envoie : aucun lien ne survit à la signature qu'il a permise.
@@ -312,7 +318,7 @@ export async function apposerSignature(ctx: ContexteSignature) {
   if (ctx.role === "GERANT") return scellerContrat(contrat.id, ctx.signataireUserId);
 
   return {
-    statut: ctx.role === "CLIENT" ? ("A_SIGNER_TEMOIN" as const) : ("A_SIGNER_GERANT" as const),
+    statut: ctx.role === "CLIENT" ? apresClient : ("A_SIGNER_GERANT" as const),
     empreinte,
     chemin: cheminPdf,
   };

@@ -31,7 +31,7 @@ export type { SnapshotContrat, ActeCompose };
  * À INCRÉMENTER à chaque modification du texte d'un acte. C'est ce qui permet
  * de savoir, des mois plus tard, quelle rédaction exacte un client a signée.
  */
-export const VERSION_MODELES = 1;
+export const VERSION_MODELES = 2;
 
 const LIBELLES_MODELE: Record<Formule, string> = {
   LOCATION_JOURNALIERE: "Contrat de location journalière",
