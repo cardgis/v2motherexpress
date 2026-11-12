@@ -98,13 +98,6 @@ const CONTRAT: Table<StatutContrat> = {
     client: { libelle: "À signer", ton: "attention" },
     gerant: { libelle: "Chez le client", ton: "info" },
   },
-  A_SIGNER_TEMOIN: {
-    // Le client a signé ; on attend un tiers. « info » (bleu) est le ton de
-    // l'attente qui ne dépend plus de soi, pour aucun des deux profils : ni le
-    // client ni le gérant ne peuvent faire avancer ce contrat à cet instant.
-    client: { libelle: "Signé, en attente du témoin", ton: "info" },
-    gerant: { libelle: "Chez le témoin", ton: "info" },
-  },
   A_SIGNER_GERANT: {
     client: { libelle: "Signé, en attente de la boutique", ton: "info" },
     gerant: { libelle: "À contresigner", ton: "attention" },

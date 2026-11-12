@@ -30,8 +30,15 @@ export type { SnapshotContrat, ActeCompose };
  *
  * À INCRÉMENTER à chaque modification du texte d'un acte. C'est ce qui permet
  * de savoir, des mois plus tard, quelle rédaction exacte un client a signée.
+ *
+ * UN NUMÉRO NE SE RÉUTILISE JAMAIS, même pour revenir en arrière. La 2 portait
+ * le cadre de témoin, retiré le 2026-11-12 ; le texte redevient donc celui de
+ * la 1, mais sous le numéro 3. Remettre 1 aurait fait désigner par un même
+ * numéro deux rédactions différentes, et laissé en base un contrat pointant
+ * vers une version absente du code — exactement ce que cette constante existe
+ * pour empêcher.
  */
-export const VERSION_MODELES = 2;
+export const VERSION_MODELES = 3;
 
 const LIBELLES_MODELE: Record<Formule, string> = {
   LOCATION_JOURNALIERE: "Contrat de location journalière",

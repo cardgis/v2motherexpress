@@ -154,7 +154,6 @@ const COMMUN = {
   montantTotalIndicatif: "0 FCFA",
   joursFacturesIndicatif: null,
   prixTotal: "860 000 FCFA",
-  temoinNom: "NDIAYE Moussa",
 } satisfies Partial<SnapshotContrat>;
 
 const ACCESSION_24: SnapshotContrat = {
@@ -360,22 +359,6 @@ async function main() {
   verifie("NINEA de l'entreprise", contient(t24, "008246888"));
   verifie("représentant de la boutique", contient(t24, "NASSALAN Frédéric Olivier"));
   verifie("identité du locataire", contient(t24, "SARR Abdoulaye"));
-
-  // ── Le témoin, sur les trois contrats ─────────────────────────────────────
-  // Ce bloc est la raison d'être de VERSION_MODELES = 2. On vérifie les trois
-  // éléments qui donnent sa valeur au témoin, et le mot qui change d'un acte à
-  // l'autre : « Accédant » ici, « Acheteur » pour la vente, « Locataire » pour
-  // le journalier.
-  verifie("témoin : son cadre de signature", contient(t24, "LE TÉMOIN"));
-  verifie("témoin : son nom", contient(t24, "NDIAYE Moussa"));
-  verifie("témoin : la prise de connaissance", contient(t24, "avoir pris connaissance du présent contrat"));
-  verifie("témoin : l'attestation d'identité et de consentement", contient(t24, "atteste de l'identité et du consentement"));
-  verifie("témoin : le mot propre à l'accession", contient(t24, "consentement de l'Accédant"));
-  verifie(
-    "témoin : la limite de son engagement est ÉCRITE",
-    contient(t24, "ne constitue pas un cautionnement") && contient(t24, "aucune obligation financière"),
-  );
-  verifie("témoin : un emplacement de signature lui est réservé", a24.emplacements.temoin !== undefined);
   verifie("numéro de pièce", contient(t24, "1 07 20011011 000060"));
   verifie("numéro de série du véhicule", contient(t24, "HB3BH2108S9110183"));
   verifie("valeur de référence", contient(t24, "860 000 FCFA"));
@@ -424,12 +407,7 @@ async function main() {
   // ── Vente échelonnée ─────────────────────────────────────────────────────
   console.log("\n=== Vente avec paiement échelonné ===");
   const v = await composerContratVente(VENTE);
-
   const tv = texteDuPdf(v.octets);
-  // Le témoin sur la vente : même bloc, mais « de l'Acheteur ».
-  verifie("vente — témoin : son cadre", contient(tv, "LE TÉMOIN"));
-  verifie("vente — témoin : le mot propre à la vente", contient(tv, "consentement de l'Acheteur"));
-  verifie("vente — témoin : emplacement réservé", v.emplacements.temoin !== undefined);
 
   verifie("titre de l'acte", contient(tv, "CONTRAT DE VENTE DE MOTO"));
   verifie("sous-titre", contient(tv, "AVEC PAIEMENT ÉCHELONNÉ"));
@@ -535,19 +513,6 @@ async function main() {
   console.log("\n=== Location journalière ===");
   const j = await composerContratJournaliere(JOURNALIERE);
   const tj = texteDuPdf(j.octets);
-
-  // Le témoin sur le journalier : « du Locataire ».
-  verifie("journalier — témoin : son cadre", contient(tj, "LE TÉMOIN"));
-  verifie("journalier — témoin : le mot propre au journalier", contient(tj, "consentement du Locataire"));
-  verifie("journalier — témoin : emplacement réservé", j.emplacements.temoin !== undefined);
-
-  // SANS témoin : ni cadre vide, ni texte orphelin. C'est le contrôle qui
-  // protège les contrats produits avant l'introduction du témoin.
-  const jSansTemoin = await composerContratJournaliere({ ...JOURNALIERE, temoinNom: null });
-  const tjSans = texteDuPdf(jSansTemoin.octets);
-  verifie("sans témoin — aucun cadre « LE TÉMOIN »", !contient(tjSans, "LE TÉMOIN"));
-  verifie("sans témoin — aucun texte de reconnaissance", !contient(tjSans, "avoir pris connaissance du présent contrat"));
-  verifie("sans témoin — aucun emplacement réservé", jSansTemoin.emplacements.temoin === undefined);
 
   verifie("titre de l'acte", contient(tj, "CONTRAT DE LOCATION JOURNALIÈRE DE MOTO"));
   verifie("NINEA de l'entreprise", contient(tj, "008246888"));

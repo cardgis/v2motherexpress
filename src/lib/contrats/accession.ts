@@ -21,7 +21,6 @@
 
 import { ActePdf, type EmplacementSignature } from "./mise-en-page";
 import type { SnapshotContrat } from "./snapshot";
-import { texteTemoin } from "./temoin";
 
 /** Durées en toutes lettres, telles qu'elles figurent sur les actes. */
 const EN_LETTRES: Record<number, string> = {
@@ -36,17 +35,7 @@ function enLettres(mois: number): string {
 
 export interface ActeCompose {
   octets: Uint8Array;
-  /**
-   * Emplacements des tracés de signature. `temoin` est ABSENT quand l'acte
-   * n'en porte pas — contrat produit avant l'introduction du témoin, ou
-   * généré sans en désigner un. L'optionnalité est donc porteuse de sens :
-   * elle dit « cet acte n'attend pas de témoin ».
-   */
-  emplacements: {
-    client: EmplacementSignature;
-    gerant: EmplacementSignature;
-    temoin?: EmplacementSignature;
-  };
+  emplacements: { client: EmplacementSignature; gerant: EmplacementSignature };
   pages: number;
 }
 
@@ -326,16 +315,6 @@ export async function composerContratAccession(s: SnapshotContrat): Promise<Acte
   doc.espace(10);
   const client = doc.blocSignature("LE LOCATAIRE-ACCÉDANT", `Nom : ${s.clientNomComplet}`);
 
-  // Le témoin n'apparaît que si le gérant en a désigné un : un acte produit
-  // avant son introduction ne doit pas afficher un cadre vide.
-  const temoin = s.temoinNom
-    ? (() => {
-        doc.espace(10);
-        doc.texte(texteTemoin("Accédant"), { taille: 9.5, apres: 8 });
-        return doc.blocSignature("LE TÉMOIN", `Nom : ${s.temoinNom}`);
-      })()
-    : undefined;
-
   // Mention manuscrite exigée par la formule avec engagement : la signature
   // seule ne suffit pas à rendre l'article du différentiel opposable.
   if (s.avecEngagement && numeroArticleDifferentiel) {
@@ -351,7 +330,7 @@ export async function composerContratAccession(s: SnapshotContrat): Promise<Acte
       titre: "Contrat de location-accession",
       reference: s.reference,
     }),
-    emplacements: { client, gerant, temoin },
+    emplacements: { client, gerant },
     pages: doc.nombreDePages,
   };
 }

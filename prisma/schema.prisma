@@ -531,15 +531,6 @@ model Reservation {
   /// laquelle l'acte est réellement signé ; à défaut, celle du jour.
   dateSignatureContrat   DateTime?
 
-  /// Témoin du contrat, saisi par le gérant à la génération de l'acte.
-  ///
-  /// Le téléphone n'est PAS facultatif : le témoin signe à distance, et c'est
-  /// le code reçu sur ce numéro qui relie son tracé à une personne. Sans lui,
-  /// sa signature serait un dessin à côté d'un nom — et ajouterait au contrat
-  /// un élément contestable au lieu de le renforcer.
-  temoinNomContrat       String?
-  temoinTelephoneContrat String?
-
   /// LOCATION JOURNALIÈRE — valeurs propres à cet acte, saisies par le gérant.
   ///
   /// Le contrat journalier demande bien plus que les deux autres : des heures,
@@ -712,7 +703,6 @@ model Contract {
 enum StatutContrat {
   BROUILLON
   A_SIGNER_CLIENT
-  A_SIGNER_TEMOIN
   A_SIGNER_GERANT
   SIGNE
   EN_ATTENTE_RETRAIT
@@ -750,9 +740,6 @@ model Signature {
 enum RoleSignataire {
   CLIENT
   GERANT
-  /// Témoin du contrat. Il atteste avoir pris connaissance des stipulations ;
-  /// il n'est tenu d'aucune obligation financière.
-  TEMOIN
 }
 
 /// Piste d'audit. Chaque transition d'état écrit un événement, sans exception.

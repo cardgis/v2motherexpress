@@ -17,7 +17,6 @@
 import { ActePdf } from "./mise-en-page";
 import type { SnapshotContrat } from "./snapshot";
 import type { ActeCompose } from "./accession";
-import { texteTemoin } from "./temoin";
 
 export async function composerContratVente(s: SnapshotContrat): Promise<ActeCompose> {
   const doc = await ActePdf.creer();
@@ -214,19 +213,9 @@ export async function composerContratVente(s: SnapshotContrat): Promise<ActeComp
   doc.espace(10);
   const client = doc.blocSignature("L'ACHETEUR", `Nom : ${s.clientNomComplet}`);
 
-  // Le témoin n'apparaît que si le gérant en a désigné un : un acte produit
-  // avant son introduction ne doit pas afficher un cadre vide.
-  const temoin = s.temoinNom
-    ? (() => {
-        doc.espace(10);
-        doc.texte(texteTemoin("Acheteur"), { taille: 9.5, apres: 8 });
-        return doc.blocSignature("LE TÉMOIN", `Nom : ${s.temoinNom}`);
-      })()
-    : undefined;
-
   return {
     octets: await doc.octets({ titre: "Contrat de vente", reference: s.reference }),
-    emplacements: { client, gerant, temoin },
+    emplacements: { client, gerant },
     pages: doc.nombreDePages,
   };
 }
