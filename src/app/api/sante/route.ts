@@ -6,18 +6,19 @@ import { manqueAuStockage } from "@/lib/storage";
  * Sonde de santé pour l'orchestrateur (Vercel, Azure Container Apps, load
  * balancer OVHcloud…). Il retire du trafic une instance qui répond 503.
  *
- * Elle vérifie DEUX choses, et la seconde a été ajoutée le 2026-11-05 : la
- * base, et la configuration du stockage. Une sonde qui ne contrôlait que la
- * base déclarait le service sain alors qu'aucune pièce d'identité ne pouvait
- * être téléversée — panne qui ne se découvrait que chez un gérant, pendant un
- * retrait, avec un client en face.
+ * Elle vérifie TROIS choses, chacune ajoutée après une panne qu'elle n'avait
+ * pas vue venir :
  *
- * Le stockage est vérifié SANS appel réseau : on contrôle que les variables du
+ *   1. la base RÉPOND ;
+ *   2. le SCHÉMA est à jour avec le code déployé (2026-11-12) ;
+ *   3. le STOCKAGE est configuré (2026-11-05).
+ *
+ * Le stockage est contrôlé SANS appel réseau : on vérifie que les variables du
  * driver configuré sont présentes. Éprouver l'aller-retour supposerait
- * d'écrire à chaque appel, sur un point d'entrée public — inacceptable.
+ * d'écrire un blob à chaque appel, sur un point d'entrée public — inacceptable.
  *
- * Ne révèle rien : ni version, ni nom de base, ni variable manquante. Le nom
- * de la variable va dans les journaux, où seul l'exploitant le lit.
+ * Ne révèle rien : ni version, ni nom de base, ni variable manquante, ni
+ * colonne. Le détail va dans les journaux, où seul l'exploitant le lit.
  */
 
 export const dynamic = "force-dynamic";
@@ -34,12 +35,26 @@ export async function GET() {
 
   try {
     await Promise.race([
-      prisma.$queryRaw`SELECT 1`,
+      // `SELECT 1` prouvait seulement que la base RÉPOND. Le 2026-11-12, une
+      // migration appliquée en local et pas en production a fait échouer tout
+      // le parcours client — le code déployé réclamait une colonne absente —
+      // pendant que cette sonde affichait 200. Le code était en avance sur sa
+      // base, et rien ne le disait.
+      //
+      // On interroge donc une table par le CLIENT GÉNÉRÉ, qui sélectionne
+      // toutes les colonnes qu'il croit exister. Une colonne manquante fait
+      // alors échouer la sonde, à l'endroit prévu pour ça plutôt qu'au milieu
+      // d'un retrait. `Reservation` est choisie parce qu'elle porte le plus de
+      // champs ajoutés au fil des migrations, donc la plus exposée à l'écart.
+      //
+      // Coût : une lecture indexée sur une ligne. `verif:prod` ne peut pas
+      // faire ce contrôle, lui qui s'interdit délibérément de toucher la base.
+      prisma.reservation.findFirst({ take: 1 }),
       new Promise((_, rejeter) => setTimeout(() => rejeter(new Error("délai dépassé")), DELAI_MS)),
     ]);
     return NextResponse.json({ statut: "ok" }, { headers: SANS_CACHE });
   } catch (error) {
-    console.error("[sante] base de données injoignable", error);
+    console.error("[sante] base injoignable ou schéma en retard sur le code", error);
     return NextResponse.json({ statut: "indisponible" }, { status: 503, headers: SANS_CACHE });
   }
 }
