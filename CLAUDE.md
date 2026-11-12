@@ -359,6 +359,46 @@ une réponse vide compte zéro, ce qui ressemble à un succès. Vérifier qu'une
 page contient ce qu'elle doit contenir, pas seulement qu'elle ne contient plus
 ce qu'on a retiré.
 
+### Migrations : le SENS décide de l'ordre (2026-11-12)
+
+Les deux ordres ont été éprouvés le même jour, dans les deux sens, et chacun a
+causé une panne.
+
+| Migration | Ordre | Sinon |
+|---|---|---|
+| **ADDITIVE** (colonne, valeur d'énumération) | `migrate deploy` **PUIS** le code | le code déployé réclame une colonne absente |
+| **DESTRUCTIVE** (`DROP COLUMN`, retrait d'une valeur) | le code servi **PUIS** `migrate deploy` | l'ancien code, encore en vol, sélectionne ce qui vient de disparaître |
+
+**`/api/sante` ne peut pas dire à lui seul si un déploiement est servi**, et
+c'est ce qui a coûté vingt minutes de production. La sonde répondait 200
+pendant l'attente parce que l'ANCIEN code allait parfaitement avec l'ANCIEN
+schéma : elle ne devient rouge qu'une fois la migration passée, donc trop tard.
+Attendre deux minutes à la montre n'est pas une preuve.
+
+D'où le champ `commit` dans sa réponse. **Avant une migration destructive,
+constater que le commit servi est bien le vôtre :**
+
+```bash
+curl -s https://<domaine>/api/sante     # {"statut":"ok","commit":"bb4a7bc"}
+git rev-parse --short HEAD              # doit donner le même
+```
+
+Si les deux diffèrent, la construction n'est pas finie — ou elle a échoué.
+`git commit --allow-empty` puis `git push` force une vraie construction, et la
+bascule se voit à un `000` passager suivi d'un 200.
+
+**Pour atteindre la production**, forcer l'URL : `prisma.config.ts` fait lire
+`.env.local` avant `.env`, donc toute commande Prisma vise la base LOCALE par
+défaut — garde-fou voulu, et `db:reset` est sans danger grâce à lui.
+
+```powershell
+$env:DATABASE_URL = (Get-Content .neon-direct.url -Raw).Trim()
+npx prisma migrate deploy
+```
+
+Le `DATABASE_URL` de `.env` pointe sur une base Neon **abandonnée** (aucune
+table applicative) : ce n'est pas l'adresse de la production.
+
 
 ## Purge des pièces d'identité (2026-11-11)
 

@@ -17,8 +17,23 @@ import { manqueAuStockage } from "@/lib/storage";
  * driver configuré sont présentes. Éprouver l'aller-retour supposerait
  * d'écrire un blob à chaque appel, sur un point d'entrée public — inacceptable.
  *
- * Ne révèle rien : ni version, ni nom de base, ni variable manquante, ni
- * colonne. Le détail va dans les journaux, où seul l'exploitant le lit.
+ * Ne révèle rien : ni nom de base, ni variable manquante, ni colonne. Le
+ * détail va dans les journaux, où seul l'exploitant le lit.
+ *
+ * ELLE DIT EN REVANCHE QUEL COMMIT EST SERVI (2026-11-12), et c'est le seul
+ * renseignement qu'elle livre. Sans lui, « le nouveau code est-il en ligne ? »
+ * ne se vérifie pas : le 2026-11-12, la sonde a répondu 200 pendant trois
+ * minutes d'attente parce que l'ANCIEN code allait parfaitement avec l'ANCIEN
+ * schéma. La migration a donc été appliquée sur un déploiement périmé, et la
+ * production est tombée vingt minutes. Une attente à la montre n'est pas une
+ * preuve ; `commit` en est une.
+ *
+ * C'est à vérifier AVANT toute migration DESTRUCTIVE (`DROP COLUMN`, retrait
+ * d'une valeur d'énumération), où le nouveau code doit être servi d'abord.
+ * Pour une migration ADDITIVE, l'ordre est l'inverse : la base d'abord.
+ *
+ * Divulgation acceptée : sept caractères d'une empreinte de commit d'un dépôt
+ * PRIVÉ ne mènent à aucun code. À reconsidérer si le dépôt devient public.
  */
 
 export const dynamic = "force-dynamic";
@@ -26,11 +41,17 @@ export const dynamic = "force-dynamic";
 const DELAI_MS = 3_000;
 const SANS_CACHE = { "Cache-Control": "no-store" };
 
+/** Le commit servi, pour que la bascule d'un déploiement se CONSTATE. */
+const COMMIT = (process.env.VERCEL_GIT_COMMIT_SHA ?? "").slice(0, 7) || "local";
+
 export async function GET() {
   const manquante = manqueAuStockage();
   if (manquante) {
     console.error(`[sante] stockage non configuré : ${manquante}`);
-    return NextResponse.json({ statut: "indisponible" }, { status: 503, headers: SANS_CACHE });
+    return NextResponse.json(
+      { statut: "indisponible", commit: COMMIT },
+      { status: 503, headers: SANS_CACHE },
+    );
   }
 
   try {
@@ -52,9 +73,12 @@ export async function GET() {
       prisma.reservation.findFirst({ take: 1 }),
       new Promise((_, rejeter) => setTimeout(() => rejeter(new Error("délai dépassé")), DELAI_MS)),
     ]);
-    return NextResponse.json({ statut: "ok" }, { headers: SANS_CACHE });
+    return NextResponse.json({ statut: "ok", commit: COMMIT }, { headers: SANS_CACHE });
   } catch (error) {
     console.error("[sante] base injoignable ou schéma en retard sur le code", error);
-    return NextResponse.json({ statut: "indisponible" }, { status: 503, headers: SANS_CACHE });
+    return NextResponse.json(
+      { statut: "indisponible", commit: COMMIT },
+      { status: 503, headers: SANS_CACHE },
+    );
   }
 }
