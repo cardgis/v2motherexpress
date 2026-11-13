@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { HomePageContent } from "@/components/HomePageContent";
 import { getHomeProductsData } from "@/lib/home-data";
+import { jsonLd, schemaCatalogue } from "@/lib/seo/catalogue";
 
 export const dynamic = 'force-dynamic';
 
@@ -23,9 +24,24 @@ export default async function Home() {
   const { produits, nombreModeles } = await getHomeProductsData();
 
   return (
-    <HomePageContent
-      produits={produits}
-      nombreModeles={nombreModeles}
-    />
+    <>
+      {/*
+        Balisage des produits mis en avant. `layout.tsx` déclare déjà
+        l'entreprise et ses deux agences ; celui-ci dit ce qu'elle VEND, avec
+        les prix — c'est ce qui les fait apparaître dans un résultat de
+        recherche. Aucune disponibilité n'est déclarée : voir
+        `lib/seo/catalogue.ts`. Rien d'autre ne change sur la page.
+      */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd(schemaCatalogue(produits, "Nos best-sellers")),
+        }}
+      />
+      <HomePageContent
+        produits={produits}
+        nombreModeles={nombreModeles}
+      />
+    </>
   );
 }

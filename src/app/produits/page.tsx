@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import ProductExplorer from "@/components/ProductExplorer";
 import { HomeFooterSections } from "@/components/HomeFooterSections";
 import { getAllProductsData } from "@/lib/home-data";
+import { jsonLd, schemaCatalogue } from "@/lib/seo/catalogue";
 
 export const dynamic = 'force-dynamic';
 
@@ -25,6 +26,13 @@ export default async function ProduitsPage() {
 
   return (
     <div className="page-home">
+      {/* Même balisage que l'accueil, sur la gamme complète cette fois. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd(schemaCatalogue(produits, "Catalogue REVOO")),
+        }}
+      />
       <main className="page-main">
         <ProductExplorer produits={produits} />
       </main>
