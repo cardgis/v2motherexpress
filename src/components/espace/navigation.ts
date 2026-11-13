@@ -37,7 +37,9 @@ export interface LienNavigation {
 
 export const NAVIGATION: Record<Espace, LienNavigation[]> = {
   client: [
-    { href: "/compte", libelle: "Mon espace", libelleCourt: "Accueil", Icone: LayoutDashboard, exact: true, rattachees: ["/compte/contrats"] },
+    // « Mes documents » s'ouvre depuis la carte de l'accueil et revient par son
+    // fil d'Ariane : un quatrième onglet déborderait la barre basse.
+    { href: "/compte", libelle: "Mon espace", libelleCourt: "Accueil", Icone: LayoutDashboard, exact: true, rattachees: ["/compte/contrats", "/compte/documents"] },
     { href: "/compte/reserver", libelle: "Réserver", Icone: CalendarPlus },
     { href: "/compte/dossier", libelle: "Mon dossier", libelleCourt: "Dossier", Icone: IdCard },
   ],

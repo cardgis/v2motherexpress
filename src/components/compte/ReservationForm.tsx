@@ -399,7 +399,10 @@ export default function ReservationForm({
                     titre={o.libelle}
                     detail={`${fcfa(o.redevanceJournaliere)} par jour, 6 jours sur 7 — ${nombre(o.joursFactures)} jours facturés`}
                   >
-                    <span className="lme-choix__valeur">{fcfa(o.montantTotal)}</span>
+                    {/* Pas le total des 24 mois (2026-11-13, décision
+                        d'Alexandre) : la redevance journalière est ce que le
+                        client paie et ce sur quoi il compare. Le cumul reste
+                        dans l'acte, qui est le document qui l'engage. */}
                     {o.avecEngagement ? (
                       <span className="lme-message lme-message--attention" style={{ marginTop: 8 }}>
                         <TriangleAlert size={14} aria-hidden />
@@ -412,7 +415,7 @@ export default function ReservationForm({
               </GroupeChoix>
             ) : null}
 
-            <Montant devis={devis} calculEnCours={calculEnCours} />
+            <Montant devis={devis} calculEnCours={calculEnCours} formule={b.formule} />
           </div>
 
           <BarreActions
@@ -462,14 +465,24 @@ export default function ReservationForm({
                   {devis.engagementMois ? (
                     <LigneRecap libelle="Engagement" valeur={`${devis.engagementMois} mois fermes`} />
                   ) : null}
+                  {/* En accession, la redevance remplace le total : c'est elle
+                      que le client paie, jour après jour. Même décision que
+                      dans `Montant`, pour que les deux écrans concordent. */}
+                  {b.formule === "LOCATION_ACCESSION" && devis.redevanceJournaliere ? (
+                    <LigneRecap libelle="Redevance" valeur={`${fcfa(devis.redevanceJournaliere)} / jour`} />
+                  ) : null}
                 </Recapitulatif>
 
-                <hr className="lme-separateur" style={{ margin: "6px 0" }} />
+                {b.formule === "LOCATION_ACCESSION" ? null : (
+                  <>
+                    <hr className="lme-separateur" style={{ margin: "6px 0" }} />
 
-                <div className="lme-rangee lme-rangee--entre">
-                  <span className="lme-gras">Total</span>
-                  <span className="lme-montant">{fcfa(devis.montantTotal)}</span>
-                </div>
+                    <div className="lme-rangee lme-rangee--entre">
+                      <span className="lme-gras">Total</span>
+                      <span className="lme-montant">{fcfa(devis.montantTotal)}</span>
+                    </div>
+                  </>
+                )}
 
                 {devis.echeances.length > 1 ? (
                   <div>
@@ -528,8 +541,27 @@ export default function ReservationForm({
 // Sous-composants
 // ---------------------------------------------------------------------------
 
-function Montant({ devis, calculEnCours }: { devis: Devis | null; calculEnCours: boolean }) {
+/**
+ * Le montant calculé, sous le choix de la formule.
+ *
+ * EN LOCATION-ACCESSION, LE CUMUL DES 24 MOIS N'EST PAS AFFICHÉ (2026-11-13,
+ * décision d'Alexandre) : on annonce la REDEVANCE JOURNALIÈRE, qui est ce que
+ * le client paie et ce sur quoi il compare une offre à une autre. Le cumul
+ * reste dans l'acte, qu'il lit et signe. La journalière et la vente gardent
+ * leur total : pour l'une il est modeste et attendu, pour l'autre c'est le
+ * prix du scooter.
+ */
+function Montant({
+  devis,
+  calculEnCours,
+  formule,
+}: {
+  devis: Devis | null;
+  calculEnCours: boolean;
+  formule: Formule | "";
+}) {
   if (!devis && !calculEnCours) return null;
+  const accession = formule === "LOCATION_ACCESSION";
 
   return (
     <div className="lme-encart" aria-live="polite">
@@ -541,13 +573,23 @@ function Montant({ devis, calculEnCours }: { devis: Devis | null; calculEnCours:
       ) : (
         <div className="lme-pile lme-pile--serree">
           <div className="lme-rangee lme-rangee--entre">
-            <span className="lme-gras">Total</span>
-            <span className="lme-montant">{fcfa(devis.montantTotal)}</span>
+            <span className="lme-gras">{accession ? "Redevance" : "Total"}</span>
+            <span className="lme-montant">
+              {accession
+                ? devis.redevanceJournaliere
+                  ? `${fcfa(devis.redevanceJournaliere)} / jour`
+                  : "—"
+                : fcfa(devis.montantTotal)}
+            </span>
           </div>
           {devis.nbJours ? (
             <p className="lme-aide">
               {nombre(devis.nbJours)} jours facturés
-              {devis.redevanceJournaliere ? ` à ${fcfa(devis.redevanceJournaliere)}` : null}
+              {accession
+                ? ", 6 jours sur 7"
+                : devis.redevanceJournaliere
+                  ? ` à ${fcfa(devis.redevanceJournaliere)}`
+                  : null}
             </p>
           ) : null}
           {devis.tarifProvisoire ? (

@@ -55,8 +55,19 @@ async function sessionPour(role: "ADMIN" | "GERANT" | "COMMERCIAL" | "CLIENT") {
  *
  * Le code 200 ne suffit pas : Next rend sa page d'erreur avec un 200 dans
  * certains cas. On exige donc un marqueur présent dans le HTML attendu.
+ *
+ * `interdit` fait l'inverse — un texte qui ne doit PAS s'y trouver. Vérifier
+ * qu'une page contient ce qu'elle doit contenir ne dit rien de ce qu'on a
+ * voulu en retirer : sans ce second contrôle, un montant réintroduit sur
+ * l'espace client passerait inaperçu.
  */
-async function page(cookie: string, chemin: string, marqueur: string, libelle: string) {
+async function page(
+  cookie: string,
+  chemin: string,
+  marqueur: string,
+  libelle: string,
+  interdit?: string,
+) {
   let reponse: Response;
   try {
     reponse = await fetch(`${BASE}${chemin}`, {
@@ -76,6 +87,10 @@ async function page(cookie: string, chemin: string, marqueur: string, libelle: s
   const html = await reponse.text();
   if (!html.includes(marqueur)) {
     resultat("KO", libelle, `${chemin} — rendu sans « ${marqueur} »`);
+    return;
+  }
+  if (interdit && html.includes(interdit)) {
+    resultat("KO", libelle, `${chemin} — contient « ${interdit} », qui ne doit plus s'y trouver`);
     return;
   }
 
@@ -131,9 +146,17 @@ async function main() {
   console.log("=== Espace client ===");
   if (!client) resultat("SAUTÉ", "aucun compte CLIENT actif en base");
   else {
-    await page(client, "/compte", "Mon espace", "accueil du client");
-    await page(client, "/compte/dossier", "Mon dossier", "son dossier KYC");
+    // Le `FCFA` interdit garde la décision du 2026-11-13 : aucun montant sur
+    // l'espace client. Le tunnel de réservation en affiche, lui, et doit en
+    // afficher — c'est là que le client choisit son offre et consent au prix.
+    await page(client, "/compte", "Mon espace", "accueil du client", "FCFA");
+    await page(client, "/compte/dossier", "Mon dossier", "son dossier KYC", "FCFA");
     await page(client, "/compte/reserver", "Réserver un scooter", "réservation en ligne");
+    await page(client, "/compte/documents", "Mes documents", "tous ses documents", "FCFA");
+    // Un type inconnu dans l'adresse ne doit pas casser la page : elle retombe
+    // sur la liste complète au lieu de renvoyer une erreur.
+    await page(client, "/compte/documents?type=inexistant", "Mes documents", "ses documents, filtre inconnu");
+    await page(client, "/compte/documents?type=recu", "Mes documents", "ses documents, filtrés sur les reçus");
     if (contrat) await flux(client, `/api/contrats/${contrat.id}/pdf`, "application/pdf", "téléchargement de son contrat");
     else resultat("SAUTÉ", "aucun contrat avec PDF en base");
   }

@@ -13,8 +13,7 @@ import {
 } from "lucide-react";
 import { exigerUtilisateur } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { dateFr, fcfa } from "@/lib/formatters";
-import { presentationStatut } from "@/lib/statuts";
+import { dateFr } from "@/lib/formatters";
 import { EnTetePage } from "@/components/ui/EnTetePage";
 import { Carte } from "@/components/ui/Carte";
 import { StatutBadge } from "@/components/ui/Badge";
@@ -22,6 +21,11 @@ import { LienBouton } from "@/components/ui/Bouton";
 import { EtatVide } from "@/components/ui/EtatVide";
 import { Alerte } from "@/components/ui/Alerte";
 import { lienPublic } from "@/lib/site";
+import { LigneDocument } from "@/components/compte/LigneDocument";
+import { construireDocuments, INCLUSION_DOCUMENTS } from "@/lib/compte/documents";
+
+/** Combien de documents la carte montre avant de renvoyer à la page dédiée. */
+const DOCUMENTS_EN_APERCU = 4;
 
 export const metadata: Metadata = {
   title: "Mon espace",
@@ -52,18 +56,10 @@ export default async function EspaceClientPage() {
     prisma.reservation.findMany({
       where: { customer: { userId: user.id } },
       include: {
-        produit: { select: { nom: true } },
+        // Tout ce dont la liste des documents a besoin, défini une seule fois
+        // dans `lib/compte/documents` : les deux pages lisent la même forme.
+        ...INCLUSION_DOCUMENTS,
         boutique: { select: { store: { select: { name: true } } } },
-        contract: { select: { id: true, statut: true } },
-        handover: { select: { statut: true, pvPdfPath: true } },
-        // Constat de sortie : la pièce qui arrête l'état du véhicule au retour.
-        restitution: { select: { statut: true, pvPdfPath: true } },
-        // Reçus de versement : le client les retrouve même s'il perd le papier.
-        encaissements: {
-          where: { annuleLe: null, recuPdfPath: { not: null } },
-          select: { id: true, montant: true, recuLe: true, recuRef: true },
-          orderBy: { recuLe: "desc" },
-        },
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -83,19 +79,16 @@ export default async function EspaceClientPage() {
       )
     : null;
 
-  // Un brouillon n'est jamais montré au client : il ne voit que ce que la
-  // boutique lui a explicitement transmis.
-  const contrats = reservations.filter((r) => r.contract && r.contract.statut !== "BROUILLON");
-  const constats = reservations.filter((r) => r.handover?.pvPdfPath);
-  const restitutions = reservations.filter((r) => r.restitution?.pvPdfPath);
-  const attestations = reservations.flatMap((r) =>
-    r.encaissements.map((e) => ({ ...e, reference: r.reference })),
-  );
+  // La liste est construite par `lib/compte/documents`, qui porte seul la
+  // règle « un brouillon n'est jamais montré au client ».
+  const documents = construireDocuments(reservations);
+  const apercu = documents.slice(0, DOCUMENTS_EN_APERCU);
+  const resteADecouvrir = documents.length - apercu.length;
 
   const etape = prochaineEtape();
 
   function prochaineEtape(): ProchaineEtape | null {
-    const aSigner = contrats.find((r) => r.contract!.statut === "A_SIGNER_CLIENT");
+    const aSigner = reservations.find((r) => r.contract?.statut === "A_SIGNER_CLIENT");
     if (aSigner) {
       return {
         Icone: PenLine,
@@ -240,8 +233,11 @@ export default async function EspaceClientPage() {
                         {r.dateDebut ? ` · à partir du ${dateFr(r.dateDebut)}` : null}
                       </p>
                     </div>
+                    {/* Pas de montant ici (2026-11-13, décision d'Alexandre) :
+                        le total du contrat sur chaque ligne mettait en avant une
+                        grosse somme sans rien dire d'utile au client. Il reste
+                        dans l'acte, qui est le document qui l'engage. */}
                     <div className="lme-ligne__fin">
-                      <span className="lme-gras">{fcfa(r.montantTotal)}</span>
                       <StatutBadge type="reservation" statut={r.statut} lecteur="client" />
                     </div>
                   </li>
@@ -273,109 +269,35 @@ export default async function EspaceClientPage() {
             </Carte>
 
             <Carte titre="Mes documents">
-              {contrats.length === 0 &&
-              constats.length === 0 &&
-              attestations.length === 0 &&
-              restitutions.length === 0 ? (
+              {documents.length === 0 ? (
                 <p className="lme-texte-2 lme-petit">
                   Votre contrat et votre constat de remise apparaîtront ici dès qu’ils seront établis.
                 </p>
               ) : (
-                <ul className="lme-liste">
-                  {contrats.map((r) => {
-                    const statut = r.contract!.statut;
-                    return (
-                      <li key={r.contract!.id} className="lme-ligne">
-                        <div className="lme-ligne__principal">
-                          <p className="lme-ligne__titre">
-                            <FileText size={16} aria-hidden />
-                            Contrat {r.reference}
-                          </p>
-                          <p className="lme-ligne__meta">{r.produit.nom}</p>
-                          <p style={{ marginTop: 8 }}>
-                            <StatutBadge type="contrat" statut={statut} lecteur="client" />
-                          </p>
-                        </div>
-                        <div className="lme-ligne__fin">
-                          <LienBouton
-                            href={`/api/contrats/${r.contract!.id}/pdf`}
-                            nouvelOnglet
-                            variante="secondaire"
-                            taille="sm"
-                            aria-label={`Lire le contrat ${r.reference}, ${presentationStatut("contrat", statut, "client").libelle}`}
-                          >
-                            Lire
-                          </LienBouton>
-                          {statut === "A_SIGNER_CLIENT" ? (
-                            <LienBouton href={`/compte/contrats/${r.contract!.id}/signer`} taille="sm">
-                              Signer
-                            </LienBouton>
-                          ) : null}
-                        </div>
-                      </li>
-                    );
-                  })}
-
-                  {attestations.map((a) => (
-                    <li key={`attestation-${a.id}`} className="lme-ligne">
-                      <div className="lme-ligne__principal">
-                        <p className="lme-ligne__titre">
-                          <FileText size={16} aria-hidden />
-                          Reçu de {fcfa(a.montant)}
-                        </p>
-                        <p className="lme-ligne__meta">
-                          {a.reference} — versement du {dateFr(a.recuLe)}
-                          {a.recuRef ? ` · ${a.recuRef}` : ""}
-                        </p>
-                      </div>
+                <>
+                  {/* Un APERÇU, et non toute la liste : au bout de deux ans de
+                      location-accession, un reçu par mois enterrait le contrat
+                      — la seule pièce qui demande parfois une action — sous une
+                      trentaine de lignes de reçus. Le reste vit sur
+                      `/compte/documents`, filtrable par type. */}
+                  <ul className="lme-liste">
+                    {apercu.map((d) => (
+                      <LigneDocument key={d.cle} document={d} />
+                    ))}
+                  </ul>
+                  {resteADecouvrir > 0 ? (
+                    <div style={{ marginTop: 14 }}>
                       <LienBouton
-                        href={`/api/actes/attestation/${a.id}`}
-                        nouvelOnglet
+                        href="/compte/documents"
                         variante="secondaire"
                         taille="sm"
+                        icone={<FileText size={16} aria-hidden />}
                       >
-                        Lire
+                        Voir tous mes documents ({documents.length})
                       </LienBouton>
-                    </li>
-                  ))}
-
-                  {constats.map((r) => (
-                    <li key={`constat-${r.id}`} className="lme-ligne">
-                      <div className="lme-ligne__principal">
-                        <p className="lme-ligne__titre">
-                          <FileText size={16} aria-hidden />
-                          Constat de remise
-                        </p>
-                        <p className="lme-ligne__meta">{r.reference} — état du véhicule à la remise</p>
-                      </div>
-                      <LienBouton href={`/api/actes/constat/${r.id}`} nouvelOnglet variante="secondaire" taille="sm">
-                        Lire
-                      </LienBouton>
-                    </li>
-                  ))}
-
-                  {restitutions.map((r) => (
-                    <li key={`restitution-${r.id}`} className="lme-ligne">
-                      <div className="lme-ligne__principal">
-                        <p className="lme-ligne__titre">
-                          <FileText size={16} aria-hidden />
-                          Constat de restitution
-                        </p>
-                        <p className="lme-ligne__meta">
-                          {r.reference} — état du véhicule au retour
-                        </p>
-                      </div>
-                      <LienBouton
-                        href={`/api/actes/restitution/${r.id}`}
-                        nouvelOnglet
-                        variante="secondaire"
-                        taille="sm"
-                      >
-                        Lire
-                      </LienBouton>
-                    </li>
-                  ))}
-                </ul>
+                    </div>
+                  ) : null}
+                </>
               )}
             </Carte>
           </div>
