@@ -35,7 +35,6 @@ export function HomeFormulesSection({ bornes }: { bornes: BornesTarifs }) {
   const demiJournee = bornes.demiJourneeMin;
   const journee = bornes.journeeMin;
   const vingtQuatre = bornes.vingtQuatreMin;
-  const achat = bornes.achatMin;
 
   const redevances = Object.values(OFFRES_ACCESSION).flat();
   const accession = redevances.length > 0 ? Math.min(...redevances.map((o) => o.redevanceJournaliere)) : null;
@@ -114,12 +113,15 @@ export function HomeFormulesSection({ bornes }: { bornes: BornesTarifs }) {
               Le scooter est à vous le jour même, sans échéance à suivre et sans durée à
               respecter.
             </p>
-            {achat !== null ? (
-              <p className="lme-formule__prix">
-                <strong>{fcfa(achat)}</strong>
-                <span>le modèle d’entrée</span>
-              </p>
-            ) : null}
+            {/* PAS DE MONTANT TOTAL ICI (Alexandre, 2026-11-14) : les totaux
+                vivent dans la fiche produit, pas dans la prose de l'accueil.
+                Les deux autres colonnes annoncent un tarif PAR JOUR, qui
+                donne envie ; celle-ci annoncerait le prix d'un scooter, qui
+                refroidit. Elle dit donc où le trouver. */}
+            <p className="lme-formule__prix lme-formule__prix--mot">
+              <strong>Selon le modèle</strong>
+              <span>cinq prix au catalogue</span>
+            </p>
             <dl className="lme-formule__faits">
               {/* La borne haute du catalogue a été retirée (Alexandre,
                   2026-11-14) : « jusqu'à 970 000 F » n'attire personne, et le

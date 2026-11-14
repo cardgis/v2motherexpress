@@ -38,7 +38,6 @@ async function bornesTarifs() {
       tarifMatinFcfa: true,
       tarifJourneeFcfa: true,
       tarif24hFcfa: true,
-      prixVenteFcfa: true,
     },
   });
 
@@ -46,7 +45,6 @@ async function bornesTarifs() {
     demiJourneeMin: r._min.tarifMatinFcfa,
     journeeMin: r._min.tarifJourneeFcfa,
     vingtQuatreMin: r._min.tarif24hFcfa,
-    achatMin: r._min.prixVenteFcfa,
   };
 }
 

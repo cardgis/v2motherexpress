@@ -1,5 +1,5 @@
 import { HomeHeroAbout } from "@/components/HomeHeroAbout";
-import ProductExplorer from "@/components/ProductExplorer";
+import { HomeBestSellersSection } from "@/components/HomeBestSellersSection";
 import { HomeFormulesSection } from "@/components/HomeFormulesSection";
 import { HomeAccessionSection } from "@/components/HomeAccessionSection";
 import { HomeParcoursSection } from "@/components/HomeParcoursSection";
@@ -33,6 +33,12 @@ type HomePageContentProps = {
  * « Questions fréquentes » juste avant les agences : on répond aux objections,
  * puis on dit où venir.
  *
+ * `ProductExplorer` quitte l’accueil : il porte le bug d’interactivité SPA
+ * documenté dans CLAUDE.md, et le restyler demanderait d’entrer dans son état
+ * React pour un gain purement visuel. Une section serveur sans état le
+ * remplace ici ; lui continue de servir `/produits`, où son panneau de détail
+ * et son carrousel ont toute leur utilité.
+ *
  * `HomePromoSection` a disparu : « Promotion en cours / Offre du moment »
  * présentait en promotion ce qui est le modèle économique de la maison.
  * `HomeAccessionSection` prend sa place et son sujet.
@@ -43,7 +49,7 @@ export function HomePageContent({ produits, nombreModeles, bornes }: HomePageCon
       <ScrollReveal />
       <main className="page-main">
         <HomeHeroAbout />
-        <ProductExplorer produits={produits} variant="section" />
+        <HomeBestSellersSection produits={produits} />
         <HomeFormulesSection bornes={bornes} />
         <HomeAccessionSection />
         <HomeParcoursSection />

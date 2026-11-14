@@ -1,0 +1,311 @@
+/*
+ * « Nos best-sellers » — section neuve, 2026-11-14.
+ *
+ * ── Deuxième dessin ──────────────────────────────────────────────────────
+ * Le premier était trop bavard : un paragraphe, une pastille d'argument et
+ * trois lignes de prix par carte. Le scooter — ce qu'on vient voir —
+ * n'occupait qu'un quart de la carte.
+ *
+ * Ici l'image domine (ratio 4/3), le rang est une vignette d'angle, les
+ * spécifications tiennent sur UNE ligne avec leurs icônes, et il n'y a qu'UN
+ * prix en avant : la redevance d'accession, celle qui fait entrer.
+ *
+ * AUCUN PRIX COMPTANT. Posé sous « 5 500 F / jour », il annulait l'effet du
+ * premier chiffre. Les totaux vivent dans la fiche produit, pas ici.
+ *
+ * Classes `lme-`, aucune classe `uk-`.
+ */
+
+.lme-best {
+  --encre: #09090b;
+  --texte-2: #52525b;
+  --texte-3: #71717a;
+  --filet: #e4e4e7;
+  --filet-2: #f4f4f5;
+  --or: #e8a534;
+  --ocre: #92400e;
+
+  background: #ffffff;
+  border-bottom: 1px solid var(--filet);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.lme-best__bande {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: clamp(56px, 6vw, 88px) clamp(16px, 3.5vw, 48px);
+}
+
+.lme-best__entete {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 44px;
+}
+
+.lme-best__surtitre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ocre);
+}
+
+.lme-best__surtitre::before {
+  content: "";
+  width: 28px;
+  height: 2px;
+  background: var(--or);
+}
+
+.lme-best__titre {
+  margin: 0 0 16px;
+  max-width: 48ch;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: clamp(30px, 3.4vw, 48px);
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--encre);
+}
+
+.lme-best__accroche {
+  margin: 0;
+  max-width: 52ch;
+  font-size: clamp(16px, 1.4vw, 17px);
+  line-height: 1.65;
+  color: var(--texte-2);
+}
+
+.lme-best__tout {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ocre);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.lme-best__tout svg {
+  transition: transform 0.14s ease;
+}
+
+.lme-best__tout:hover svg {
+  transform: translateX(3px);
+}
+
+.lme-best__grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+/* ── Une carte ───────────────────────────────────────────────────────────── */
+
+.lme-bs {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid var(--filet);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(9, 9, 11, 0.04);
+  transition: box-shadow 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+.lme-bs:hover {
+  border-color: #d4d4d8;
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(9, 9, 11, 0.09);
+}
+
+/* L'image prend la moitié haute : c'est le scooter qu'on vient voir. */
+.lme-bs__visuel {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px 26px;
+  background: radial-gradient(135% 100% at 50% 8%, #ffffff 0%, #f4f4f5 54%, #e6e6ea 100%);
+  border-bottom: 1px solid var(--filet);
+}
+
+.lme-bs__visuel img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.lme-bs__rang {
+  position: absolute;
+  top: 16px;
+  left: 18px;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #a1a1aa;
+  font-variant-numeric: tabular-nums;
+}
+
+.lme-bs__corps {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 26px;
+  flex-grow: 1;
+}
+
+.lme-bs__usage {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ocre);
+}
+
+.lme-bs__nom {
+  margin: 0;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--encre);
+}
+
+/* Les specs sur une seule ligne : on compare trois cartes d'un coup d'œil
+   au lieu de lire trois tableaux. */
+.lme-bs__specs {
+  list-style: none;
+  margin: 0;
+  padding: 14px 0;
+  border-top: 1px solid var(--filet-2);
+  border-bottom: 1px solid var(--filet-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.lme-bs__spec {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #18181b;
+  font-variant-numeric: tabular-nums;
+}
+
+.lme-bs__spec svg {
+  flex: none;
+  color: var(--ocre);
+}
+
+.lme-bs__prix {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lme-bs__prix strong {
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--encre);
+}
+
+.lme-bs__prix span {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--texte-2);
+}
+
+.lme-bs__second {
+  margin: 7px 0 0;
+  font-size: 13.5px;
+  color: var(--texte-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Une action pleine, un lien discret : la hiérarchie est dans les poids. */
+.lme-bs__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: auto;
+}
+
+.lme-bs__reserver {
+  flex: 999 1 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 50px;
+  border-radius: 11px;
+  background: var(--or);
+  color: #1c1917;
+  font-size: 15.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.13s ease, filter 0.13s ease;
+}
+
+.lme-bs__reserver:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+
+.lme-bs__fiche {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ocre);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.lme-bs__fiche svg {
+  transition: transform 0.14s ease;
+}
+
+.lme-bs__fiche:hover svg {
+  transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lme-bs,
+  .lme-bs__reserver,
+  .lme-bs__fiche svg,
+  .lme-best__tout svg {
+    transition: none;
+  }
+
+  .lme-bs:hover,
+  .lme-bs__reserver:hover {
+    transform: none;
+  }
+
+  .lme-bs__fiche:hover svg,
+  .lme-best__tout:hover svg {
+    transform: none;
+  }
+}

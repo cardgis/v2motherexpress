@@ -195,6 +195,21 @@
   color: var(--texte-2);
 }
 
+/* La colonne « Achat comptant » n'annonce AUCUN montant : les totaux vivent
+   dans la fiche produit, pas dans la prose de l'accueil. Elle garde la place
+   et le rythme du bloc de prix, mais avec des mots — d'où un corps plus
+   petit, un chiffre de 34 px ne s'appliquant pas à du texte. */
+.lme-formule__prix--mot {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.lme-formule__prix--mot strong {
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+
 .lme-formule--phare .lme-formule__prix span {
   color: var(--texte-3);
 }
