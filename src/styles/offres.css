@@ -29,10 +29,14 @@
   color: var(--texte);
 }
 
+.lme-offres {
+  border-bottom: 1px solid var(--filet);
+}
+
 .lme-offres__bande {
   max-width: 1240px;
   margin: 0 auto;
-  padding: clamp(64px, 7vw, 104px) clamp(16px, 3.5vw, 48px);
+  padding: clamp(44px, 4.6vw, 68px) clamp(16px, 3.5vw, 48px);
 }
 
 .lme-offres__entete {
@@ -325,16 +329,6 @@
   text-decoration: underline;
 }
 
-/* ── La note sur l'engagement ────────────────────────────────────────────── */
-
-.lme-offres__note {
-  margin: 24px 0 0;
-  max-width: 86ch;
-  font-size: 13.5px;
-  line-height: 1.6;
-  color: var(--texte-2);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .lme-etape,
   .lme-entree__bouton {
@@ -345,4 +339,23 @@
   .lme-entree__bouton:hover {
     transform: none;
   }
+}
+
+/* ── Le survol ne repeint pas les liens ───────────────────────────────────
+ * `public/assets/css/main.css` (thème V1, encore chargé pour le Header et
+ * `/produits`) impose `a:hover { color:#e63619; text-decoration:underline }`
+ * à tous les liens. Nos couleurs sont posées sur `.lme-x` (0,1,0), que
+ * `a:hover` (0,1,1) surclasse : les liens devenaient rouge souligné au
+ * survol (relevé par Alexandre le 2026-11-14). On les redit à (0,2,0).
+ * ────────────────────────────────────────────────────────────────────────── */
+
+.lme-entree__bouton:hover {
+  color: #1c1917;
+  text-decoration: none;
+}
+
+/* Celui-ci se souligne au survol, et c'est voulu : c'est un lien de texte,
+   pas un bouton. Seule la couleur du thème est écartée. */
+.lme-entree__lien:hover {
+  color: #fcd34d;
 }

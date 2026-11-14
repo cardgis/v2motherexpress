@@ -154,15 +154,12 @@ export function HomeAccessionSection() {
           </div>
         </article>
 
-        {/* Le complément de rupture vient de l'offre elle-même : si la remise
-            liée à l'engagement change, cette phrase change avec elle. */}
-        {entree.avecEngagement && entree.differentielSiRupture > 0 ? (
-          <p className="lme-offres__note">
-            Avec engagement, un arrêt anticipé de votre fait rend dû un complément de{' '}
-            {fcfa(entree.differentielSiRupture)} par jour loué — c’est la contrepartie de la
-            remise. Sans engagement, aucun complément n’est dû.
-          </p>
-        ) : null}
+        {/* LA NOTE DE RUPTURE A ÉTÉ RETIRÉE D'ICI (Alexandre, 2026-11-14).
+            Elle disait ce qui est dû si l'on s'arrête avant la fin d'un
+            engagement : une réserve, posée sous l'offre qu'elle devait porter.
+            Elle n'est pas perdue — la question « Et si j'arrête avant la
+            fin ? » y répond dans les questions fréquentes, où quelqu'un qui
+            se la pose la trouve, et le contrat la porte in extenso. */}
 
       </div>
     </section>

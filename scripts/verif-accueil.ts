@@ -171,9 +171,29 @@ async function main() {
       new RegExp(`${avecEngagement.dureeMois}\\s*mois fermes`).test(page.replace(/\s+/g, " ")),
       "sa durée ferme est nommée au même endroit",
     );
+    // Le complément de rupture a QUITTÉ la vitrine le 2026-11-14 : posé sous
+    // l'offre qu'il devait porter, il la retenait. Il reste nommé là où on le
+    // cherche — la question « Et si j'arrête avant la fin ? » — et in extenso
+    // dans le contrat. Les deux contrôles tiennent ensemble : il ne doit pas
+    // revenir avant les questions, et il ne doit pas en disparaître.
+    // On coupe sur l'ANCRE de la section, qui ne paraît qu'une fois : la
+    // classe `lme-questions` est un préfixe partagé par six autres classes,
+    // et découper dessus ne donnait qu'un fragment de quelques octets.
+    const debutQuestions = page.indexOf('id="questions"');
+    const avantQuestions = debutQuestions < 0 ? page : page.slice(0, debutQuestions);
+    const apresQuestions = debutQuestions < 0 ? "" : page.slice(debutQuestions);
+    // « 500 FCFA » est un MORCEAU de « 2 500 FCFA », la remise affichée juste
+    // au-dessus : chercher la sous-chaîne signalait un écart qui n'existait
+    // pas. Le chiffre ne compte que s'il n'est pas précédé de ses milliers.
+    const rupture = new RegExp(`(?<!\\d\\s)${fr(avecEngagement.differentielSiRupture)} FCFA`);
     resultat(
-      page.includes(`${fr(avecEngagement.differentielSiRupture)} FCFA`),
-      `le complément de rupture ${fr(avecEngagement.differentielSiRupture)} F est nommé`,
+      !rupture.test(avantQuestions),
+      "aucune réserve de rupture dans la vitrine",
+      "retirée le 2026-11-14 : elle vit dans les questions et dans le contrat",
+    );
+    resultat(
+      apresQuestions.includes(`${fr(avecEngagement.differentielSiRupture)} FCFA`),
+      `le complément de rupture ${fr(avecEngagement.differentielSiRupture)} F est nommé dans les questions`,
     );
   }
 

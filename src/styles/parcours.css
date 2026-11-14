@@ -43,7 +43,7 @@
 .lme-questions__bande {
   max-width: 1240px;
   margin: 0 auto;
-  padding: clamp(64px, 7vw, 104px) clamp(16px, 3.5vw, 48px);
+  padding: clamp(44px, 4.6vw, 68px) clamp(16px, 3.5vw, 48px);
 }
 
 .lme-surtitre {
@@ -255,4 +255,22 @@
   .lme-questions__tel:hover {
     transform: none;
   }
+}
+
+/* ── Le survol ne repeint pas les liens ───────────────────────────────────
+ * `public/assets/css/main.css` (thème V1, encore chargé pour le Header et
+ * `/produits`) impose `a:hover { color:#e63619; text-decoration:underline }`
+ * à tous les liens. Nos couleurs sont posées sur `.lme-x` (0,1,0), que
+ * `a:hover` (0,1,1) surclasse : les liens devenaient rouge souligné au
+ * survol (relevé par Alexandre le 2026-11-14). On les redit à (0,2,0).
+ * ────────────────────────────────────────────────────────────────────────── */
+
+.lme-parcours__bouton:hover {
+  color: #1c1917;
+  text-decoration: none;
+}
+
+.lme-questions__tel:hover {
+  color: #ffffff;
+  text-decoration: none;
 }

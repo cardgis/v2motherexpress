@@ -67,9 +67,9 @@ function IconeAutonomie() {
   );
 }
 
-function IconeFleche({ taille = 16 }: { taille?: number }) {
+function IconeFleche() {
   return (
-    <svg width={taille} height={taille} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
       <path d="M5 12h14" />
       <path d="m13 5 7 7-7 7" />
     </svg>
@@ -175,13 +175,16 @@ export function HomeBestSellersSection({ produits }: { produits: ProduitHome[] }
                   </div>
 
                   <div className="lme-bs__actions">
+                    {/* SANS FLÈCHE (Alexandre, 2026-11-14) : trois flèches
+                        par rangée de cartes, plus celle de l'en-tête, faisaient
+                        un motif qui tirait l'œil sans rien ajouter. Le libellé
+                        suffit sur un bouton plein. Celle de « Tout le
+                        catalogue » reste : elle sort de la section. */}
                     <Link href={LIEN_RESERVER} className="lme-bs__reserver">
                       Réserver
-                      <IconeFleche />
                     </Link>
                     <Link href="/produits" className="lme-bs__fiche">
                       La fiche
-                      <IconeFleche taille={14} />
                     </Link>
                   </div>
                 </div>

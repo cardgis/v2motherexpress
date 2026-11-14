@@ -109,8 +109,8 @@ signer/layout.tsx             → CadreSimple (signature par lien)
 `src/components/DisableBfcache.tsx` — force un reload si la page est restaurée depuis le bfcache du navigateur (event `pageshow` avec `event.persisted`).
 
 ## interaction-handler.js
-**NE PLUS CHARGER CE SCRIPT.** La balise `<Script>` a été retirée de `layout.tsx`.
-Le fichier `public/assets/js/interaction-handler.js` existe encore mais n'est pas chargé.
+**NE PLUS RECHARGER CE SCRIPT.** La balise `<Script>` avait été retirée de `layout.tsx` ;
+le fichier lui-même a été **supprimé** de `public/assets/js/` le 2026-11-14.
 Toute gestion d'Escape ou de clic est désormais faite dans les composants React (Header, ProductCard).
 
 ## Prisma
@@ -650,8 +650,10 @@ L'avertissement ESLint `@next/next/no-img-element` est attendu et assumé.
 
 `jquery.min.js`, `slick.min.js`, `ion.rangeSlider.min.js`, `main.js` et
 `fontawesome.all.min.js` ont été retirés de `layout.tsx` — 1,39 MB par page pour du code qui
-ne s'exécutait jamais. Les fichiers existent encore dans `public/assets/` mais ne sont pas
-chargés.
+ne s'exécutait jamais. **Les fichiers ont été supprimés de `public/assets/` le 2026-11-14**,
+avec `interaction-handler.js`, `ion.rangeSlider.css`, `slick.css` et `slick-theme.css` :
+1,45 Mo que plus aucune balise ne demandait. Le décrochage avait déjà rendu le gain de
+performance ; cette suppression ne change rien pour le visiteur, elle retire le piège.
 
 Vérification faite sélecteur par sélecteur : aucune cible de `main.js` n'existe dans
 l'application (`.gallery-slider`, `.gallery-slider-nav`, `#range-price`, `#range-mileage`,
@@ -661,6 +663,47 @@ SVG inline depuis longtemps, FontAwesome ne dessinait plus rien.
 
 **Ne pas les recharger.** Si une fonctionnalité du thème est réintroduite, la réécrire en
 React plutôt que de rebrancher jQuery.
+
+## Le thème V1 : ce qui a été nettoyé, ce qui reste (2026-11-14)
+
+### Fait
+- `src/styles/accueil.css` **supprimé** : ses 18 sélecteurs étaient tous scopés sous
+  `.section-hero`, `.section-videos` ou `.page-footer`, trois classes qu'aucun composant
+  ne rend plus depuis la refonte. Son import est parti de `HomePageContent.tsx`.
+- `src/app/globals.css` : **802 lignes retirées sur 2 415** (130 règles) — l'ancien accueil
+  (`hero-slider`, `hero-particles`, `hero-scroll-cue`, `promo__*`, `videos-carousel__*`,
+  `video-card__*`, `contact-branch*`, `contact-map*`, `slideshow-item*`, `block-icon`) et
+  le panneau de recherche du menu (`navbar-search-form`, `navbar-overlay--search`), plus
+  deux `@keyframes` que plus rien n'appelait. Critère appliqué : une règle ne part que si
+  CHACUN de ses sélecteurs ne cite que des classes absentes de tout `src/**/*.tsx`.
+- Les 1 613 lignes restantes servent encore le Header, les overlays, `/produits`
+  (`product-item*`, `product-panel*`), `/about` et `/gallery`. Ne pas les traiter au grep.
+
+### Ce qui reste, et ce qu'il coûte
+Trois fichiers du thème sont encore chargés sur **chaque** page par `layout.tsx` :
+
+| fichier | poids | classes encore rendues |
+|---|---|---|
+| `uikit.min.css` | 270 Ko | 7 : `uk-nav`, `uk-nav-default`, `uk-nav-parent-icon`, `uk-navbar-nav`, `uk-navbar-toggle`, `uk-grid`, `uk-inline-clip` |
+| `uikit.min.js` + `uikit-icons.min.js` | 266 Ko | des comportements que React pilote déjà (les overlays suivent l'état React) |
+| `main.css` | 119 Ko | ~58, presque toutes le header/pied (`page-header*`, `logo*`, `menu-btn*`, `support*`) et `/produits` (`specifications-list*`) |
+
+**655 Ko de CSS et de JS par page pour une soixantaine de classes**, sur un projet dont le
+quota de transfert a déjà été dépassé une fois (voir « Contexte Vercel »). Les réécrire
+supprimerait aussi la cause d'un défaut visible : `main.css` impose
+`a:hover { color:#e63619; text-decoration:underline }` à TOUS les liens du site, à une
+spécificité (0,1,1) qui surclasse nos couleurs posées sur `.lme-x` (0,1,0) — tous les liens
+de l'accueil devenaient rouge souligné au survol. C'est aujourd'hui neutralisé section par
+section, dans chaque feuille `src/styles/*.css`, mais contourné et non résolu.
+
+**Ordre à respecter si on s'y attaque :** le Header d'abord, seul, avec un contrôle visuel —
+il est monté sur toutes les pages et le bug d'interactivité SPA documenté plus haut est né
+là. Puis `/produits`, seul, avec un contrôle visuel. Jamais les deux dans la même passe.
+
+### Ne pas juger les images au grep
+Les variantes (`A10-400.webp`, `chezlamother-768.webp`…) sont désignées par le manifeste à
+l'exécution, pas par leur nom dans le code. Un grep les déclare orphelines à tort : 43 des
+76 fichiers de `public/assets/img` répondent à ce faux positif.
 
 ## Contexte Vercel
 

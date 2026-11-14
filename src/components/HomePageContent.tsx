@@ -11,7 +11,6 @@ import { HomeCTASection } from "@/components/HomeCTASection";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import type { ProduitHome } from "@/types";
 import type { BornesTarifs } from "@/lib/home-data";
-import "@/styles/accueil.css";
 
 type HomePageContentProps = {
   produits: ProduitHome[];
