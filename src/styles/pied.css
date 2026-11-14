@@ -1,0 +1,387 @@
+/*
+ * Pied de page et contact flottant — refonte 2026-11-14.
+ *
+ * ── Pourquoi une feuille à part, et des classes `lme-` ────────────────────
+ * `accueil.css` passe son temps à reprendre le thème hérité (`main.css`) :
+ * chaque règle y commence par une section pour l'emporter sur des sélecteurs
+ * qu'on ne maîtrise pas. C'est tenable pour trois retouches, pas pour une
+ * refonte. Ici, aucune classe du thème n'est touchée et aucune classe `uk-`
+ * n'est employée : le pied de page a ses propres classes, préfixées `lme-`,
+ * comme les espaces client et gérant le font déjà avec `espace.css`.
+ *
+ * Cette feuille est importée par le COMPOSANT, pas par une page : le pied de
+ * page sert l'accueil et le catalogue, et chacun l'obtient ainsi sans que
+ * l'autre ait à s'en soucier.
+ *
+ * ── Le code couleur, et un piège de contraste ────────────────────────────
+ * Le doré `--or` ne sert QUE à l'action principale. En TEXTE sur fond clair
+ * il tombe à environ 2:1, très loin des 4,5:1 requis : le texte de la famille
+ * dorée passe donc par `--ocre`, qui tient 5,9:1. Sur fond sombre, le doré est
+ * libre, et `--or-clair` sert aux sur-titres.
+ *
+ * ── Fluide sans requête média ────────────────────────────────────────────
+ * Les grilles sont en `repeat(auto-fit, minmax(…, 1fr))` et se replient
+ * d'elles-mêmes ; les espacements sont en `clamp()`. La gouttière descend à
+ * 16 px sur téléphone sans une seule `@media` de mise en page — il n'y a donc
+ * rien à maintenir en double.
+ */
+
+.lme-pied {
+  --encre: #09090b;
+  --encre-2: #18181b;
+  --filet: #27272a;
+  --texte: #d4d4d8;
+  --texte-2: #a1a1aa;
+  --texte-3: #71717a;
+  --or: #e8a534;
+  --or-clair: #fcd34d;
+  --ocre: #92400e;
+  --whatsapp: #25d366;
+  --whatsapp-encre: #0b2e18;
+
+  background: var(--encre);
+  color: var(--texte);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.lme-pied a {
+  color: var(--texte);
+  text-decoration: none;
+  transition: color 0.14s ease;
+}
+
+.lme-pied a:hover {
+  color: #ffffff;
+}
+
+.lme-pied__bande {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding-inline: clamp(16px, 3.5vw, 48px);
+}
+
+/* ── Étage 1 : la marque, et comment nous joindre ────────────────────────── */
+
+.lme-pied__haut {
+  padding-top: clamp(48px, 5vw, 72px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 44px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.lme-pied__marque {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+.lme-pied__logo {
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+.lme-pied__logo img {
+  display: block;
+  height: 44px;
+  width: auto;
+}
+
+.lme-pied__accroche {
+  margin: 0;
+  max-width: 40ch;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--texte-2);
+}
+
+.lme-pied__joindre {
+  flex: 0 1 300px;
+  min-width: 0;
+}
+
+.lme-pied__titre {
+  margin: 0 0 16px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--texte-3);
+}
+
+.lme-pied__boutons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lme-pied__bouton {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.lme-pied__bouton--tel {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--filet);
+  color: #ffffff;
+}
+
+.lme-pied__bouton--tel svg {
+  flex: none;
+  color: var(--or);
+}
+
+.lme-pied__bouton--whatsapp {
+  background: var(--whatsapp);
+  color: var(--whatsapp-encre);
+}
+
+.lme-pied__bouton--whatsapp:hover {
+  color: var(--whatsapp-encre);
+  filter: brightness(1.05);
+}
+
+.lme-pied__courriel {
+  padding-top: 4px;
+  font-size: 14px;
+}
+
+/* Réseaux sociaux : ronds de 44 px, la cible tactile minimale. */
+.lme-pied__reseaux {
+  list-style: none;
+  margin: 20px 0 0;
+  padding: 0;
+  display: flex;
+  gap: 10px;
+}
+
+.lme-pied__reseau {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--filet);
+  border-radius: 50%;
+  color: var(--texte);
+  font-size: 18px;
+  transition: border-color 0.14s ease, color 0.14s ease, background-color 0.14s ease;
+}
+
+.lme-pied__reseau:hover {
+  border-color: var(--or);
+  color: var(--or);
+  background: rgba(232, 165, 52, 0.08);
+}
+
+/* ── Étage 2 : « À la une », avec ses vignettes ──────────────────────────── */
+
+.lme-pied__une {
+  margin-top: clamp(36px, 4vw, 52px);
+  padding: 28px 0;
+  border-top: 1px solid var(--filet);
+  border-bottom: 1px solid var(--filet);
+}
+
+.lme-pied__une-liste {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.lme-pied__une-lien {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.lme-pied__une-vignette {
+  flex: none;
+  width: 96px;
+  height: 64px;
+  border-radius: 9px;
+  overflow: hidden;
+  background: var(--encre-2);
+  border: 1px solid var(--filet);
+}
+
+.lme-pied__une-vignette img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lme-pied__une-titre {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.lme-pied__une-detail {
+  display: block;
+  margin-top: 5px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--texte-2);
+}
+
+.lme-pied__une-lien:hover .lme-pied__une-titre {
+  color: var(--or-clair);
+}
+
+/* ── Étage 3 : la navigation complète du site ───────────────────────────── */
+
+.lme-pied__colonnes {
+  margin-top: clamp(36px, 4vw, 52px);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 40px;
+}
+
+.lme-pied__liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lme-pied__liste li,
+.lme-pied__liste a {
+  font-size: 14px;
+}
+
+.lme-pied__liste-muet {
+  color: var(--texte-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Mentions ───────────────────────────────────────────────────────────── */
+
+.lme-pied__bas {
+  margin-top: 0;
+  padding: 30px 0 44px;
+}
+
+.lme-pied__mentions {
+  margin: 0;
+  padding-top: 30px;
+  border-top: 1px solid var(--filet);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--texte-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Contact flottant : UNE capsule, deux portes ─────────────────────────
+ * La V1 posait deux pastilles côte à côte. Ici, un seul objet : à gauche
+ * « Besoin d'aide ? » et le numéro LISIBLE SANS CLIQUER, à droite le carré
+ * WhatsApp. Le vert est celui de la marque WhatsApp — il nomme un canal, ce
+ * n'est pas un statut, donc le code couleur de la maison n'est pas en cause.
+ */
+
+.lme-flottant {
+  position: fixed;
+  right: clamp(14px, 2vw, 26px);
+  bottom: clamp(14px, 2vw, 26px);
+  z-index: 60;
+  display: flex;
+  align-items: stretch;
+  background: rgba(9, 9, 11, 0.95);
+  border: 1px solid #3f3f46;
+  border-radius: 31px;
+  box-shadow: 0 14px 38px rgba(9, 9, 11, 0.42);
+  overflow: hidden;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.lme-flottant__tel {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  height: 62px;
+  padding: 0 18px 0 22px;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.lme-flottant__tel svg {
+  flex: none;
+  color: #e8a534;
+}
+
+.lme-flottant__label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: #a1a1aa;
+}
+
+.lme-flottant__numero {
+  display: block;
+  font-size: 15.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lme-flottant__whatsapp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 62px;
+  height: 62px;
+  background: #25d366;
+  color: #0b2e18;
+  border-left: 1px solid rgba(9, 9, 11, 0.15);
+  transition: filter 0.14s ease;
+}
+
+.lme-flottant__whatsapp:hover {
+  filter: brightness(1.07);
+}
+
+/* Sur téléphone la capsule rétrécit : le numéro reste lisible, l'ensemble ne
+   mange pas la largeur de l'écran. */
+@media (max-width: 480px) {
+  .lme-flottant__tel {
+    height: 54px;
+    padding: 0 14px 0 16px;
+    gap: 9px;
+  }
+
+  .lme-flottant__numero {
+    font-size: 14px;
+  }
+
+  .lme-flottant__whatsapp {
+    width: 54px;
+    height: 54px;
+  }
+
+  .lme-flottant {
+    border-radius: 27px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lme-pied a,
+  .lme-pied__reseau,
+  .lme-flottant__whatsapp {
+    transition: none;
+  }
+}
