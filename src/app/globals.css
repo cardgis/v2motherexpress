@@ -1,3 +1,367 @@
+/*
+ * SOCLE DU SITE — repris du thème V1 le 2026-11-14, quand `uikit.min.css` et
+ * `main.css` ont été retirés.
+ *
+ * ── Pourquoi ce bloc est ici, et pourquoi il ne faut pas le prendre pour du
+ *    remplissage ──────────────────────────────────────────────────────────
+ * Ces deux feuilles ne servaient pas que leurs propres classes : elles
+ * portaient la typographie de base du site (`html, body`), les `@font-face`
+ * d'Oswald — la police de TOUS les titres —, la remise à zéro des marges de
+ * `p`, `ul`, `h1`…`h6`, et `body { margin: 0 }`. Les supprimer sans
+ * reprendre ce socle aurait décalé chaque page de 8 px, remplacé Oswald par
+ * la police système et effacé l'interligne, sans qu'aucun contrôle ne le
+ * dise. Les valeurs ci-dessous sont celles qui s'appliquaient, relevées dans
+ * les deux fichiers avant leur suppression.
+ *
+ * ── Deux départs VOLONTAIRES de l'original ────────────────────────────────
+ *  1. `a:hover { color:#e63619; text-decoration:underline }` n'est PAS
+ *     repris. C'est le rouge qu'Alexandre a relevé le 2026-11-14 : il
+ *     repeignait tous les liens du site, y compris ceux des sections
+ *     refondues qui déclaraient leur propre couleur. Les liens gardent donc
+ *     la leur au survol.
+ *  2. `em { color:#f0506e }` n'est pas repris non plus — un rose de défaut
+ *     d'UIkit que personne n'a choisi. Les deux seuls `<em>` du site
+ *     (l'accroche du bandeau, la citation d'« À propos ») ont leur couleur.
+ *
+ * ── Un gain au passage ────────────────────────────────────────────────────
+ * Le thème listait `woff` AVANT `woff2` : le navigateur prenait donc le
+ * format le plus lourd des deux, puisqu'il retient le premier qu'il sait
+ * lire. L'ordre est inversé ici — même rendu, fichiers plus légers.
+ */
+
+/* ── Oswald, la police des titres ─────────────────────────────────────────
+ * Servie depuis `/assets/fonts`. Les chemins sont ABSOLUS : cette feuille
+ * est empaquetée par Next et ne vit plus à côté du dossier des polices.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+@font-face {
+  font-family: "Oswald";
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+  src: url("/assets/fonts/Oswald-ExtraLight.woff2") format("woff2"),
+       url("/assets/fonts/Oswald-ExtraLight.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Oswald";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("/assets/fonts/Oswald-Light.woff2") format("woff2"),
+       url("/assets/fonts/Oswald-Light.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Oswald";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/assets/fonts/Oswald-Regular.woff2") format("woff2"),
+       url("/assets/fonts/Oswald-Regular.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Oswald";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/assets/fonts/Oswald-Medium.woff2") format("woff2"),
+       url("/assets/fonts/Oswald-Medium.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Oswald";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/assets/fonts/Oswald-SemiBold.woff2") format("woff2"),
+       url("/assets/fonts/Oswald-SemiBold.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Oswald";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/assets/fonts/Oswald-Bold.woff2") format("woff2"),
+       url("/assets/fonts/Oswald-Bold.woff") format("woff");
+}
+
+/* Oxygen porte le texte courant des pages d'avant la refonte. Les sections
+   refondues demandent "Inter", qui n'est pas servie et retombe donc sur la
+   police système — c'était déjà le cas avant, rien ne change là. */
+
+@font-face {
+  font-family: "Oxygen";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("/assets/fonts/Oxygen-Light.woff2") format("woff2"),
+       url("/assets/fonts/Oxygen-Light.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Oxygen";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/assets/fonts/Oxygen-Regular.woff2") format("woff2"),
+       url("/assets/fonts/Oxygen-Regular.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Oxygen";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/assets/fonts/Oxygen-Bold.woff2") format("woff2"),
+       url("/assets/fonts/Oxygen-Bold.woff") format("woff");
+}
+
+/* ── La base du document ──────────────────────────────────────────────────
+ * La taille fluide vient du thème : elle suit la largeur de la fenêtre, et
+ * les deux bornes se croisent à 767 px — où la seconde l'emporte, comme
+ * avant.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+html {
+  background: #ffffff;
+  -webkit-text-size-adjust: 100%;
+}
+
+html,
+body {
+  font-family: "Oxygen", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.75;
+  color: #777777;
+}
+
+body {
+  /* Sans cette ligne, le navigateur ajoute 8 px autour de CHAQUE page. */
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.69;
+}
+
+@media (min-width: 767px) {
+  html,
+  body {
+    font-size: calc(14px + 2 * (100vw / 1920));
+  }
+}
+
+@media (max-width: 767px) {
+  html,
+  body {
+    font-size: calc(14px + 3.4 * ((100vw - 320px) / 1920));
+  }
+}
+
+/* ── Les éléments de texte ────────────────────────────────────────────────── */
+
+a {
+  color: #1e87f0;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0 0 20px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 400;
+  color: #333333;
+  text-transform: none;
+}
+
+* + h1,
+* + h2,
+* + h3,
+* + h4,
+* + h5,
+* + h6 {
+  margin-top: 40px;
+}
+
+h1 {
+  font-size: 2.23125rem;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 1.7rem;
+  line-height: 1.3;
+}
+
+h3 {
+  font-size: 1.5rem;
+  line-height: 1.4;
+}
+
+h4 {
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+h5 {
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+h6 {
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+@media (min-width: 960px) {
+  h1 {
+    font-size: 2.625rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+  }
+}
+
+address,
+dl,
+fieldset,
+figure,
+ol,
+p,
+pre,
+ul {
+  margin: 0 0 20px;
+}
+
+* + address,
+* + dl,
+* + fieldset,
+* + figure,
+* + ol,
+* + p,
+* + pre,
+* + ul {
+  margin-top: 20px;
+}
+
+ol,
+ul {
+  padding-left: 30px;
+}
+
+ol > li > ol,
+ol > li > ul,
+ul > li > ol,
+ul > li > ul {
+  margin: 0;
+}
+
+dt {
+  font-weight: 700;
+}
+
+dd {
+  margin-left: 0;
+}
+
+address {
+  font-style: normal;
+}
+
+b,
+strong {
+  font-weight: bolder;
+}
+
+small {
+  font-size: 80%;
+}
+
+sub,
+sup {
+  position: relative;
+  font-size: 75%;
+  line-height: 0;
+  vertical-align: baseline;
+}
+
+sup {
+  top: -0.5em;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+hr {
+  overflow: visible;
+  margin: 0 0 20px;
+  border: 0;
+  border-top: 1px solid #e5e5e5;
+  text-align: inherit;
+}
+
+* + hr {
+  margin-top: 20px;
+}
+
+/* ── Les médias ───────────────────────────────────────────────────────────── */
+
+audio,
+canvas,
+iframe,
+img,
+svg,
+video {
+  vertical-align: middle;
+}
+
+canvas,
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
+  box-sizing: border-box;
+}
+
+svg:not(:root) {
+  overflow: hidden;
+}
+
+/* Les cartes des agences sont des `iframe` : sans ceci, elles portent la
+   bordure en relief du navigateur. */
+iframe {
+  border: 0;
+}
+
+::selection {
+  background: #3399ff;
+  color: #ffffff;
+  text-shadow: none;
+}
+
+details,
+main {
+  display: block;
+}
+
+summary {
+  display: list-item;
+}
+
+template {
+  display: none;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -10,64 +374,6 @@ body {
   margin: 0;
 }
 
-/* ── Logo ─────────────────────────────────────────────────── */
-.page-header .logo__icon {
-  width: 340px;
-  height: 138px; /* ratio 530:215 */
-  filter: drop-shadow(0 2px 14px rgba(0, 0, 0, 0.5));
-  transition: transform 0.35s cubic-bezier(.22, 1, .36, 1),
-              filter 0.35s ease;
-}
-
-.page-header .logo__link:hover .logo__icon,
-.page-header .logo__link:focus-visible .logo__icon {
-  transform: scale(1.05);
-  filter: drop-shadow(0 4px 22px rgba(0, 0, 0, 0.65));
-}
-
-@media (max-width: 1280px) {
-  .page-header .logo__icon {
-    width: 280px;
-    height: 114px;
-  }
-}
-
-@media (max-width: 959px) {
-  .page-header .logo__icon {
-    width: 200px;
-    height: 81px;
-  }
-}
-
-.menu-btn--icon {
-  display: none;
-}
-
-.menu-btn__icon {
-  display: block;
-  width: 26px;
-  height: 26px;
-}
-
-.menu-btn__icon path {
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-width: 2.2;
-}
-
-.navbar-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(8, 8, 10, 0.72);
-  backdrop-filter: blur(12px);
-  display: flex;
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.22s ease, visibility 0s linear 0.22s;
-}
-
 .navbar-overlay.is-open {
   visibility: visible;
   opacity: 1;
@@ -75,150 +381,8 @@ body {
   transition: opacity 0.22s ease, visibility 0s;
 }
 
-.navbar-overlay--menu {
-  justify-content: flex-end;
-  z-index: 2200;
-}
-
-.navbar-overlay--menu .navbar-overlay__panel--menu {
-  transform: translateX(100%);
-  transition: transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
 .navbar-overlay--menu.is-open .navbar-overlay__panel--menu {
   transform: translateX(0);
-}
-
-.navbar-overlay__panel {
-  border-radius: 28px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
-}
-
-.navbar-overlay__panel--menu {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: auto;
-  transform: none !important;
-  width: min(420px, 100vw);
-  height: 100vh;
-  overflow-y: auto;
-  padding: 22px;
-  background: linear-gradient(180deg, #15151b 0%, #0f0f11 100%);
-}
-
-.navbar-overlay__header,
-.navbar-overlay__search-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.navbar-overlay__content {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  margin-top: 24px;
-}
-
-.navbar-overlay__nav {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.navbar-overlay__close {
-  width: 44px;
-  height: 44px;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  font-size: 30px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.navbar-overlay__close:hover {
-  background: rgba(255, 255, 255, 0.14);
-}
-
-.navbar-overlay__nav > li > a {
-  display: block;
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  color: #fff;
-  font-size: 16px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.navbar-overlay__nav > li:last-child > a {
-  border-bottom: 0;
-}
-
-.navbar-overlay--menu .uk-nav > li:last-child > a {
-  border-bottom: 0;
-}
-
-.navbar-overlay__support {
-  margin-top: auto;
-}
-
-.navbar-overlay--menu .support__link {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 18px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.05);
-  text-decoration: none;
-}
-
-.navbar-overlay--menu .support__icon {
-  color: #c79a2a;
-  font-size: 22px;
-}
-
-.navbar-overlay--menu .support__label {
-  color: rgba(255, 255, 255, 0.72);
-}
-
-.navbar-overlay--menu .support__phone {
-  color: #fff;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-@media (max-width: 639px) {
-
-  .navbar-overlay__panel--menu {
-    width: 100vw;
-    padding: 18px;
-    border-radius: 0;
-  }
-
-  .menu-btn--icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .menu-btn__icon {
-    width: 22px;
-    height: 22px;
-  }
-}
-
-@media (max-width: 1200px) {
-  .menu-btn--icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
 }
 
 .product-item__media img {
@@ -284,12 +448,6 @@ dialog[open] {
 
 .section-videos .section-title h3 {
   color: #fff;
-}
-
-@media (max-width: 639px) {
-  .section-videos .uk-grid {
-    row-gap: 24px !important;
-  }
 }
 
 /* Product card head — prevent price overflow on 2-column tablet grid */
@@ -691,18 +849,10 @@ dialog[open] {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .page-header,
-  .section-hero,
-  .slideshow-item,
-  .slideshow-nav,
-  .uk-slideshow-items,
-  .product-item__media,
-  .uk-modal,
-  .subscribe-box,
-  .section-gallery,
-  .section-products { transition: none !important; animation: none !important; }
-}
+/* La règle `prefers-reduced-motion` globale a été retirée (2026-11-14) :
+   sept de ses huit sélecteurs visaient des sections supprimées, et l'en-tête
+   n'a aucune transition à neutraliser ici — `styles/entete.css` porte la
+   sienne, comme chaque feuille de section porte la sienne. */
 
 /* ── À Propos page ───────────────────────────────────────── */
 .about-story {
@@ -1195,28 +1345,6 @@ dialog[open] {
   transform: scale(1.04);
 }
 
-/* ── Gallery — hover zoom + overlay doré ── */
-.section-gallery .uk-grid > div > div {
-  overflow: hidden;
-  border-radius: 6px;
-  position: relative;
-}
-
-.section-gallery .uk-grid > div > div::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(199, 154, 42, .0) 0%, rgba(199, 154, 42, .22) 100%);
-  opacity: 0;
-  transition: opacity 0.35s ease;
-  pointer-events: none;
-  border-radius: 6px;
-}
-
-.section-gallery .uk-grid > div > div:hover::after {
-  opacity: 1;
-}
-
 /* ── WhatsApp floating — pulse ── */
 
 
@@ -1586,27 +1714,40 @@ dialog[open] {
 }
 
 /* ── prefers-reduced-motion — neutralise tout ── */
-@media (prefers-reduced-motion: reduce) {
-  .hero-particles,
-  .hero-scroll-cue,
-  .hero-overlay,
-  .slideshow-item__decor,
-  .uk-active .hero-slider__image,
-  .uk-active .slideshow-item__decor,
-  .uk-active .slideshow-item__title,
-  .block-icon,
-  .block-icon__icon,
-  .product-item,
-  .product-item__media img,
-  .video-card,
-  .social-list__link,
-  .floating-contact__whatsapp,
-  .promo__btn,
-  .section-gallery img,
-  .section-gallery .uk-grid > div > div::after {
+@media (prefers-reduced-motion: reduce) {.hero-particles,
+.hero-scroll-cue,
+.hero-overlay,
+.slideshow-item__decor,
+.block-icon,
+.block-icon__icon,
+.product-item,
+.product-item__media img,
+.video-card,
+.social-list__link,
+.floating-contact__whatsapp,
+.promo__btn,
+.section-gallery img {
     transition: none !important;
     animation: none !important;
     transform: none !important;
     opacity: 1 !important;
   }
+}
+
+
+/* ── La charpente de page, reprise de `main.css` ──────────────────────────
+ * Deux règles, et tout ce que cette feuille du thème donnait encore en
+ * dehors de l'en-tête. `/about`, `/gallery` et `/contact` posent
+ * `.page-wrapper`, qui tient le pied de page en bas des pages courtes.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100vh;
+}
+
+.page-wrapper .page-main {
+  flex-grow: 1;
 }

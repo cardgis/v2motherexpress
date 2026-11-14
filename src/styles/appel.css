@@ -114,21 +114,3 @@
     transform: none;
   }
 }
-
-/* ── Le survol ne repeint pas les liens ───────────────────────────────────
- * `public/assets/css/main.css` (thème V1, encore chargé pour le Header et
- * `/produits`) impose `a:hover { color:#e63619; text-decoration:underline }`
- * à tous les liens. Nos couleurs sont posées sur `.lme-x` (0,1,0), que
- * `a:hover` (0,1,1) surclasse : les liens devenaient rouge souligné au
- * survol (relevé par Alexandre le 2026-11-14). On les redit à (0,2,0).
- * ────────────────────────────────────────────────────────────────────────── */
-
-.lme-appel__bouton--principal:hover {
-  color: #ffffff;
-  text-decoration: none;
-}
-
-.lme-appel__bouton--contour:hover {
-  color: var(--encre);
-  text-decoration: none;
-}

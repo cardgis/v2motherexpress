@@ -7,7 +7,7 @@ import { UserRound } from 'lucide-react';
 import { LIEN_RESERVER } from '@/lib/suite';
 import { OffcanvasButton } from "./OffcanvasButton";
 import { NavbarOverlays } from "./NavbarOverlays";
-import "@/styles/vitrine-acces.css";
+import "@/styles/entete.css";
 
 export function Header() {
   const pathname = usePathname();
@@ -49,8 +49,11 @@ export function Header() {
               </Link></div>
           </div>
           <div className="page-header__center">
-            <nav className="page-nav" data-uk-navbar>
-              <ul className="uk-navbar-nav">
+            {/* `data-uk-navbar` a été retiré avec UIkit (2026-11-14) : le
+                composant JavaScript ne servait qu'aux menus déroulants, et
+                cette barre n'en a aucun — quatre liens simples. */}
+            <nav className="page-nav">
+              <ul className="page-nav__liste">
                 <li><Link href="/produits">CATALOGUE SCOOTERS</Link></li>
                 <li><Link href="/about">À PROPOS</Link></li>
                 <li><Link href="/gallery">GALERIE</Link></li>

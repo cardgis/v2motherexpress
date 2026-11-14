@@ -3,7 +3,7 @@
 export function OffcanvasButton({ onClick }: { onClick?: () => void }) {
   return (
     <button
-      className="uk-navbar-toggle menu-btn menu-btn--icon"
+      className="menu-btn menu-btn--icon"
       type="button"
       data-open-menu=""
       onClick={onClick}

@@ -1,5 +1,3 @@
-import { OFFRES_ACCESSION } from '@/lib/offres';
-import { fcfa } from '@/lib/formatters';
 import '@/styles/parcours.css';
 
 /**
@@ -12,30 +10,19 @@ import '@/styles/parcours.css';
  * ── CHAQUE RÉPONSE VIENT D'UNE RÈGLE RÉELLE DU CONTRAT ────────────────────
  * Les papiers, la redevance due 6 jours sur 7, le constat fait avec le
  * client, la signature par code SMS : ce sont les règles de `lib/contrats` et
- * du retrait, pas des promesses commerciales. Le complément de rupture est
- * même LU dans `OFFRES_ACCESSION`, pour qu'il ne puisse pas dériver.
+ * du retrait, pas des promesses commerciales. Plus aucun montant ici : la
+ * section ne lit plus `OFFRES_ACCESSION`.
  *
- * ── LA QUESTION QUI N'EST PAS LÀ ──────────────────────────────────────────
+ * ── LES DEUX QUESTIONS QUI NE SONT PAS LÀ ─────────────────────────────────
+ * « Et si j'arrête avant la fin ? » a été retirée le 2026-11-14 : sa réponse
+ * chiffrait le complément dû en cas de rupture d'un engagement, et une
+ * réserve n'a pas sa place sur une page qui doit donner envie. Le contrat la
+ * porte in extenso, et c'est là qu'elle engage — pas dans une vitrine.
  * « Qui paie l'entretien et l'assurance ? » a été retirée : la réponse n'est
  * nulle part dans le contrat, et Alexandre a tranché le 2026-11-13 — si on
  * n'a pas la donnée, on ne met pas la case. Elle reviendra le jour où la
  * réponse existera.
  */
-
-/**
- * L'offre avec engagement, celle qui porte un complément de rupture.
- *
- * Le modèle est la CLÉ de `OFFRES_ACCESSION`, pas un champ de l'offre : il
- * faut donc passer par `Object.entries` pour le garder. Avec `Object.values`
- * on perd le nom du modèle, et la phrase ne peut plus le nommer.
- */
-function offreAvecEngagement() {
-  for (const [modele, offres] of Object.entries(OFFRES_ACCESSION)) {
-    const trouvee = offres.find((o) => o.avecEngagement && o.differentielSiRupture > 0);
-    if (trouvee) return { ...trouvee, modele };
-  }
-  return null;
-}
 
 function IconeTelephone() {
   return (
@@ -46,8 +33,6 @@ function IconeTelephone() {
 }
 
 export function HomeQuestionsSection() {
-  const engagement = offreAvecEngagement();
-
   return (
     <section className="lme-questions" id="questions">
       <div className="lme-questions__bande">
@@ -72,26 +57,6 @@ export function HomeQuestionsSection() {
             <dd>
               Non. Elle est due <strong>6 jours sur 7</strong> : le septième jour de chaque
               semaine n’est pas facturé.
-            </dd>
-          </div>
-
-          <div className="lme-question">
-            <dt>Et si j’arrête avant la fin ?</dt>
-            <dd>
-              Sans engagement, vous arrêtez quand vous voulez.
-              {engagement ? (
-                <>
-                  {/* « modèle A10 » et non « le A10 » : l'élision dépend de la
-                      PRONONCIATION de la lettre — « l'A10 » et « l'E52 », mais
-                      « le B12 » et « le C32 ». Coder cette règle serait fragile ;
-                      supprimer l'article la rend sans objet, quelle que soit la
-                      lettre du modèle ajouté demain. */}
-                  {' '}Avec engagement — modèle {engagement.modele}, {engagement.dureeMois} mois
-                  — un complément de{' '}
-                  <span className="lme-nombre">{fcfa(engagement.differentielSiRupture)} par jour loué</span>{' '}
-                  reste dû : c’est la contrepartie de la remise.
-                </>
-              ) : null}
             </dd>
           </div>
 

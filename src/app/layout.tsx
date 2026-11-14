@@ -136,9 +136,12 @@ export default function RootLayout({
     // désaccord d'hydratation ailleurs dans l'arbre sera toujours signalé.
     <html lang="fr" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
-        <link rel="stylesheet" href="/assets/css/uikit.min.css" />
-        <link rel="stylesheet" href="/assets/css/main.css" />
-        <style>{`body,.page-home{font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}`}</style>
+        {/* La balise <style> qui forçait ici la police système a été retirée
+            (2026-11-14). Elle ne s'appliquait pas : `main.css`, chargée après
+            elle, imposait Oxygen à `html, body`. En supprimant `main.css` on
+            l'aurait rendue active d'un coup, changeant la police de tout le
+            site. Le socle de `globals.css` porte désormais la typographie,
+            Oxygen comprise, et une seule feuille en décide. */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
@@ -151,16 +154,13 @@ export default function RootLayout({
           {children}
           <DisableBfcache />
         </RouteBoundary>
-        {/* UIKit 3 est sans dépendance jQuery. Les scripts du thème d'origine
-            (jquery, slick, ion.rangeSlider, main.js, fontawesome, 1,4 Mo en
-            tout) ne sont plus seulement décrochés : ils ont été SUPPRIMÉS de
-            `public/assets` le 2026-11-14 — aucun des sélecteurs qu'ils ciblent
-            n'existe plus, et les icônes sociales sont en SVG inline.
-            Restent ces deux-ci, qui servent encore le Header et `/produits`.
-            Ce qu'ils coûtent, et le peu qu'ils rendent, est mesuré dans
-            `CLAUDE.md` : 536 Ko de JS et de CSS pour sept classes. */}
-        <Script src="/assets/js/uikit.min.js" strategy="afterInteractive" />
-        <Script src="/assets/js/uikit-icons.min.js" strategy="afterInteractive" />
+        {/* PLUS AUCUN FICHIER DU THÈME V1 (2026-11-14). Les quatre derniers
+            — `uikit.min.css`, `main.css`, `uikit.min.js`,
+            `uikit-icons.min.js`, 655 Ko sur CHAQUE page — ne servaient plus
+            que l'en-tête et le menu latéral, pour cinq classes `uk-` et
+            vingt-huit classes de `main.css`. Tout est passé dans
+            `src/styles/entete.css`. Mesuré page par page dans `CLAUDE.md`.
+            Ne pas les recharger : réécrire en React et en CSS propre. */}
       </body>
     </html>
   );

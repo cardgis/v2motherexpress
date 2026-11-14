@@ -1,0 +1,614 @@
+/*
+ * EN-TÊTE ET MENU LATÉRAL — feuille unique, 2026-11-14.
+ *
+ * ── Pourquoi ce fichier existe ────────────────────────────────────────────
+ * L'en-tête était dessiné par TROIS feuilles à la fois : `main.css` et
+ * `uikit.min.css` (le thème V1, chargés par `<link>` donc APRÈS tout ce que
+ * Next empaquette), plus `globals.css` et `vitrine-acces.css` (les nôtres).
+ * À spécificité égale, le thème gagnait — il arrivait en dernier. Résultat :
+ * certaines de nos intentions ne s'appliquaient pas, sans que rien ne le
+ * signale.
+ *
+ * Mesure qui a décidé de la suppression : sur les six pages du site, ces
+ * 389 Ko de CSS ne servaient plus que l'en-tête, le menu latéral et deux
+ * règles de `.page-wrapper`. Pour cinq classes `uk-` et vingt-huit classes de
+ * `main.css`. Tout est ici désormais, et une seule feuille décide.
+ *
+ * ── Ce qui est reproduit À L'IDENTIQUE ────────────────────────────────────
+ * La barre : fond, filet, hauteurs (148 / 92 / 72 px), marges du logo
+ * (100 / 30 / 18 / 10 / 15 px), tailles du logo, bouton doré du menu, et la
+ * variante transparente posée par-dessus le contenu.
+ *
+ * ── Les deux endroits où le dessin VOULU reparaît ─────────────────────────
+ * Les liens du menu latéral étaient gris `#999` avec 5 px d'interligne :
+ * `.uk-nav-default > li > a` et `.uk-nav > li > a` battaient
+ * `.navbar-overlay__nav > li > a` à spécificité égale, en arrivant après.
+ * Ils sont blancs, gras, 14 px, comme `globals.css` l'écrivait depuis la
+ * refonte. Et la carte téléphone ne devient plus ROUGE au survol
+ * (`main.css` : `.support__link:hover { background:#e63619 }`).
+ *
+ * ── Une intention morte, laissée morte ────────────────────────────────────
+ * `vitrine-acces.css` demandait 8/14 px de marge au logo sous 767 px. Ça ne
+ * s'est jamais appliqué : `main.css` imposait 10 px, puis 15 px sous 639 px.
+ * Les valeurs effectives sont conservées — corriger cela changerait le rendu,
+ * et ce n'est pas l'objet de ce portage.
+ */
+
+/* ══ La barre ═════════════════════════════════════════════════════════════ */
+
+.page-header {
+  position: relative;
+  z-index: 3;
+  display: block;
+  background: rgba(15, 15, 15, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* Sur l'accueil, « À propos » et la galerie, l'en-tête flotte au-dessus du
+   bandeau : il n'occupe aucune hauteur dans le flux. */
+.page-header.page-header-transparent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: transparent;
+}
+
+.page-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 148px;
+}
+
+.page-header__left {
+  padding-right: 100px;
+  padding-left: 100px;
+}
+
+.page-header__center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-right: 20px;
+}
+
+.page-header__right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* ══ Le logo ══════════════════════════════════════════════════════════════ */
+
+.logo {
+  position: relative;
+  display: inline-block;
+}
+
+.logo__link,
+.logo__link:hover,
+.logo__link:focus,
+.logo__link:active {
+  position: relative;
+  display: block;
+  text-align: center;
+  text-decoration: none;
+}
+
+/* Le cadre est plus large que l'image : c'est `max-width` sur l'`img` qui
+   fixe la taille vue, et l'écart sert la respiration autour du sceau. */
+.page-header .logo__icon {
+  display: block;
+  position: relative;
+  width: 340px;
+  height: 140px;
+  filter: drop-shadow(0 2px 14px rgba(0, 0, 0, 0.5));
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), filter 0.35s ease;
+}
+
+.page-header .logo__icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 240px;
+  object-fit: contain;
+}
+
+.page-header .logo__link:hover .logo__icon,
+.page-header .logo__link:focus-visible .logo__icon {
+  transform: scale(1.05);
+  filter: drop-shadow(0 4px 22px rgba(0, 0, 0, 0.65));
+}
+
+/* Le nom écrit sous le sceau. Vide dans la barre — il n'y sert qu'au menu
+   latéral, où il est renseigné. */
+.logo__text {
+  margin-top: 5px;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: clamp(18px, 1.25vw, 24px);
+  font-weight: 700;
+  line-height: 1;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+/* ══ La navigation de bureau ══════════════════════════════════════════════ */
+
+.page-nav__liste {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* La marge en `vw` est d'origine : elle resserre les libellés quand la
+   fenêtre se réduit, avant que la navigation ne disparaisse à 1200 px. */
+.page-header .page-nav .page-nav__liste > li > a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 80px;
+  padding: 0 1.19792vw;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 3.89;
+  color: #ffffff;
+  text-decoration: none;
+  text-transform: uppercase;
+  /* Un libellé ne se coupe jamais sur deux lignes : « CATALOGUE / SCOOTERS »
+     empilés désalignaient toute la barre. */
+  white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+/* ══ Les accès client ═════════════════════════════════════════════════════
+ * Doré = action principale, comme dans les espaces client et gérant. Le
+ * contour clair sert l'action secondaire.
+ *
+ * Largeurs : la barre doit tenir sur une ligne de 360 px à 1920 px sans
+ * recouvrir le logo ni la navigation. Là où la place manque — bureau étroit
+ * avec navigation complète, ou téléphone — « Mon espace » se réduit à son
+ * icône, son libellé restant lu par les lecteurs d'écran.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+.entete-acces {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 24px;
+}
+
+.page-header .entete-acces__compte,
+.page-header .entete-acces__reserver {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: 999px;
+  font-size: 15px;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.18s ease, border-color 0.18s ease, background-color 0.18s ease,
+    transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.page-header .entete-acces__compte {
+  gap: 8px;
+  padding: 0 16px;
+  color: #ffffff;
+  font-weight: 600;
+  background: rgba(10, 10, 18, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.page-header .entete-acces__compte:hover {
+  color: #f4d27a;
+  border-color: #f4d27a;
+}
+
+.page-header .entete-acces__reserver {
+  padding: 0 24px;
+  color: #0a0a12;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  background: linear-gradient(180deg, #f4d27a 0%, #c79a2a 100%);
+  border: 0;
+  box-shadow: 0 6px 20px rgba(199, 154, 42, 0.35);
+}
+
+.page-header .entete-acces__reserver:hover {
+  color: #0a0a12;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(199, 154, 42, 0.5);
+}
+
+.page-header .entete-acces a:focus-visible,
+.navbar-overlay .menu-acces a:focus-visible {
+  outline: 3px solid #f4d27a;
+  outline-offset: 3px;
+}
+
+/* ══ Le bouton du menu ════════════════════════════════════════════════════ */
+
+.menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0;
+  background: #c79a2a;
+  border: 0;
+  color: #ffffff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Caché au-dessus de 1200 px : la navigation complète y est visible. */
+.menu-btn--icon {
+  display: none;
+}
+
+.menu-btn__icon {
+  display: block;
+  width: 26px;
+  height: 26px;
+}
+
+.menu-btn__icon path {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 2.2;
+}
+
+/* ══ Le menu latéral ══════════════════════════════════════════════════════ */
+
+.navbar-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  background: rgba(8, 8, 10, 0.72);
+  backdrop-filter: blur(12px);
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease, visibility 0s linear 0.22s;
+}
+
+.navbar-overlay.is-open {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: all;
+  transition: opacity 0.22s ease, visibility 0s;
+}
+
+.navbar-overlay--menu {
+  justify-content: flex-end;
+  z-index: 2200;
+}
+
+.navbar-overlay__panel {
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+}
+
+.navbar-overlay__panel--menu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: auto;
+  width: min(420px, 100vw);
+  height: 100vh;
+  overflow-y: auto;
+  padding: 22px;
+  background: linear-gradient(180deg, #15151b 0%, #0f0f11 100%);
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.navbar-overlay--menu.is-open .navbar-overlay__panel--menu {
+  transform: translateX(0);
+}
+
+.navbar-overlay__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.navbar-overlay__content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.navbar-overlay__close {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.navbar-overlay__close:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* Blancs, gras, et 14 px d'interligne : c'est ce que `globals.css` écrivait
+   depuis la refonte, et que `.uk-nav-default > li > a` écrasait en gris
+   `#999` sur 5 px, à spécificité égale mais en arrivant après. */
+.navbar-overlay__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navbar-overlay__nav > li > a {
+  display: block;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.navbar-overlay__nav > li:last-child > a {
+  border-bottom: 0;
+}
+
+.menu-acces {
+  display: grid;
+  gap: 10px;
+}
+
+.navbar-overlay .menu-acces a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.navbar-overlay .menu-acces__reserver,
+.navbar-overlay .menu-acces__reserver:hover {
+  color: #0a0a12;
+  background: linear-gradient(180deg, #f4d27a 0%, #c79a2a 100%);
+}
+
+.navbar-overlay .menu-acces__compte {
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.navbar-overlay .menu-acces__compte:hover {
+  color: #f4d27a;
+  border-color: #f4d27a;
+}
+
+/* ── La carte téléphone, en bas du menu ─────────────────────────────────── */
+
+.support {
+  display: block;
+  position: relative;
+}
+
+.navbar-overlay__support {
+  margin-top: auto;
+}
+
+/* Elle ne devient plus rouge au survol : `main.css` y posait
+   `background:#e63619`, sans que rien ne le demande. */
+.navbar-overlay--menu .support__link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  text-decoration: none;
+  transition: background-color 0.22s ease;
+}
+
+.navbar-overlay--menu .support__link:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.navbar-overlay--menu .support__icon {
+  color: #c79a2a;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.support__desc {
+  padding-left: 20px;
+  color: #ffffff;
+}
+
+.navbar-overlay--menu .support__label {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.navbar-overlay--menu .support__phone {
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.71;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+/* ══ Les largeurs ═════════════════════════════════════════════════════════
+ * Les bornes et les valeurs sont celles du thème : 1680, 1280, 1200, 959,
+ * 767 et 639 px. Elles ne sont pas harmonieuses, elles sont EXACTES — ce
+ * portage ne doit rien déplacer.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+/* Bureau étroit : « Mon espace » se réduit à son icône, et le logo rend
+   ses 100 px de marge. */
+@media (min-width: 1201px) and (max-width: 1680px) {
+  .page-header__left {
+    padding-right: 30px;
+    padding-left: 30px;
+  }
+
+  .entete-acces {
+    margin-right: 16px;
+  }
+}
+
+@media (min-width: 1201px) and (max-width: 1680px), (max-width: 767px) {
+  .page-header .entete-acces__compte {
+    width: 44px;
+    padding: 0;
+  }
+
+  /* Masqué à l'œil, conservé pour les lecteurs d'écran. */
+  .entete-acces__libelle {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 1280px) {
+  .page-header .logo__icon {
+    width: 280px;
+  }
+}
+
+/* 1200 px : la navigation complète cède la place au bouton du menu. */
+@media (max-width: 1200px) {
+  .page-header__inner {
+    min-height: 92px;
+  }
+
+  .page-header__left {
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  .page-header__center {
+    display: none;
+  }
+
+  .page-header .logo__icon {
+    height: 114px;
+  }
+
+  .page-header .logo__icon img {
+    max-width: 150px;
+  }
+
+  .page-header__right .menu-btn--icon {
+    display: inline-flex;
+    width: 84px;
+    height: 84px;
+    min-height: 84px;
+  }
+}
+
+@media (max-width: 959px) {
+  .page-header .logo__icon {
+    width: 200px;
+    height: 81px;
+  }
+}
+
+@media (max-width: 767px) {
+  .page-header__inner {
+    min-height: 72px;
+  }
+
+  .page-header__left {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .page-header .page-header__left .logo__icon {
+    width: 112px;
+    height: 74px;
+  }
+
+  .page-header .page-header__left .logo__icon img {
+    max-width: 112px;
+  }
+
+  .page-header__left .logo .logo__text {
+    display: none;
+  }
+
+  .page-header__right .menu-btn--icon {
+    width: 60px;
+    height: 60px;
+    min-height: 60px;
+  }
+
+  .entete-acces {
+    gap: 8px;
+    margin-right: 10px;
+  }
+
+  .page-header .entete-acces__reserver {
+    padding: 0 16px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 639px) {
+  .page-header__left {
+    padding-right: 15px;
+    padding-left: 15px;
+  }
+
+  .navbar-overlay__panel--menu {
+    width: 100vw;
+    padding: 18px;
+    border-radius: 0;
+  }
+
+  .menu-btn__icon {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-header .logo__icon,
+  .navbar-overlay,
+  .navbar-overlay__panel--menu,
+  .page-header .entete-acces__compte,
+  .page-header .entete-acces__reserver,
+  .navbar-overlay--menu .support__link {
+    transition: none;
+  }
+
+  .page-header .logo__link:hover .logo__icon,
+  .page-header .logo__link:focus-visible .logo__icon,
+  .page-header .entete-acces__reserver:hover {
+    transform: none;
+  }
+}

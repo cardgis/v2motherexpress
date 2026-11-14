@@ -49,7 +49,7 @@ export function NavbarOverlays({ menuOpen, onCloseMenu }: NavbarOverlaysProps) {
               </Link>
             </div>
             <nav aria-label="Navigation mobile">
-              <ul className="navbar-overlay__nav uk-nav uk-nav-default uk-nav-parent-icon">
+              <ul className="navbar-overlay__nav">
                 <li><Link href="/" onClick={onCloseMenu}>Accueil</Link></li>
                 <li><Link href="/produits" onClick={onCloseMenu}>Catalogue motos</Link></li>
                 <li><Link href="/about" onClick={onCloseMenu}>À PROPOS</Link></li>

@@ -679,26 +679,80 @@ React plutôt que de rebrancher jQuery.
 - Les 1 613 lignes restantes servent encore le Header, les overlays, `/produits`
   (`product-item*`, `product-panel*`), `/about` et `/gallery`. Ne pas les traiter au grep.
 
-### Ce qui reste, et ce qu'il coûte
-Trois fichiers du thème sont encore chargés sur **chaque** page par `layout.tsx` :
+### Le thème est entièrement décroché (2026-11-14)
 
-| fichier | poids | classes encore rendues |
-|---|---|---|
-| `uikit.min.css` | 270 Ko | 7 : `uk-nav`, `uk-nav-default`, `uk-nav-parent-icon`, `uk-navbar-nav`, `uk-navbar-toggle`, `uk-grid`, `uk-inline-clip` |
-| `uikit.min.js` + `uikit-icons.min.js` | 266 Ko | des comportements que React pilote déjà (les overlays suivent l'état React) |
-| `main.css` | 119 Ko | ~58, presque toutes le header/pied (`page-header*`, `logo*`, `menu-btn*`, `support*`) et `/produits` (`specifications-list*`) |
+Les quatre derniers fichiers ont été **supprimés** : `uikit.min.css` (264 Ko),
+`main.css` (116 Ko), `uikit.min.js` (196 Ko), `uikit-icons.min.js` (63 Ko) —
+**639 Ko qui partaient sur CHAQUE page**.
 
-**655 Ko de CSS et de JS par page pour une soixantaine de classes**, sur un projet dont le
-quota de transfert a déjà été dépassé une fois (voir « Contexte Vercel »). Les réécrire
-supprimerait aussi la cause d'un défaut visible : `main.css` impose
-`a:hover { color:#e63619; text-decoration:underline }` à TOUS les liens du site, à une
-spécificité (0,1,1) qui surclasse nos couleurs posées sur `.lme-x` (0,1,0) — tous les liens
-de l'accueil devenaient rouge souligné au survol. C'est aujourd'hui neutralisé section par
-section, dans chaque feuille `src/styles/*.css`, mais contourné et non résolu.
+Ce qui a décidé de la faisabilité : une mesure sur les pages SERVIES, et non
+sur le code source. Sur `/`, `/produits`, `/about`, `/gallery`, `/contact` et
+`/compte/connexion`, ces deux feuilles CSS ne stylaient plus que **cinq
+classes `uk-`** et **vingt-huit classes de `main.css`**, presque toutes
+l'en-tête et le menu latéral. `uk-grid` et `uk-inline-clip` paraissaient
+vivantes dans le source : elles ne sont rendues par aucune page.
+`is-active` et `is-anim` sur `/produits` sont stylées par le CSS propre de
+`ProductExplorer` ; les règles du thème pour ces classes visaient
+`.slideshow-nav__dot`, `.product-item__whish` et `.sorting-btn`, qui
+n'existent plus.
 
-**Ordre à respecter si on s'y attaque :** le Header d'abord, seul, avec un contrôle visuel —
-il est monté sur toutes les pages et le bug d'interactivité SPA documenté plus haut est né
-là. Puis `/produits`, seul, avec un contrôle visuel. Jamais les deux dans la même passe.
+**`src/styles/entete.css` est désormais la feuille UNIQUE de l'en-tête et du
+menu latéral.** L'en-tête était dessiné par trois feuilles à la fois, et le
+thème — chargé par `<link>`, donc APRÈS tout ce que Next empaquette —
+gagnait à spécificité égale. Les rendus de `globals.css` et de
+`vitrine-acces.css` (supprimée, son contenu déplacé) y sont fondus, conflit
+par conflit.
+
+#### Le piège qui a failli passer : `main.css` portait le SOCLE du site
+
+Ces feuilles ne servaient pas que leurs classes. `main.css` déclarait les
+**neuf `@font-face`**, dont Oswald en six graisses — la police de TOUS les
+titres — et la typographie de base `html, body { font: normal 400 16px/1.75
+Oxygen; color: #777777 }` avec ses deux tailles fluides. `uikit.min.css`
+portait la remise à zéro : `body { margin: 0 }`, les marges de `p`, `ul`,
+`h1`…`h6`, `img { max-width: 100% }`, `iframe { border: 0 }`.
+
+Les supprimer sans reprendre tout cela décalait chaque page de 8 px,
+remplaçait Oswald par la police système et effaçait l'interligne — **sur une
+page parfaitement valide, sans qu'aucun contrôle ne le dise**. Ce socle est
+repris en tête de `globals.css`, à l'identique, avec `woff2` avant `woff`
+(le thème listait l'inverse, le navigateur prenait donc le plus lourd des
+deux). `verif:accueil` vérifie désormais la déclaration ET le fichier.
+
+La balise `<style>` de `layout.tsx` qui forçait la police système a été
+retirée : elle ne s'appliquait pas — `main.css` passait après — et supprimer
+`main.css` l'aurait rendue active d'un coup.
+
+#### Trois départs volontaires de l'original
+
+1. `a:hover { color:#e63619; text-decoration:underline }` n'est pas repris.
+   C'est le rouge qui repeignait tous les liens du site, relevé par Alexandre
+   sur « Réserver » et « La fiche ». Les neuf blocs de contournement ajoutés
+   le matin même dans `src/styles/*.css` sont retirés : la cause a disparu.
+2. `em { color:#f0506e }` non repris — un rose de défaut d'UIkit. Les deux
+   seuls `<em>` du site ont leur couleur.
+3. Les liens du menu latéral redeviennent **blancs, gras, 14 px**, comme
+   `globals.css` l'écrivait depuis la refonte : `.uk-nav-default > li > a`
+   les imposait en gris `#999` sur 5 px, à spécificité égale mais en
+   arrivant après. Et la carte téléphone ne devient plus rouge au survol.
+
+#### Contrôle de non-régression appliqué
+
+Pour chaque classe RENDUE par les six pages, vérifier qu'une règle existe
+encore dans ce qu'on sert. Résultat : six classes sans règle, toutes sans
+objet — cinq `lucide-*` posées par les icônes, qui n'en ont jamais eu, et
+`page-home`, dont les seules règles visaient `.section-hero__bg`, supprimée.
+**Reproduire ce contrôle avant de toucher à `globals.css`.**
+
+#### Ce qui reste comme poids mort, mesuré
+
+- `src/components/ProductCard.tsx` n'est utilisé par AUCUNE page — il n'est
+  cité que dans un commentaire de `HomeBestSellersSection`. Les règles
+  `product-item*` et `product-panel*` de `globals.css` ne sont donc rendues
+  nulle part : `/produits` est servi par `ProductExplorer`, qui porte son
+  propre CSS.
+- `public/assets/fonts/Oxygen-*` reste nécessaire : le texte courant des
+  pages d'avant la refonte s'appuie dessus.
 
 ### Ne pas juger les images au grep
 Les variantes (`A10-400.webp`, `chezlamother-768.webp`…) sont désignées par le manifeste à

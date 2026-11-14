@@ -171,35 +171,28 @@ async function main() {
       new RegExp(`${avecEngagement.dureeMois}\\s*mois fermes`).test(page.replace(/\s+/g, " ")),
       "sa durée ferme est nommée au même endroit",
     );
-    // Le complément de rupture a QUITTÉ la vitrine le 2026-11-14 : posé sous
-    // l'offre qu'il devait porter, il la retenait. Il reste nommé là où on le
-    // cherche — la question « Et si j'arrête avant la fin ? » — et in extenso
-    // dans le contrat. Les deux contrôles tiennent ensemble : il ne doit pas
-    // revenir avant les questions, et il ne doit pas en disparaître.
-    // On coupe sur l'ANCRE de la section, qui ne paraît qu'une fois : la
-    // classe `lme-questions` est un préfixe partagé par six autres classes,
-    // et découper dessus ne donnait qu'un fragment de quelques octets.
-    const debutQuestions = page.indexOf('id="questions"');
-    const avantQuestions = debutQuestions < 0 ? page : page.slice(0, debutQuestions);
-    const apresQuestions = debutQuestions < 0 ? "" : page.slice(debutQuestions);
-    // « 500 FCFA » est un MORCEAU de « 2 500 FCFA », la remise affichée juste
-    // au-dessus : chercher la sous-chaîne signalait un écart qui n'existait
-    // pas. Le chiffre ne compte que s'il n'est pas précédé de ses milliers.
+    // Le complément de rupture a QUITTÉ L'ACCUEIL ENTIÈREMENT le 2026-11-14,
+    // en deux temps : d'abord la note sous l'offre d'accession, puis la
+    // question « Et si j'arrête avant la fin ? ». Une réserve n'a pas sa
+    // place sur une page qui doit donner envie ; le contrat la porte in
+    // extenso, et c'est là qu'elle engage.
+    //
+    // « 500 FCFA » est un MORCEAU de « 2 500 FCFA », la remise affichée plus
+    // haut : chercher la sous-chaîne signalait un écart qui n'existait pas.
+    // Le chiffre ne compte que s'il n'est pas précédé de ses milliers.
     const rupture = new RegExp(`(?<!\\d\\s)${fr(avecEngagement.differentielSiRupture)} FCFA`);
     resultat(
-      !rupture.test(avantQuestions),
-      "aucune réserve de rupture dans la vitrine",
-      "retirée le 2026-11-14 : elle vit dans les questions et dans le contrat",
-    );
-    resultat(
-      apresQuestions.includes(`${fr(avecEngagement.differentielSiRupture)} FCFA`),
-      `le complément de rupture ${fr(avecEngagement.differentielSiRupture)} F est nommé dans les questions`,
+      !rupture.test(page),
+      "aucune réserve de rupture, nulle part",
+      "retirée le 2026-11-14 ; elle vit dans le contrat, pas dans la vitrine",
     );
   }
 
   console.log("\n=== Les sections sont là, et complètes ===");
   resultat((page.match(/lme-parcours__etape"/g) ?? []).length === 4, "quatre étapes de réservation");
-  resultat((page.match(/class="lme-question"/g) ?? []).length === 5, "cinq questions fréquentes");
+  // Quatre, et non cinq : « Et si j'arrête avant la fin ? » est partie le
+  // 2026-11-14, comme « Qui paie l'entretien ? » l'avait fait la veille.
+  resultat((page.match(/class="lme-question"/g) ?? []).length === 4, "quatre questions fréquentes");
   resultat((page.match(/lme-agence__plan/g) ?? []).length === 2, "deux agences, deux plans");
   resultat(
     ["70 367 75 75", "77 232 02 35", "70 001 91 93", "76 372 83 40"].every((n) => page.includes(n)),
@@ -225,6 +218,29 @@ async function main() {
     "aucune classe de l'ancien thème",
   );
   resultat(!/À RENSEIGNER|À FOURNIR/i.test(page), "aucun emplacement laissé vide");
+  // Le thème V1 a été entièrement décroché le 2026-11-14 — ses quatre
+  // derniers fichiers pesaient 655 Ko sur chaque page. Ce contrôle empêche
+  // qu'une balise revienne par mégarde, et avec elle le `a:hover` rouge.
+  resultat(
+    !/assets\/(css|js)\/(main|uikit)[.-]|class="[^"]*\buk-/.test(page),
+    "aucun fichier ni aucune classe d'UIkit",
+    "l'en-tête est dessiné par `styles/entete.css`, seul",
+  );
+  // Oswald dessine TOUS les titres du site, et sa déclaration `@font-face`
+  // vivait dans `main.css` : la supprimer sans la reprendre laissait une page
+  // parfaitement valide, qui changeait de visage sans rien signaler. On
+  // vérifie donc les deux bouts — la déclaration, et le fichier.
+  const feuilles = [...page.matchAll(/href="(\/_next\/[^"]+\.css)[^"]*"/g)].map((m) => m[1]!);
+  const declarations = await Promise.all(
+    feuilles.map(async (f) => (await fetch(`${BASE}${f}`)).text()),
+  );
+  resultat(
+    declarations.some((c) => c.includes("Oswald-Regular.woff2")),
+    "Oswald est déclarée dans le CSS servi",
+    "sa déclaration vivait dans `main.css` ; elle est désormais dans le socle de `globals.css`",
+  );
+  const police = await fetch(`${BASE}/assets/fonts/Oswald-Regular.woff2`);
+  resultat(police.status === 200, "et le fichier de police répond");
 
   console.log(
     `\n${ko === 0 ? "TOUS LES CONTRÔLES PASSENT" : "DES ÉCARTS"} — ${ok} OK, ${ko} KO\n`,
