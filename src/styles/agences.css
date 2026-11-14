@@ -1,0 +1,274 @@
+/*
+ * Section « Nos agences » — refonte 2026-11-14.
+ *
+ * ── Ce qui change, et pourquoi ────────────────────────────────────────────
+ * La carte Google existait déjà et elle est bonne : `iframe` en chargement
+ * différé, avec un lien d'itinéraire. Son défaut n'était pas technique mais
+ * de PLACE : elle était posée À CÔTÉ des informations, si bien qu'on lisait
+ * l'adresse d'un côté et qu'on cherchait le plan de l'autre. Elle coiffe
+ * désormais la fiche, comme une photo de devanture.
+ *
+ * Le code Plus se lit SUR la carte : au Sénégal, c'est lui qui situe, pas le
+ * nom de rue. La pastille est en `pointer-events: none` — sinon elle
+ * mangerait les clics destinés à la carte en dessous.
+ *
+ * Classes `lme-` et aucune classe `uk-`, comme `pied.css` : on ne reprend pas
+ * le thème hérité. Feuille importée par le COMPOSANT, qui sert l'accueil et
+ * la page `/contact`.
+ */
+
+.lme-agences {
+  --encre: #09090b;
+  --texte: #3f3f46;
+  --texte-2: #52525b;
+  --texte-3: #a1a1aa;
+  --filet: #e4e4e7;
+  --filet-2: #f4f4f5;
+  --fond: #fafafa;
+  --or: #e8a534;
+  --ocre: #92400e;
+
+  background: var(--fond);
+  border-top: 1px solid var(--filet);
+  border-bottom: 1px solid var(--filet);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--texte);
+}
+
+.lme-agences__bande {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: clamp(64px, 7vw, 104px) clamp(16px, 3.5vw, 48px);
+}
+
+.lme-agences__surtitre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ocre);
+}
+
+.lme-agences__surtitre::before {
+  content: "";
+  width: 28px;
+  height: 2px;
+  background: var(--or);
+}
+
+.lme-agences__titre {
+  margin: 0 0 48px;
+  max-width: 52ch;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: clamp(30px, 3.4vw, 48px);
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--encre);
+}
+
+/* Deux fiches côte à côte, qui se replient d'elles-mêmes. */
+.lme-agences__grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 24px;
+}
+
+.lme-agence {
+  background: #ffffff;
+  border: 1px solid var(--filet);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(9, 9, 11, 0.04);
+  transition: box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.lme-agence:hover {
+  border-color: #d4d4d8;
+  box-shadow: 0 14px 32px rgba(9, 9, 11, 0.09), 0 2px 6px rgba(9, 9, 11, 0.05);
+}
+
+/* ── La carte, en haut de la fiche ───────────────────────────────────────── */
+
+.lme-agence__plan {
+  position: relative;
+  height: 200px;
+  border-bottom: 1px solid var(--filet);
+  background: #e9ecef;
+}
+
+.lme-agence__plan iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* `pointer-events: none` : la pastille informe, elle ne doit pas intercepter
+   les clics qui appartiennent à la carte. */
+.lme-agence__code {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px;
+  background: #ffffff;
+  border: 1px solid var(--filet);
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #18181b;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 2px 8px rgba(9, 9, 11, 0.1);
+}
+
+.lme-agence__code svg {
+  flex: none;
+  color: var(--ocre);
+}
+
+/* ── Le corps de la fiche ────────────────────────────────────────────────── */
+
+.lme-agence__corps {
+  padding: 32px;
+}
+
+.lme-agence__ville {
+  margin: 0 0 6px;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--encre);
+}
+
+.lme-agence__adresse {
+  margin: 0 0 28px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--texte-2);
+}
+
+.lme-agence__faits {
+  margin: 0 0 28px;
+  border-top: 1px solid var(--filet-2);
+}
+
+.lme-agence__fait {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--filet-2);
+}
+
+.lme-agence__fait dt {
+  font-size: 14px;
+  color: var(--texte-2);
+}
+
+.lme-agence__fait dd {
+  margin: 0;
+  text-align: right;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #18181b;
+  font-variant-numeric: tabular-nums;
+}
+
+.lme-agence__fait dd a {
+  color: var(--ocre);
+  text-decoration: none;
+}
+
+.lme-agence__fait dd a:hover {
+  color: #78350f;
+  text-decoration: underline;
+}
+
+/* Les lignes supplémentaires de Thiès : empilées, pas accolées. */
+.lme-agence__lignes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+}
+
+/* ── Les deux actions ────────────────────────────────────────────────────── */
+
+.lme-agence__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.lme-agence__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 20px;
+  border-radius: 10px;
+  font-size: 14.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.13s ease, box-shadow 0.13s ease;
+}
+
+.lme-agence__action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(9, 9, 11, 0.14);
+}
+
+.lme-agence__action--plan {
+  background: #ffffff;
+  border: 1px solid #d4d4d8;
+  color: #18181b;
+}
+
+.lme-agence__action--tel {
+  background: #18181b;
+  color: #ffffff;
+}
+
+/* ── L'adresse électronique, commune aux deux agences ───────────────────── */
+
+.lme-agences__courriel {
+  margin: 32px 0 0;
+  text-align: center;
+}
+
+.lme-agences__courriel a {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ocre);
+  text-decoration: none;
+}
+
+.lme-agences__courriel a:hover {
+  color: #78350f;
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lme-agence,
+  .lme-agence__action {
+    transition: none;
+  }
+
+  .lme-agence__action:hover {
+    transform: none;
+  }
+}
