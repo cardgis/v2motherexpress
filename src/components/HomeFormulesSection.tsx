@@ -36,7 +36,6 @@ export function HomeFormulesSection({ bornes }: { bornes: BornesTarifs }) {
   const journee = bornes.journeeMin;
   const vingtQuatre = bornes.vingtQuatreMin;
   const achat = bornes.achatMin;
-  const achatMax = bornes.achatMax;
 
   const redevances = Object.values(OFFRES_ACCESSION).flat();
   const accession = redevances.length > 0 ? Math.min(...redevances.map((o) => o.redevanceJournaliere)) : null;
@@ -122,9 +121,11 @@ export function HomeFormulesSection({ bornes }: { bornes: BornesTarifs }) {
               </p>
             ) : null}
             <dl className="lme-formule__faits">
-              {achatMax !== null ? (
-                <div><dt>Jusqu’à</dt><dd>{fcfa(achatMax)}</dd></div>
-              ) : null}
+              {/* La borne haute du catalogue a été retirée (Alexandre,
+                  2026-11-14) : « jusqu'à 970 000 F » n'attire personne, et le
+                  prix d'entrée suffit à situer la gamme. Le prix de chaque
+                  modèle reste dans le catalogue, à sa place. */}
+              <div><dt>Dossier</dt><dd>Pièce d’identité</dd></div>
               <div><dt>Échéances</dt><dd>Paiement échelonné possible</dd></div>
               <div><dt>Au terme</dt><dd className="lme-formule__gain">À vous tout de suite</dd></div>
             </dl>

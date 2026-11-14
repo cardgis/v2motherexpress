@@ -40,7 +40,6 @@ async function bornesTarifs() {
       tarif24hFcfa: true,
       prixVenteFcfa: true,
     },
-    _max: { prixVenteFcfa: true },
   });
 
   return {
@@ -48,7 +47,6 @@ async function bornesTarifs() {
     journeeMin: r._min.tarifJourneeFcfa,
     vingtQuatreMin: r._min.tarif24hFcfa,
     achatMin: r._min.prixVenteFcfa,
-    achatMax: r._max.prixVenteFcfa,
   };
 }
 
