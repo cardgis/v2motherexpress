@@ -19,6 +19,7 @@
     "verif:reference": "tsx scripts/verif-reference.ts",
     "apercu:contrats": "tsx scripts/apercu-contrats.ts",
     "verif:actes": "tsx scripts/verif-actes.ts",
+    "verif:accueil": "tsx scripts/verif-accueil.ts",
     "verif:versements": "tsx scripts/verif-versements.ts",
     "verif:statistiques": "tsx scripts/verif-statistiques.ts",
     "purge:test": "tsx scripts/purger-donnees-test.ts",

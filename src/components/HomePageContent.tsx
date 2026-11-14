@@ -48,7 +48,7 @@ export function HomePageContent({ produits, nombreModeles, bornes }: HomePageCon
     <div className="page-home">
       <ScrollReveal />
       <main className="page-main">
-        <HomeHeroAbout />
+        <HomeHeroAbout nombreModeles={nombreModeles} bornes={bornes} />
         <HomeBestSellersSection produits={produits} />
         <HomeFormulesSection bornes={bornes} />
         <HomeAccessionSection />

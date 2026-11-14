@@ -32,19 +32,28 @@ const BEST_SELLER_SLUGS = ["revoo-e52", "revoo-b12", "revoo-a10"];
  * en une requête et sans charger les lignes.
  */
 async function bornesTarifs() {
-  const r = await prisma.tarification.aggregate({
+  const [r, pointes] = await Promise.all([
+    prisma.tarification.aggregate({
     where: { produit: { estActif: true } },
     _min: {
       tarifMatinFcfa: true,
       tarifJourneeFcfa: true,
       tarif24hFcfa: true,
-    },
-  });
+      },
+    }),
+    // L_autonomie la plus haute du catalogue : le bandeau l_annonce, et
+    // l_écrire en dur laissait la page mentir au premier modèle ajouté.
+    prisma.produit.aggregate({
+      where: { estActif: true },
+      _max: { autonomieKm: true },
+    }),
+  ]);
 
   return {
     demiJourneeMin: r._min.tarifMatinFcfa,
     journeeMin: r._min.tarifJourneeFcfa,
     vingtQuatreMin: r._min.tarif24hFcfa,
+    autonomieMax: pointes._max.autonomieKm,
   };
 }
 

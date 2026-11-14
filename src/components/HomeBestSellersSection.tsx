@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { LIEN_RESERVER } from '@/lib/suite';
-import { OFFRES_ACCESSION } from '@/lib/offres';
 import { fcfa } from '@/lib/formatters';
 import type { ProduitHome } from '@/types';
 import '@/styles/best.css';
@@ -46,39 +45,6 @@ const USAGES: Record<string, string> = {
   'revoo-b12': 'Pour la livraison',
   'revoo-a10': 'Pour la ville',
 };
-
-/**
- * La redevance d'accession à annoncer pour ce modèle.
- *
- * ── LA RÈGLE N'EST PAS « LA MOINS CHÈRE » ─────────────────────────────────
- * C'est le piège que j'ai d'abord posé. L'A10 a deux offres : 3 000 F sur
- * 14 mois SANS engagement, et 2 500 F sur 12 mois FERMES. Prendre le minimum
- * affichait 2 500 F sur une carte qui ne mentionne aucune condition — un prix
- * conditionné présenté comme un prix ferme. Ce n'est pas une nuance : le
- * client qui vient avec ce chiffre découvre un engagement qu'on ne lui avait
- * pas dit.
- *
- * On annonce donc la moins chère des offres SANS ENGAGEMENT. La remise liée à
- * l'engagement existe toujours, et la section accession l'explique avec sa
- * contrepartie — c'est là qu'elle se comprend, pas sur une vignette.
- *
- * Repli : s'il n'existe qu'une offre avec engagement, on l'annonce faute de
- * mieux. Le cas ne se présente pas aujourd'hui ; s'il survenait, la carte
- * devrait porter la condition.
- *
- * `OFFRES_ACCESSION` est indexé par le CODE du modèle — « A10 », « B12 » —
- * que le type `ProduitHome` ne déclare pas. La clé est tirée du slug,
- * `revoo-a10` → `A10`.
- */
-function redevancePour(slug: string): number | null {
-  const code = slug.replace(/^revoo-/i, '').toUpperCase();
-  const offres = OFFRES_ACCESSION[code];
-  if (!offres || offres.length === 0) return null;
-
-  const sansEngagement = offres.filter((o) => !o.avecEngagement);
-  const retenues = sansEngagement.length > 0 ? sansEngagement : offres;
-  return Math.min(...retenues.map((o) => o.redevanceJournaliere));
-}
 
 function IconeVitesse() {
   return (
@@ -134,18 +100,28 @@ export function HomeBestSellersSection({ produits }: { produits: ProduitHome[] }
         <div className="lme-best__grille">
           {produits.map((produit, i) => {
             const usage = USAGES[produit.slug];
-            const redevance = redevancePour(produit.slug);
             const vingtQuatre = produit.tarification?.tarif24hFcfa;
+            const journee = produit.tarification?.tarifJourneeFcfa;
 
             return (
               <article className="lme-bs" key={produit.id}>
 
                 <div className="lme-bs__visuel">
                   {produit.imageUrl ? (
+                    /*
+                      `alt=""` : l'image est DÉCORATIVE ici, parce que le nom
+                      du modèle est écrit juste en dessous, en titre. Avec
+                      `alt="Revoo B12"` un lecteur d'écran annonçait « Revoo
+                      B12 » deux fois de suite — défaut repéré par Alexandre
+                      le 2026-11-14, en copiant le texte de la page.
+                      Sur `/produits`, où la fiche sert à identifier un modèle,
+                      l'alternative garde tout son sens : c'est le contexte
+                      qui décide, pas l'image.
+                    */
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={produit.imageUrl}
-                      alt={produit.nom}
+                      alt=""
                       width="320"
                       height="240"
                       loading={i === 0 ? 'eager' : 'lazy'}
@@ -179,14 +155,22 @@ export function HomeBestSellersSection({ produits }: { produits: ProduitHome[] }
                   </ul>
 
                   <div>
-                    {redevance !== null ? (
+                    {/*
+                      DONNÉES DE BASE, pas la redevance d_accession (Alexandre,
+                      2026-11-14) : « les prix en promo on a mis sur une section
+                      avec une image, les autres données restent ceux de base ».
+                      Les tarifs d_accession vivent donc dans la section
+                      accession, qui porte l_image, et la carte annonce la
+                      location — un chiffre modeste et sans condition.
+                    */}
+                    {vingtQuatre ? (
                       <p className="lme-bs__prix">
-                        <strong>{fcfa(redevance)}</strong>
-                        <span>/ jour en accession</span>
+                        <strong>{fcfa(vingtQuatre)}</strong>
+                        <span>les 24 heures</span>
                       </p>
                     ) : null}
-                    {vingtQuatre ? (
-                      <p className="lme-bs__second">Location 24 h : {fcfa(vingtQuatre)}</p>
+                    {journee ? (
+                      <p className="lme-bs__second">Journée : {fcfa(journee)}</p>
                     ) : null}
                   </div>
 

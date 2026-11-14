@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { LIEN_RESERVER } from '@/lib/suite';
-import { OFFRES_ACCESSION } from '@/lib/offres';
+import { OFFRES_ACCESSION, offreAAnnoncer } from '@/lib/offres';
 import { fcfa } from '@/lib/formatters';
 import type { BornesTarifs } from '@/lib/home-data';
 import '@/styles/formules.css';
@@ -36,9 +36,14 @@ export function HomeFormulesSection({ bornes }: { bornes: BornesTarifs }) {
   const journee = bornes.journeeMin;
   const vingtQuatre = bornes.vingtQuatreMin;
 
-  const redevances = Object.values(OFFRES_ACCESSION).flat();
-  const accession = redevances.length > 0 ? Math.min(...redevances.map((o) => o.redevanceJournaliere)) : null;
-  const durees = redevances.map((o) => o.dureeMois);
+  // L'offre à annoncer, et NON la moins chère : la règle vit dans
+  // `lib/offres.ts`, parce qu'elle servait à trois endroits de l'accueil. Le
+  // minimum brut mettait ici 2 500 F, qui exige douze mois fermes, dans une
+  // colonne qui ne mentionne aucune condition.
+  const entree = offreAAnnoncer();
+  const accession = entree?.redevanceJournaliere ?? null;
+
+  const durees = Object.values(OFFRES_ACCESSION).flat().map((o) => o.dureeMois);
   const dureeMin = durees.length > 0 ? Math.min(...durees) : null;
   const dureeMax = durees.length > 0 ? Math.max(...durees) : null;
 
@@ -98,6 +103,7 @@ export function HomeFormulesSection({ bornes }: { bornes: BornesTarifs }) {
                 <div><dt>Durée</dt><dd>{dureeMin} à {dureeMax} mois</dd></div>
               ) : null}
               <div><dt>Apport</dt><dd>Aucun</dd></div>
+              <div><dt>Engagement</dt><dd>Sans engagement</dd></div>
               <div><dt>Au terme</dt><dd className="lme-formule__gain">Il est à vous</dd></div>
             </dl>
             <Link href="#accession" className="lme-formule__bouton lme-formule__bouton--or">

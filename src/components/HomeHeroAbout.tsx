@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { LIEN_RESERVER } from '@/lib/suite';
 import { responsiveImage } from '@/lib/img';
+import { offreAAnnoncer } from '@/lib/offres';
+import { fcfa } from '@/lib/formatters';
+import type { BornesTarifs } from '@/lib/home-data';
 import '@/styles/heros.css';
 
 /**
@@ -73,7 +76,13 @@ function IconeFleche() {
   );
 }
 
-export function HomeHeroAbout() {
+export function HomeHeroAbout({ nombreModeles, bornes }: { nombreModeles: number; bornes: BornesTarifs }) {
+  // Les quatre chiffres du bandeau étaient ÉCRITS EN DUR. Ils étaient justes,
+  // mais rien ne le garantissait : ajouter un modèle au catalogue laissait la
+  // page annoncer « 5 modèles », et changer une redevance la laissait annoncer
+  // un tarif périmé. Ils viennent désormais du catalogue et des offres.
+  const entree = offreAAnnoncer();
+
   return (
     <section className="lme-heros">
 
@@ -134,25 +143,31 @@ export function HomeHeroAbout() {
                 <IconeFleche />
               </Link>
               <Link href="/produits" className="lme-heros__bouton lme-heros__bouton--secondaire">
-                Voir les 5 modèles
+                Voir les {nombreModeles} modèles
               </Link>
             </div>
 
             <div className="lme-heros__prix">
-              <p className="lme-heros__montant">
-                3 000 F<span> / jour</span>
-              </p>
-              <p className="lme-heros__condition">sans engagement — modèle A10</p>
+              {entree ? (
+                <>
+                  <p className="lme-heros__montant">
+                    {fcfa(entree.redevanceJournaliere)}<span> / jour</span>
+                  </p>
+                  <p className="lme-heros__condition">
+                    sans engagement — modèle {entree.modele}
+                  </p>
+                </>
+              ) : null}
             </div>
           </div>
 
           <dl className="lme-heros__faits">
             <div>
-              <dt>140 km</dt>
+              <dt>{bornes.autonomieMax ?? 0} km</dt>
               <dd>d’autonomie au mieux</dd>
             </div>
             <div>
-              <dt>5 modèles</dt>
+              <dt>{nombreModeles} modèles</dt>
               <dd>au catalogue</dd>
             </div>
             <div>

@@ -112,6 +112,40 @@ export function offresAccessionPour(
   return (OFFRES_ACCESSION[modele] ?? []).map((o) => ({ ...o, ...calculerAccession(o) }));
 }
 
+/**
+ * L'offre d'accession à ANNONCER, tous modèles confondus.
+ *
+ * ── LA RÈGLE N'EST PAS « LA MOINS CHÈRE » ─────────────────────────────────
+ * L'A10 a deux offres : 3 000 F sur 14 mois SANS engagement, et 2 500 F sur
+ * 12 mois FERMES. Annoncer le minimum brut met 2 500 F en vitrine sans dire
+ * qu'il suppose un engagement — un prix conditionné présenté comme ferme. Le
+ * client qui vient avec ce chiffre découvre une contrainte dont personne ne
+ * lui a parlé.
+ *
+ * On retient donc la moins chère des offres SANS ENGAGEMENT. La remise liée à
+ * l'engagement existe toujours, et la section accession l'explique avec sa
+ * contrepartie — c'est là qu'elle se comprend, pas sur une vignette.
+ *
+ * Cette fonction existe pour que la règle ne soit écrite QU'UNE FOIS : elle
+ * servait à trois endroits de l'accueil, et trois copies auraient fini par
+ * diverger.
+ *
+ * Repli : s'il n'existe aucune offre sans engagement, on rend la moins chère
+ * faute de mieux — et l'appelant doit alors en afficher la condition.
+ */
+export function offreAAnnoncer(): (OffreAccessionModele & { modele: string }) | null {
+  const toutes = Object.entries(OFFRES_ACCESSION).flatMap(([modele, offres]) =>
+    offres.map((o) => ({ ...o, modele })),
+  );
+  if (toutes.length === 0) return null;
+
+  const sansEngagement = toutes.filter((o) => !o.avecEngagement);
+  const retenues = sansEngagement.length > 0 ? sansEngagement : toutes;
+  return retenues.reduce((basse, o) =>
+    o.redevanceJournaliere < basse.redevanceJournaliere ? o : basse,
+  );
+}
+
 /** Retrouve une offre par sa clé, tous modèles confondus. */
 export function offreAccessionParCle(cle: string): OffreAccessionModele | null {
   for (const offres of Object.values(OFFRES_ACCESSION)) {
