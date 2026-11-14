@@ -1,0 +1,331 @@
+/*
+ * Héros de l'accueil — refonte 2026-11-14.
+ *
+ * ── LE DIAPORAMA EST INVERSÉ ──────────────────────────────────────────────
+ * La V1 faisait défiler trois SLOGANS : « La liberté, ça se conduit. »,
+ * « Partenaire officiel Revoo Sénégal », « Besoin d'un scooter aujourd'hui ? ».
+ * Trois messages pour un visiteur qui n'en retient aucun, et aucun prix.
+ * Ici le message ne bouge plus et seules les images respirent : le titre, le
+ * tarif d'entrée et les deux boutons restent sous les yeux en permanence.
+ *
+ * Le fondu est en CSS pur, sans une ligne de JavaScript, et il s'annule
+ * entièrement pour qui a demandé moins d'animations.
+ *
+ * ── Le doré enfin à pleine force ──────────────────────────────────────────
+ * Sur fond clair, `#e8a534` en texte tombe à ~2:1 et devient illisible ;
+ * c'est pourquoi le reste de la page emploie l'ocre `#92400e`. Sur ce fond
+ * sombre, le doré est à sa place, et `#fcd34d` sert aux sur-titres.
+ */
+
+.lme-heros {
+  position: relative;
+  overflow: hidden;
+  background: #09090b;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ── Les trois images, superposées ───────────────────────────────────────── */
+
+.lme-heros__fond {
+  position: absolute;
+  inset: 0;
+}
+
+.lme-heros__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+}
+
+/* Première image visible d'emblée : c'est elle que le navigateur télécharge
+   en priorité, et elle ne doit pas attendre une animation pour s'afficher. */
+.lme-heros__image--1 {
+  opacity: 0.55;
+}
+
+@keyframes lmeHerosFondu {
+  0%, 28% { opacity: 0.55; }
+  34%, 94% { opacity: 0; }
+  100% { opacity: 0.55; }
+}
+
+.lme-heros__image {
+  animation: lmeHerosFondu 21s linear infinite;
+}
+
+.lme-heros__image--2 { animation-delay: 7s; }
+.lme-heros__image--3 { animation-delay: 14s; }
+
+/* Deux voiles : le premier assombrit la gauche, où vit le texte ; le second
+   fond le bas du bandeau dans la section suivante. */
+.lme-heros__voile {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    #09090b 0%,
+    rgba(9, 9, 11, 0.92) 34%,
+    rgba(9, 9, 11, 0.55) 62%,
+    rgba(9, 9, 11, 0.25) 100%
+  );
+}
+
+.lme-heros__ourlet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 140px;
+  background: linear-gradient(180deg, rgba(9, 9, 11, 0) 0%, #09090b 100%);
+}
+
+/* ── Particules dorées, conservées de la V1 ──────────────────────────────
+ * Elles donnent sa chaleur au bandeau, et un fond sombre les porte mieux
+ * qu'une photo claire. Ralenties et atténuées : une décoration ne doit pas
+ * disputer l'attention au titre.
+ */
+
+.lme-heros__particules {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.lme-heros__particule {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e8a534;
+  opacity: 0;
+  animation: lmeHerosFlotte 18s ease-in-out infinite;
+}
+
+@keyframes lmeHerosFlotte {
+  0% { opacity: 0; transform: translateY(14px); }
+  30% { opacity: 0.5; }
+  70% { opacity: 0.32; }
+  100% { opacity: 0; transform: translateY(-34px); }
+}
+
+.lme-heros__particule:nth-child(1) { left: 58%; top: 24%; animation-delay: 0s; }
+.lme-heros__particule:nth-child(2) { left: 72%; top: 56%; animation-delay: 3.5s; width: 4px; height: 4px; }
+.lme-heros__particule:nth-child(3) { left: 85%; top: 34%; animation-delay: 7s; }
+.lme-heros__particule:nth-child(4) { left: 66%; top: 74%; animation-delay: 10.5s; width: 4px; height: 4px; }
+.lme-heros__particule:nth-child(5) { left: 91%; top: 62%; animation-delay: 14s; }
+
+/* ── Le contenu ──────────────────────────────────────────────────────────── */
+
+.lme-heros__bande {
+  position: relative;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: clamp(64px, 7vw, 104px) clamp(16px, 3.5vw, 48px) clamp(72px, 8vw, 112px);
+}
+
+.lme-heros__texte {
+  max-width: 760px;
+}
+
+.lme-heros__pastille {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 26px;
+  padding: 8px 14px;
+  border: 1px solid rgba(232, 165, 52, 0.35);
+  border-radius: 999px;
+  background: rgba(232, 165, 52, 0.1);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #fcd34d;
+}
+
+/* « Dem rek » : une SEULE fois, et à la place d'honneur. La V1 le répétait en
+   filigrane sur les trois diapositives, où il ne disait rien à qui ne le
+   connaît pas. Ici, c'est une signature. */
+.lme-heros__signature {
+  color: #ffffff;
+  letter-spacing: 0.2em;
+}
+
+.lme-heros__separateur {
+  color: rgba(252, 211, 77, 0.5);
+}
+
+.lme-heros__titre {
+  margin: 0 0 26px;
+  max-width: 15ch;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: clamp(40px, 5.4vw, 76px);
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+}
+
+.lme-heros__titre em {
+  font-style: normal;
+  color: #e8a534;
+}
+
+.lme-heros__accroche {
+  margin: 0 0 40px;
+  max-width: 56ch;
+  font-size: clamp(16px, 1.5vw, 19.5px);
+  line-height: 1.6;
+  color: #d4d4d8;
+}
+
+.lme-heros__rangee {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 28px;
+  margin-bottom: 44px;
+}
+
+.lme-heros__boutons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.lme-heros__bouton {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 0 30px;
+  border-radius: 12px;
+  font-size: 16.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.13s ease, filter 0.13s ease, box-shadow 0.13s ease;
+}
+
+.lme-heros__bouton:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+
+.lme-heros__bouton--principal {
+  background: #e8a534;
+  color: #1c1917;
+  box-shadow: 0 8px 24px rgba(232, 165, 52, 0.26);
+}
+
+.lme-heros__bouton--secondaire {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid #52525b;
+  color: #ffffff;
+  padding: 0 28px;
+}
+
+/* L'ancrage de prix : le chiffre d'entrée est l'argument le plus persuasif de
+   la page, et la V1 n'en affichait aucun. */
+.lme-heros__prix {
+  padding-left: 28px;
+  border-left: 1px solid #3f3f46;
+}
+
+.lme-heros__montant {
+  margin: 0;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+
+.lme-heros__montant span {
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: #a1a1aa;
+}
+
+.lme-heros__condition {
+  margin: 5px 0 0;
+  font-size: 13.5px;
+  color: #a1a1aa;
+}
+
+.lme-heros__faits {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 24px;
+  margin: 0 0 36px;
+  padding-top: 32px;
+  border-top: 1px solid #27272a;
+  max-width: 560px;
+}
+
+.lme-heros__faits dt {
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: 26px;
+  font-weight: 600;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+
+.lme-heros__faits dd {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #a1a1aa;
+}
+
+/* Indicateurs du diaporama : ils disent OÙ l'on est. Les flèches de la V1,
+   elles, ne faisaient rien sans le JavaScript du thème. */
+.lme-heros__points {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.lme-heros__point {
+  display: block;
+  width: 9px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.3);
+  animation: lmeHerosPoint 21s linear infinite;
+}
+
+.lme-heros__point--1 { width: 30px; background: #e8a534; }
+.lme-heros__point--2 { animation-delay: 7s; }
+.lme-heros__point--3 { animation-delay: 14s; }
+
+@keyframes lmeHerosPoint {
+  0%, 28% { width: 30px; background: #e8a534; }
+  34%, 94% { width: 9px; background: rgba(255, 255, 255, 0.3); }
+  100% { width: 30px; background: #e8a534; }
+}
+
+/* Rien ne bouge pour qui a demandé moins d'animations : la première image
+   reste affichée, les autres restent masquées, les particules s'éteignent. */
+@media (prefers-reduced-motion: reduce) {
+  .lme-heros__image,
+  .lme-heros__point,
+  .lme-heros__particule,
+  .lme-heros__bouton {
+    animation: none;
+    transition: none;
+  }
+
+  .lme-heros__particule {
+    opacity: 0.28;
+  }
+
+  .lme-heros__bouton:hover {
+    transform: none;
+  }
+}

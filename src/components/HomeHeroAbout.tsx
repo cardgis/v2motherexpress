@@ -1,128 +1,174 @@
-import Link from "next/link";
-import { responsiveImage } from "@/lib/img";
-import { LIEN_RESERVER } from "@/lib/suite";
+import Link from 'next/link';
+import { LIEN_RESERVER } from '@/lib/suite';
+import { responsiveImage } from '@/lib/img';
+import '@/styles/heros.css';
 
-const HERO_SLIDES = [
+/**
+ * Bandeau d'accueil.
+ *
+ * ── LE DIAPORAMA EST INVERSÉ (2026-11-14) ─────────────────────────────────
+ * La V1 faisait défiler trois SLOGANS — « La liberté, ça se conduit. »,
+ * « Partenaire officiel Revoo Sénégal », « Besoin d'un scooter aujourd'hui ? »
+ * — plus « DemRek » en filigrane sur chacune. Quatre messages pour un
+ * visiteur qui n'en retenait aucun, et aucun prix nulle part.
+ *
+ * Alexandre a validé le principe : on garde un diaporama, mais c'est le
+ * MESSAGE qui ne bouge plus et les IMAGES qui respirent. Le titre, le tarif
+ * d'entrée et les deux boutons restent sous les yeux en permanence. Le fondu
+ * est en CSS pur — aucun JavaScript, et il s'annule pour qui a demandé moins
+ * d'animations.
+ *
+ * ── CE QUI EST GARDÉ DE LA V1, ET POURQUOI ────────────────────────────────
+ * La première image en `eager` et `fetchPriority="high"` : c'est la plus
+ * grande de la page, celle qui décide du LCP. Les deux autres en `lazy` et
+ * `low`. Perdre ce réglage aurait abîmé la vitesse perçue sans rien dire.
+ *
+ * Les boutons rendus UNE SEULE FOIS, hors des diapositives : ils restent
+ * atteignables au clavier quelle que soit l'image affichée. Le raisonnement
+ * d'origine était juste.
+ *
+ * Les particules dorées, ralenties et atténuées : elles donnent sa chaleur au
+ * bandeau, et ce fond sombre les porte mieux qu'une photo claire.
+ *
+ * « Dem rek » est conservé mais PROMU : une seule occurrence, en sur-titre,
+ * là où une signature de marque a du poids — au lieu d'un filigrane répété
+ * qui ne disait rien à qui ne le connaît pas.
+ *
+ * ── CE QUI EST ABANDONNÉ, DÉLIBÉRÉMENT ───────────────────────────────────
+ * Les flèches `data-uk-slidenav` : sans le JavaScript du thème, elles ne
+ * faisaient rien. Des indicateurs qui disent OÙ l'on est valent mieux que des
+ * flèches qui ne mènent nulle part. Et l'indicateur de défilement, qui n'a de
+ * sens que sur un bandeau occupant toute la hauteur.
+ */
+
+/**
+ * Les trois mêmes images que la V1 — mais désignées par leur ORIGINAL.
+ *
+ * La V1 écrivait `/assets/img/header1-1920.webp` et passait ce chemin à
+ * `responsiveImage`. Or cette fonction cherche l'original dans le manifeste :
+ * lui donner une variante échoue en silence, et elle rendait donc un `<img>`
+ * nu, sans `srcset`. Chaque visiteur téléchargeait les trois images en
+ * 1920 px — environ 270 Ko — y compris sur un téléphone de 390 px de large.
+ *
+ * Avec le chemin original, le manifeste rend tout l'éventail (400 px et plus)
+ * et le navigateur choisit selon `sizes="100vw"`. Sur un téléphone, le
+ * bandeau passe de ~270 Ko à quelques dizaines de kilo-octets. C'est le même
+ * réglage que la V1 voulait, et qui ne s'appliquait pas.
+ */
+const IMAGES = [
   {
-    // Versions WebP compressées (voir public/assets/img) : 1,9 Mo → quelques centaines de Ko.
-    image: "/assets/img/header1-1920.webp",
-    alt: "Scooter électrique REVOO en balade au Sénégal — La Mother Express",
-    title: "La liberté, ça se conduit.",
-    subtitle: "Location & vente de scooters au Sénégal",
+    src: '/assets/img/header1.png',
+    alt: 'Scooter électrique REVOO en balade au Sénégal — La Mother Express',
   },
-  {
-    image: "/assets/img/header2-1920.webp",
-    alt: "Partenaire officiel REVOO Sénégal — scooters électriques à Thiès et Mbour",
-    title: "Partenaire officiel Revoo Sénégal",
-    subtitle: "Roule électrique, roule demain.",
-  },
-  {
-    image: "/assets/img/header3-1920.webp",
-    alt: "Location de scooter électrique au Sénégal — simple, rapide, fiable",
-    title: "Besoin d'un scooter aujourd'hui ?",
-    subtitle: "Simple, rapide et fiable.",
-  },
+  { src: '/assets/img/header2.jpg', alt: '' },
+  { src: '/assets/img/header3.jpg', alt: '' },
 ] as const;
+
+function IconeFleche() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <path d="M5 12h14" />
+      <path d="m13 5 7 7-7 7" />
+    </svg>
+  );
+}
 
 export function HomeHeroAbout() {
   return (
-    <>
-      <div className="section-hero">
-        <div className="hero-slider">
-          <div className="hero-slider__stage">
-            {HERO_SLIDES.map((slide, index) => (
-              <article
-                key={slide.image}
-                className={`slideshow-item hero-slider__slide hero-slider__slide--${index + 1}`}
-                // Les diapositives suivantes répètent le message : les lecteurs
-                // d'écran ne lisent que la première, porteuse du titre de la page.
-                aria-hidden={index === 0 ? undefined : true}
-              >
-                <img
-                  {...responsiveImage(slide.image, "100vw")}
-                  alt={index === 0 ? slide.alt : ""}
-                  width="1600"
-                  height="900"
-                  loading={index === 0 ? "eager" : "lazy"}
-                  // La première image est la plus grande de la page : le
-                  // navigateur la télécharge avant le reste.
-                  fetchPriority={index === 0 ? "high" : "low"}
-                  decoding="async"
-                  className="hero-slider__image"
-                />
-                <div className="uk-position-center uk-position-small">
-                  <div className="uk-container">
-                    <div className="uk-grid" data-uk-grid>
-                      <div className="uk-width-3-5@m">
-                        <div className="slideshow-item__decor">DemRek</div>
-                        <div className="slideshow-item__content">
-                          <div className="slideshow-item__title">
-                            {index === 0 ? (
-                              <h1 className="uk-h2">
-                                {slide.title}
-                                <span className="hero-sous-titre">{slide.subtitle}</span>
-                              </h1>
-                            ) : (
-                              <div className="uk-h2">
-                                {slide.title}
-                                <span className="hero-sous-titre">{slide.subtitle}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="uk-width-2-5@m uk-visible@l"></div>
-                    </div>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
+    <section className="lme-heros">
 
-          {/* Boutons communs aux trois diapositives : présents une seule fois,
-              ils restent atteignables au clavier quelle que soit l'image affichée. */}
-          <div className="hero-actions">
-            <div className="uk-container">
-              <div className="hero-actions__groupe">
-                <Link href={LIEN_RESERVER} className="hero-actions__bouton hero-actions__bouton--principal">
-                  Réserver en ligne
-                </Link>
-                <Link href="/produits" className="hero-actions__bouton hero-actions__bouton--secondaire">
-                  Voir les modèles
-                </Link>
-              </div>
+      {/* Les images sont décoratives à partir de la deuxième : une seule porte
+          le texte alternatif, les autres ne disent rien de plus. */}
+      <div className="lme-heros__fond" aria-hidden="true">
+        {IMAGES.map((image, i) => (
+          <img
+            key={image.src}
+            {...responsiveImage(image.src, '100vw')}
+            alt={i === 0 ? image.alt : ''}
+            width="1920"
+            height="1080"
+            loading={i === 0 ? 'eager' : 'lazy'}
+            fetchPriority={i === 0 ? 'high' : 'low'}
+            decoding="async"
+            className={`lme-heros__image lme-heros__image--${i + 1}`}
+          />
+        ))}
+      </div>
+
+      <div className="lme-heros__voile" aria-hidden="true" />
+      <div className="lme-heros__ourlet" aria-hidden="true" />
+
+      <div className="lme-heros__particules" aria-hidden="true">
+        <span className="lme-heros__particule" />
+        <span className="lme-heros__particule" />
+        <span className="lme-heros__particule" />
+        <span className="lme-heros__particule" />
+        <span className="lme-heros__particule" />
+      </div>
+
+      <div className="lme-heros__bande">
+        <div className="lme-heros__texte">
+
+          <p className="lme-heros__pastille">
+            <span className="lme-heros__signature">Dem rek</span>
+            <span className="lme-heros__separateur" aria-hidden="true">·</span>
+            Partenaire officiel Revoo · Thiès &amp; Mbour
+          </p>
+
+          <h1 className="lme-heros__titre">
+            Roulez aujourd’hui.<br />
+            Le scooter devient <em>le vôtre</em>.
+          </h1>
+
+          <p className="lme-heros__accroche">
+            Location à la journée, ou location-accession : vous payez une redevance par jour,
+            6 jours sur 7 — et à la fin du contrat, le scooter vous appartient.
+          </p>
+
+          <div className="lme-heros__rangee">
+            {/* Rendus une seule fois, hors des images : atteignables au
+                clavier quelle que soit la diapositive affichée. */}
+            <div className="lme-heros__boutons">
+              <Link href={LIEN_RESERVER} className="lme-heros__bouton lme-heros__bouton--principal">
+                Réserver en ligne
+                <IconeFleche />
+              </Link>
+              <Link href="/produits" className="lme-heros__bouton lme-heros__bouton--secondaire">
+                Voir les 5 modèles
+              </Link>
+            </div>
+
+            <div className="lme-heros__prix">
+              <p className="lme-heros__montant">
+                3 000 F<span> / jour</span>
+              </p>
+              <p className="lme-heros__condition">sans engagement — modèle A10</p>
             </div>
           </div>
 
-          <div className="slideshow-nav" aria-label="Navigation du slider">
-            <div className="slideshow-nav__arrow" aria-hidden="true">
-              <span data-uk-slidenav-previous></span>
+          <dl className="lme-heros__faits">
+            <div>
+              <dt>140 km</dt>
+              <dd>d’autonomie au mieux</dd>
             </div>
-            <div className="slideshow-nav__arrow" aria-hidden="true">
-              <span data-uk-slidenav-next></span>
+            <div>
+              <dt>5 modèles</dt>
+              <dd>au catalogue</dd>
             </div>
+            <div>
+              <dt>0 F</dt>
+              <dd>de carburant, jamais</dd>
+            </div>
+          </dl>
+
+          <div className="lme-heros__points" aria-hidden="true">
+            <span className="lme-heros__point lme-heros__point--1" />
+            <span className="lme-heros__point lme-heros__point--2" />
+            <span className="lme-heros__point lme-heros__point--3" />
           </div>
-        </div>
 
-        {/* Vignette bas pour lisibilité du texte */}
-        <div className="hero-overlay" aria-hidden="true" />
-
-        {/* Particules dorées flottantes */}
-        <div className="hero-particles" aria-hidden="true">
-          <div className="hero-particle hero-particle--1" />
-          <div className="hero-particle hero-particle--2" />
-          <div className="hero-particle hero-particle--3" />
-          <div className="hero-particle hero-particle--4" />
-          <div className="hero-particle hero-particle--5" />
-          <div className="hero-particle hero-particle--6" />
-        </div>
-
-        {/* Indicateur de défilement */}
-        <div className="hero-scroll-cue" aria-hidden="true">
-          <div className="hero-scroll-cue__dot" />
-          <div className="hero-scroll-cue__line" />
         </div>
       </div>
-    </>
+    </section>
   );
 }

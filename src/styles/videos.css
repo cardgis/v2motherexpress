@@ -1,0 +1,214 @@
+/*
+ * Section « Nos vidéos » — refonte 2026-11-14.
+ *
+ * ── Le vrai sujet ici est le POIDS ────────────────────────────────────────
+ * L'ancien carrousel montait quatre éléments `<video>`, dont un de 9,7 Mo, et
+ * les préchargeait dès que la section approchait du cadre visible. Un
+ * visiteur qui descendait jusqu'en bas sans rien regarder téléchargeait donc
+ * les métadonnées de quatre vidéos — et le quota de bande passante Vercel a
+ * déjà coupé ce site une fois.
+ *
+ * Trois vignettes IMAGE, et la vidéo n'est montée qu'au clic. Plus
+ * d'observateur d'intersection, plus de préchargement : on ne télécharge que
+ * ce qu'on a demandé à voir.
+ *
+ * Classes `lme-`, aucune classe `uk-`, feuille importée par le composant.
+ */
+
+.lme-videos {
+  --encre: #09090b;
+  --encre-2: #18181b;
+  --filet: #27272a;
+  --texte: #d4d4d8;
+  --texte-2: #a1a1aa;
+  --or: #e8a534;
+  --or-clair: #fcd34d;
+
+  background: var(--encre);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.lme-videos__bande {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: clamp(64px, 7vw, 104px) clamp(16px, 3.5vw, 48px);
+}
+
+.lme-videos__entete {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 44px;
+}
+
+.lme-videos__surtitre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--or-clair);
+}
+
+.lme-videos__surtitre::before {
+  content: "";
+  width: 28px;
+  height: 2px;
+  background: var(--or);
+}
+
+.lme-videos__titre {
+  margin: 0;
+  max-width: 46ch;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: clamp(30px, 3.4vw, 48px);
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+}
+
+.lme-videos__accroche {
+  margin: 0;
+  max-width: 38ch;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--texte-2);
+}
+
+.lme-videos__grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 22px;
+}
+
+.lme-video {
+  background: var(--encre-2);
+  border: 1px solid var(--filet);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.lme-video:hover {
+  transform: translateY(-3px);
+  border-color: #52525b;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+/* La vignette est un vrai bouton : au clavier elle se cible et s'actionne. */
+.lme-video__declencheur {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+}
+
+.lme-video__cadre {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  background: var(--encre);
+}
+
+.lme-video__cadre img,
+.lme-video__cadre video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lme-video__voile {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(9, 9, 11, 0.08) 45%, rgba(9, 9, 11, 0.7) 100%);
+  pointer-events: none;
+}
+
+.lme-video__lecture {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  color: #18181b;
+  box-shadow: 0 6px 20px rgba(9, 9, 11, 0.35);
+  transition: transform 0.18s ease, background-color 0.18s ease;
+  pointer-events: none;
+}
+
+.lme-video:hover .lme-video__lecture,
+.lme-video__declencheur:focus-visible .lme-video__lecture {
+  transform: translate(-50%, -50%) scale(1.09);
+  background: var(--or);
+}
+
+.lme-video__declencheur:focus-visible {
+  outline: 2px solid var(--or);
+  outline-offset: 3px;
+}
+
+.lme-video__pied {
+  display: block;
+  padding: 20px 22px 22px;
+}
+
+.lme-video__nom {
+  display: block;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #ffffff;
+}
+
+.lme-video__appel {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--or-clair);
+}
+
+.lme-video__appel svg {
+  transition: transform 0.14s ease;
+}
+
+.lme-video:hover .lme-video__appel svg {
+  transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lme-video,
+  .lme-video__lecture,
+  .lme-video__appel svg {
+    transition: none;
+  }
+
+  .lme-video:hover {
+    transform: none;
+  }
+
+  .lme-video:hover .lme-video__lecture {
+    transform: translate(-50%, -50%);
+  }
+}
