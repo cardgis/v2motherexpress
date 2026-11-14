@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const { produits, nombreModeles } = await getHomeProductsData();
+  const { produits, nombreModeles, bornes } = await getHomeProductsData();
 
   return (
     <>
@@ -41,6 +41,7 @@ export default async function Home() {
       <HomePageContent
         produits={produits}
         nombreModeles={nombreModeles}
+        bornes={bornes}
       />
     </>
   );

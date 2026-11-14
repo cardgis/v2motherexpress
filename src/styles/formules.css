@@ -1,0 +1,291 @@
+/*
+ * « Trois façons de rouler » — section neuve, 2026-11-14.
+ *
+ * Elle répond avant le choix du modèle : louer, accéder ou acheter. La
+ * colonne du milieu est mise en avant parce que l'accession est le modèle de
+ * la maison, pas par hasard de mise en page.
+ *
+ * Classes `lme-`, aucune classe `uk-`.
+ */
+
+.lme-formules {
+  --encre: #09090b;
+  --texte-2: #52525b;
+  --texte-3: #a1a1aa;
+  --filet: #e4e4e7;
+  --filet-2: #f4f4f5;
+  --or: #e8a534;
+  --ocre: #92400e;
+  --vert: #15803d;
+
+  background: #ffffff;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.lme-formules__bande {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: clamp(64px, 7vw, 104px) clamp(16px, 3.5vw, 48px);
+}
+
+.lme-formules__entete {
+  max-width: 58ch;
+  margin-bottom: 52px;
+}
+
+.lme-formules__surtitre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ocre);
+}
+
+.lme-formules__surtitre::before {
+  content: "";
+  width: 28px;
+  height: 2px;
+  background: var(--or);
+}
+
+.lme-formules__titre {
+  margin: 0 0 18px;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: clamp(30px, 3.4vw, 48px);
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--encre);
+}
+
+.lme-formules__accroche {
+  margin: 0;
+  font-size: clamp(16px, 1.4vw, 17.5px);
+  line-height: 1.65;
+  color: var(--texte-2);
+}
+
+.lme-formules__grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 24px;
+  align-items: stretch;
+}
+
+/* ── Une colonne ─────────────────────────────────────────────────────────── */
+
+.lme-formule {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 32px;
+  background: #ffffff;
+  border: 1px solid var(--filet);
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(9, 9, 11, 0.04);
+  transition: box-shadow 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+.lme-formule:hover {
+  border-color: #d4d4d8;
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(9, 9, 11, 0.09);
+}
+
+/* L'accession : sombre, et seule à l'être. */
+.lme-formule--phare {
+  position: relative;
+  overflow: hidden;
+  background: var(--encre);
+  border-color: var(--encre);
+  box-shadow: 0 18px 44px rgba(9, 9, 11, 0.18);
+}
+
+.lme-formule--phare::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #e8a534 0%, #c9772a 100%);
+}
+
+.lme-formule__pour {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--texte-2);
+}
+
+.lme-formule__sceau {
+  display: inline-block;
+  margin: 0;
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 5px;
+  background: var(--or);
+  color: #1c1917;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.lme-formule__nom {
+  margin: 0;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--encre);
+}
+
+.lme-formule--phare .lme-formule__nom {
+  color: #ffffff;
+}
+
+.lme-formule__texte {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--texte-2);
+}
+
+.lme-formule--phare .lme-formule__texte {
+  color: var(--texte-3);
+}
+
+/* Le prix d'entrée, isolé entre deux filets : c'est le chiffre qu'on compare. */
+.lme-formule__prix {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin: 0;
+  padding: 20px 0;
+  border-top: 1px solid var(--filet-2);
+  border-bottom: 1px solid var(--filet-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.lme-formule--phare .lme-formule__prix {
+  border-color: #27272a;
+}
+
+.lme-formule__prix strong {
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--encre);
+}
+
+.lme-formule--phare .lme-formule__prix strong {
+  color: var(--or);
+}
+
+.lme-formule__prix span {
+  font-size: 14px;
+  color: var(--texte-2);
+}
+
+.lme-formule--phare .lme-formule__prix span {
+  color: var(--texte-3);
+}
+
+.lme-formule__faits {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  flex-grow: 1;
+}
+
+.lme-formule__faits > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lme-formule__faits dt {
+  font-size: 14px;
+  color: var(--texte-2);
+}
+
+.lme-formule--phare .lme-formule__faits dt {
+  color: var(--texte-3);
+}
+
+.lme-formule__faits dd {
+  margin: 0;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 600;
+  color: #18181b;
+  font-variant-numeric: tabular-nums;
+}
+
+.lme-formule--phare .lme-formule__faits dd {
+  color: #ffffff;
+}
+
+.lme-formule__neutre {
+  color: var(--texte-2) !important;
+}
+
+.lme-formule__gain {
+  color: var(--vert) !important;
+}
+
+.lme-formule--phare .lme-formule__gain {
+  color: #fcd34d !important;
+}
+
+.lme-formule__bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 1px solid #d4d4d8;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #18181b;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.13s ease, filter 0.13s ease;
+}
+
+.lme-formule__bouton:hover {
+  transform: translateY(-1px);
+}
+
+.lme-formule__bouton--or {
+  background: var(--or);
+  border-color: var(--or);
+  color: #1c1917;
+}
+
+.lme-formule__bouton--or:hover {
+  filter: brightness(1.04);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lme-formule,
+  .lme-formule__bouton {
+    transition: none;
+  }
+
+  .lme-formule:hover,
+  .lme-formule__bouton:hover {
+    transform: none;
+  }
+}

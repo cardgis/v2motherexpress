@@ -119,11 +119,15 @@
 
 /* ── Le contenu ──────────────────────────────────────────────────────────── */
 
+/* L'en-tête du site est posé en ABSOLU par-dessus le bandeau : sans réserve
+   en haut, la pastille « Dem rek · Partenaire… » venait se coller au logo
+   (signalé par Alexandre le 2026-11-14). La marge haute dégage la hauteur de
+   l'en-tête, et elle suit la largeur de l'écran comme le reste. */
 .lme-heros__bande {
   position: relative;
   max-width: 1240px;
   margin: 0 auto;
-  padding: clamp(64px, 7vw, 104px) clamp(16px, 3.5vw, 48px) clamp(72px, 8vw, 112px);
+  padding: clamp(124px, 11vw, 168px) clamp(16px, 3.5vw, 48px) clamp(72px, 8vw, 112px);
 }
 
 .lme-heros__texte {

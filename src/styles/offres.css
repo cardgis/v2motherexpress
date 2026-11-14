@@ -1,0 +1,348 @@
+/*
+ * Location-accession — refonte 2026-11-14.
+ *
+ * ── Ce que cette section remplace ─────────────────────────────────────────
+ * L'ancienne « Promotion en cours / Offre du moment ». Le cadrage était le
+ * problème : présenter en PROMOTION ce qui est le modèle économique de la
+ * maison le fait passer pour une offre passagère. C'est au contraire le seul
+ * argument que personne d'autre n'a — on paie en roulant, et à la fin le
+ * scooter est à soi.
+ *
+ * Classes `lme-`, aucune classe `uk-`, feuille importée par le composant.
+ */
+
+.lme-offres {
+  --encre: #09090b;
+  --texte: #3f3f46;
+  --texte-2: #52525b;
+  --texte-3: #a1a1aa;
+  --filet: #e4e4e7;
+  --filet-2: #f4f4f5;
+  --or: #e8a534;
+  --or-pale: #fffbeb;
+  --or-bord: #fde68a;
+  --ocre: #92400e;
+  --ocre-fonce: #713f12;
+
+  background: #ffffff;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--texte);
+}
+
+.lme-offres__bande {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: clamp(64px, 7vw, 104px) clamp(16px, 3.5vw, 48px);
+}
+
+.lme-offres__entete {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 48px;
+  align-items: center;
+  margin-bottom: 56px;
+}
+
+.lme-offres__intro {
+  flex: 999 1 420px;
+  min-width: 0;
+  max-width: 64ch;
+}
+
+.lme-offres__surtitre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ocre);
+}
+
+.lme-offres__surtitre::before {
+  content: "";
+  width: 28px;
+  height: 2px;
+  background: var(--or);
+}
+
+.lme-offres__titre {
+  margin: 0 0 20px;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: clamp(30px, 3.4vw, 48px);
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--encre);
+}
+
+.lme-offres__accroche {
+  margin: 0;
+  font-size: clamp(16px, 1.4vw, 18px);
+  line-height: 1.65;
+  color: var(--texte-2);
+}
+
+/* L'image de promotion était affichée jusqu'à 700 px de large : trop, pour un
+   visuel qui accompagne un texte au lieu de le porter. Plafonnée à 400 px,
+   posée dans un cadre doux avec un filet et une ombre discrète, et le ratio
+   est tenu par `aspect-ratio` plutôt que par les attributs du fichier. */
+.lme-offres__visuel {
+  flex: 0 1 400px;
+  min-width: 0;
+  max-width: 400px;
+  margin-inline: auto;
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid var(--filet);
+  background: linear-gradient(160deg, #ffffff 0%, #fafafa 55%, #f4f4f5 100%);
+  box-shadow: 0 10px 28px rgba(9, 9, 11, 0.07), 0 2px 6px rgba(9, 9, 11, 0.04);
+}
+
+.lme-offres__visuel img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+/* ── Les trois étapes ────────────────────────────────────────────────────── */
+
+.lme-offres__etapes {
+  list-style: none;
+  margin: 0 0 56px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(265px, 1fr));
+  gap: 24px;
+}
+
+.lme-etape {
+  border: 1px solid var(--filet);
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 1px 2px rgba(9, 9, 11, 0.04);
+  transition: box-shadow 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+.lme-etape:hover {
+  border-color: #d4d4d8;
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(9, 9, 11, 0.09);
+}
+
+/* La troisième étape est la récompense : c'est la seule en doré. */
+.lme-etape--terme {
+  background: var(--or-pale);
+  border-color: var(--or-bord);
+}
+
+.lme-etape__rang {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  background: #18181b;
+  color: #ffffff;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.lme-etape--terme .lme-etape__rang {
+  background: var(--or);
+  color: #1c1917;
+}
+
+.lme-etape__titre {
+  margin: 0 0 9px;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--encre);
+}
+
+.lme-etape__texte {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--texte-2);
+}
+
+.lme-etape--terme .lme-etape__texte {
+  color: var(--ocre-fonce);
+}
+
+/* ── La formule d'entrée, en bandeau ────────────────────────────────────── */
+
+.lme-entree {
+  position: relative;
+  overflow: hidden;
+  background: var(--encre);
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 18px 44px rgba(9, 9, 11, 0.18);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 48px;
+  align-items: center;
+}
+
+.lme-entree::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #e8a534 0%, #c9772a 100%);
+}
+
+.lme-entree__offre {
+  flex: 1 1 300px;
+  min-width: 0;
+}
+
+.lme-entree__sceau {
+  display: inline-block;
+  margin: 0 0 18px;
+  padding: 5px 11px;
+  border-radius: 6px;
+  background: var(--or);
+  color: #1c1917;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.lme-entree__modele {
+  margin: 0 0 8px;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: 30px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.lme-entree__duree {
+  margin: 0 0 22px;
+  font-size: 14.5px;
+  color: var(--texte-3);
+}
+
+.lme-entree__montant {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lme-entree__montant strong {
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: clamp(42px, 4.4vw, 62px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--or);
+}
+
+.lme-entree__montant span {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--texte-3);
+}
+
+.lme-entree__points {
+  flex: 1 1 260px;
+  min-width: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lme-entree__point {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 15px;
+  color: #d4d4d8;
+}
+
+.lme-entree__point svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--or);
+}
+
+.lme-entree__actions {
+  flex: 0 1 230px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lme-entree__bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 54px;
+  border-radius: 12px;
+  background: var(--or);
+  color: #1c1917;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.13s ease, filter 0.13s ease;
+}
+
+.lme-entree__bouton:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+
+.lme-entree__lien {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fcd34d;
+  text-decoration: none;
+}
+
+.lme-entree__lien:hover {
+  text-decoration: underline;
+}
+
+/* ── La note sur l'engagement ────────────────────────────────────────────── */
+
+.lme-offres__note {
+  margin: 24px 0 0;
+  max-width: 86ch;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--texte-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lme-etape,
+  .lme-entree__bouton {
+    transition: none;
+  }
+
+  .lme-etape:hover,
+  .lme-entree__bouton:hover {
+    transform: none;
+  }
+}

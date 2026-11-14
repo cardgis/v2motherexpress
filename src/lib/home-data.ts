@@ -22,8 +22,40 @@ const BEST_SELLER_SLUGS = ["revoo-e52", "revoo-b12", "revoo-a10"];
  * la réservation puis le retrait qui tranchent. Une analyse complète de
  * `Inventory` avec jointure disparaît au passage, à chaque affichage.
  */
+/**
+ * Bornes de prix du catalogue COMPLET.
+ *
+ * La section « Trois façons de rouler » annonce des « à partir de ». Les
+ * calculer sur les trois best-sellers donnerait un chiffre juste par hasard —
+ * parce que l'A10 et l'E52 s'y trouvent aujourd'hui — et faux le jour où la
+ * sélection change. Un agrégat sur toute la `Tarification` répond exactement,
+ * en une requête et sans charger les lignes.
+ */
+async function bornesTarifs() {
+  const r = await prisma.tarification.aggregate({
+    where: { produit: { estActif: true } },
+    _min: {
+      tarifMatinFcfa: true,
+      tarifJourneeFcfa: true,
+      tarif24hFcfa: true,
+      prixVenteFcfa: true,
+    },
+    _max: { prixVenteFcfa: true },
+  });
+
+  return {
+    demiJourneeMin: r._min.tarifMatinFcfa,
+    journeeMin: r._min.tarifJourneeFcfa,
+    vingtQuatreMin: r._min.tarif24hFcfa,
+    achatMin: r._min.prixVenteFcfa,
+    achatMax: r._max.prixVenteFcfa,
+  };
+}
+
+export type BornesTarifs = Awaited<ReturnType<typeof bornesTarifs>>;
+
 export async function getHomeProductsData() {
-  const [produits, nombreModeles] = await Promise.all([
+  const [produits, nombreModeles, bornes] = await Promise.all([
     prisma.produit.findMany({
       where: { slug: { in: BEST_SELLER_SLUGS } },
       include: { tarification: true },
@@ -31,13 +63,14 @@ export async function getHomeProductsData() {
     // Nombre réel de modèles au catalogue : l'accueil n'en montre qu'une
     // sélection, le texte d'appel annonce la gamme complète.
     prisma.produit.count({ where: { estActif: true } }),
+    bornesTarifs(),
   ]);
 
   const ordered = BEST_SELLER_SLUGS
     .map((s) => produits.find((p) => p.slug === s))
     .filter((p): p is typeof produits[0] => Boolean(p));
 
-  return { produits: ordered, nombreModeles };
+  return { produits: ordered, nombreModeles, bornes };
 }
 
 export async function getAllProductsData() {
