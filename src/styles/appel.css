@@ -1,0 +1,116 @@
+/*
+ * Appel final — refonte 2026-11-14.
+ *
+ * ── Un bandeau DORÉ, et c'est délibéré ────────────────────────────────────
+ * Partout ailleurs le doré est réservé à l'action principale, et sur fond
+ * clair il passe en ocre pour tenir le contraste. Ici le doré devient le
+ * FOND : c'est la dernière chose qu'on voit avant le pied de page, et c'est
+ * l'action principale de toute la page. Le code couleur n'est pas contourné,
+ * il est appliqué à son extrême.
+ *
+ * Le texte dessus est en encre `#1c1917` et jamais en blanc : du blanc sur
+ * #e8a534 tombe sous 2:1. Le texte secondaire est en `#713f12`, qui tient.
+ */
+
+.lme-appel {
+  --or: #e8a534;
+  --encre: #1c1917;
+  --ocre-fonce: #713f12;
+
+  background: var(--or);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.lme-appel__bande {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: clamp(52px, 5.5vw, 76px) clamp(16px, 3.5vw, 48px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lme-appel__texte {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+
+.lme-appel__surtitre {
+  margin: 0 0 14px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ocre-fonce);
+}
+
+.lme-appel__titre {
+  margin: 0 0 14px;
+  max-width: 24ch;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: clamp(30px, 3.3vw, 46px);
+  line-height: 1.06;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--encre);
+}
+
+.lme-appel__accroche {
+  margin: 0;
+  max-width: 54ch;
+  font-size: clamp(15px, 1.4vw, 17.5px);
+  line-height: 1.6;
+  color: var(--ocre-fonce);
+}
+
+.lme-appel__accroche strong {
+  font-weight: 600;
+  color: var(--encre);
+}
+
+.lme-appel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.lme-appel__bouton {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 0 30px;
+  border-radius: 12px;
+  font-size: 16.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.13s ease, box-shadow 0.13s ease;
+}
+
+.lme-appel__bouton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(28, 25, 23, 0.22);
+}
+
+.lme-appel__bouton--principal {
+  background: var(--encre);
+  color: #ffffff;
+}
+
+.lme-appel__bouton--contour {
+  border: 1px solid var(--ocre-fonce);
+  color: var(--encre);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lme-appel__bouton {
+    transition: none;
+  }
+
+  .lme-appel__bouton:hover {
+    transform: none;
+  }
+}

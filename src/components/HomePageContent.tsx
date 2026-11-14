@@ -2,6 +2,8 @@ import { HomeHeroAbout } from "@/components/HomeHeroAbout";
 import ProductExplorer from "@/components/ProductExplorer";
 import { HomeFormulesSection } from "@/components/HomeFormulesSection";
 import { HomeAccessionSection } from "@/components/HomeAccessionSection";
+import { HomeParcoursSection } from "@/components/HomeParcoursSection";
+import { HomeQuestionsSection } from "@/components/HomeQuestionsSection";
 import { HomeVideosSection } from "@/components/HomeVideosSection";
 import { HomeFooterSections } from "@/components/HomeFooterSections";
 import { ContactInfoSection } from "@/components/ContactInfoSection";
@@ -27,8 +29,9 @@ type HomePageContentProps = {
  * questions → agences → vidéos. Il a notamment avancé « Comment réserver »
  * avant les modèles, en déplaçant les planches lui-même le 2026-11-13.
  *
- * Les sections « Comment réserver » et « Questions fréquentes » n'existent pas
- * encore : elles s'inséreront à leur place, entre l'accession et les agences.
+ * « Comment réserver » est posée AVANT les modèles, comme il l'a voulu, et
+ * « Questions fréquentes » juste avant les agences : on répond aux objections,
+ * puis on dit où venir.
  *
  * `HomePromoSection` a disparu : « Promotion en cours / Offre du moment »
  * présentait en promotion ce qui est le modèle économique de la maison.
@@ -43,6 +46,8 @@ export function HomePageContent({ produits, nombreModeles, bornes }: HomePageCon
         <ProductExplorer produits={produits} variant="section" />
         <HomeFormulesSection bornes={bornes} />
         <HomeAccessionSection />
+        <HomeParcoursSection />
+        <HomeQuestionsSection />
         <HomeCTASection nombreModeles={nombreModeles} />
         <ContactInfoSection headingLevel={2} />
         <HomeVideosSection />
