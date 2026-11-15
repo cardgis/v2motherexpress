@@ -15,12 +15,30 @@
 // `.env.local` UNIQUEMENT : ce script SUPPRIME des données.
 import "./env-local";
 
-import { purgerPieces, delaiHeures } from "../src/lib/purge";
+import { purgerPieces, delaiHeures, purgeActive } from "../src/lib/purge";
 import { prisma } from "../src/lib/prisma";
 
 async function main() {
   const apercu = process.argv.includes("--apercu");
   const heures = delaiHeures();
+
+  // Éteinte depuis le 2026-11-15 : les pièces sont conservées sans limite de
+  // durée. On le dit franchement plutôt que d’afficher « aucune pièce
+  // concernée », qui se lirait comme un passage normal sans rien à faire.
+  if (!purgeActive()) {
+    console.log(
+      [
+        "",
+        "PURGE ÉTEINTE — les pièces justificatives sont conservées sans limite de durée.",
+        "Rien n'est effacé, et aucune date d'effacement n'est même posée.",
+        "",
+        'Pour la rallumer : PURGE_PIECES_ACTIVE="true", et remettre /api/cron/purge',
+        "dans vercel.json. Le pourquoi est en tête de src/lib/purge.ts.",
+        "",
+      ].join("\n"),
+    );
+    process.exit(0);
+  }
 
   console.log(
     `\nPurge des pièces d'identité — délai de ${heures} h après clôture${apercu ? " (APERÇU)" : ""}\n`,

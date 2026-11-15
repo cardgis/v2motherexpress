@@ -5,10 +5,6 @@
     {
       "path": "/api/cron/expiration",
       "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/api/cron/purge",
-      "schedule": "30 3 * * *"
     }
   ]
 }

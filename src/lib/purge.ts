@@ -53,9 +53,39 @@ import { supprimerBlob } from "@/lib/storage";
 import type { StatutReservation } from "@/generated/prisma";
 
 /**
- * Délai après la livraison. 48 heures, choix d'Alexandre le 2026-11-10.
- * Ajustable sans redéploiement : ce genre de durée se révise à l'usage, et
- * surtout à la lumière d'un avis juridique qu'on n'a pas encore.
+ * LA PURGE EST ÉTEINTE (Alexandre, 2026-11-15).
+ *
+ * Les pièces justificatives sont conservées SANS LIMITE DE DURÉE. Rien n'est
+ * effacé, et aucune date d'effacement n'est même posée : `purgeApres` et
+ * `purgeAt` restent nuls, ce que les neuf requêtes filtrant
+ * `where: { purgeAt: null }` honorent sans rien changer — elles voient donc
+ * toujours toutes les pièces.
+ *
+ * Pourquoi l'éteindre plutôt que supprimer ce fichier : une règle de
+ * conservation se révise dans les deux sens. Le mécanisme est écrit, éprouvé
+ * par `npm run verif:purge` sur de vrais blobs, et il décide correctement du
+ * cas difficile — un client aux dossiers multiples, dont l'un attend encore
+ * le retrait. Le réécrire un jour sous la pression d'un avis juridique serait
+ * la pire façon de le remettre en service.
+ *
+ * Pour le rallumer : `PURGE_PIECES_ACTIVE="true"`, et remettre l'entrée
+ * `/api/cron/purge` dans `vercel.json` — elle en a été retirée, sans quoi
+ * Vercel frapperait chaque nuit une route qui ne fait plus rien.
+ *
+ * CE QUE CELA ENGAGE. Une photographie de carte d'identité est la donnée la
+ * plus sensible du système. La garder indéfiniment est un choix d'exploitant,
+ * pas un défaut : il appelle une mention dans la politique de confidentialité
+ * et, le jour venu, un avis au regard de la loi 2008-12 et de la CDP. Le
+ * chiffrement au stockage et l'absence d'URL publique restent les deux
+ * protections qui, elles, ne dépendent d'aucun délai.
+ */
+export function purgeActive(): boolean {
+  return process.env.PURGE_PIECES_ACTIVE === "true";
+}
+
+/**
+ * Délai après la livraison, s'il est un jour rallumé. 48 heures, choix
+ * d'Alexandre le 2026-11-10.
  */
 const HEURES_DEFAUT = 48;
 
@@ -97,6 +127,11 @@ export interface PieceAPurger {
 export async function purgerPieces(
   options: { maintenant?: Date; apercu?: boolean } = {},
 ): Promise<PieceAPurger[]> {
+  // Éteinte par défaut : on ne lit même pas la base. Un appel qui ne
+  // supprime rien ne doit pas non plus parcourir les pièces de tous les
+  // clients pour aboutir à une liste vide.
+  if (!purgeActive()) return [];
+
   const maintenant = options.maintenant ?? new Date();
   const delai = delaiHeures() * 3_600_000;
 

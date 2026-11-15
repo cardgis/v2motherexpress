@@ -625,13 +625,19 @@ function ZoneDepot({
 
       // Une photo de CNI prise au téléphone pèse 4 à 8 Mo : inenvoyable en 3G.
       // La bibliothèque est chargée à la demande pour ne pas alourdir la page.
+      //
+      // Mêmes réglages que la compression du SERVEUR (2026-11-15) : WebP,
+      // 1600 px. Le serveur recomprime de toute façon — c'est lui la garantie
+      // —, mais le faire ici d'abord évite au client d'envoyer deux fois le
+      // poids nécessaire sur un réseau mobile qu'il paie. Les deux étages
+      // visant la même cible, le second ne trouve presque rien à reprendre.
       if (fichier.type.startsWith("image/")) {
         const { default: compresser } = await import("browser-image-compression");
         aEnvoyer = await compresser(fichier, {
-          maxSizeMB: 1,
-          maxWidthOrHeight: 1800, // suffisant pour lire un numéro de pièce
+          maxSizeMB: 0.6,
+          maxWidthOrHeight: 1600, // une CNI y occupe encore plus de 1200 px de large
           useWebWorker: true,
-          fileType: "image/jpeg",
+          fileType: "image/webp",
         });
       }
 

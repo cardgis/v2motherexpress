@@ -4,6 +4,7 @@ import { utilisateurCourant } from "@/lib/auth";
 import { ecrireBlob, supprimerBlob } from "@/lib/storage";
 import { etatDossier } from "@/lib/dossier";
 import { EXTENSIONS, typeReel } from "@/lib/fichiers";
+import { comprimerPiece } from "@/lib/pieces-compression";
 import type { TypeDocument } from "@/generated/prisma";
 
 /**
@@ -17,6 +18,18 @@ import type { TypeDocument } from "@/generated/prisma";
  * Le type retenu est celui des OCTETS, jamais celui annoncé par le navigateur
  * (voir `src/lib/fichiers.ts`). L'empreinte SHA-256 est conservée : elle
  * permet de détecter qu'une pièce aurait été remplacée après validation.
+ *
+ * ── Le fichier est COMPRIMÉ avant d'être stocké (2026-11-15) ───────────────
+ * Depuis que les pièces sont conservées sans limite de durée, chaque
+ * kilo-octet l'est pour toujours. `comprimerPiece` ramène les images à
+ * 1600 px en WebP — environ la moitié du poids —, applique l'orientation EXIF
+ * puis jette les métadonnées, GPS compris. Le détail et les mesures sont en
+ * tête de `lib/pieces-compression.ts`.
+ *
+ * L'ORDRE COMPTE : le type réel est établi sur les octets REÇUS, avant toute
+ * conversion. On ne compresse donc jamais un fichier dont on n'a pas d'abord
+ * prouvé qu'il est bien ce qu'il prétend être. Et le SHA-256 porte sur les
+ * octets STOCKÉS — c'est l'empreinte de ce que le gérant verra.
  */
 
 const TYPES_ACCEPTES: TypeDocument[] = [
@@ -83,8 +96,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const chemin = `clients/${customer.id}/${type.toLowerCase()}-${Date.now()}.${EXTENSIONS[mimeType]}`;
-    const { sha256, taille } = await ecrireBlob(chemin, octets, mimeType);
+    // Après la validation du type réel, jamais avant : voir l'en-tête.
+    const piece = await comprimerPiece(octets, mimeType);
+
+    const chemin = `clients/${customer.id}/${type.toLowerCase()}-${Date.now()}.${EXTENSIONS[piece.mimeType]}`;
+    const { sha256, taille } = await ecrireBlob(chemin, piece.octets, piece.mimeType);
 
     // Un même type ne peut exister qu'une fois : le nouveau dépôt remplace
     // l'ancien, dont le blob est supprimé pour ne pas laisser traîner une
@@ -101,7 +117,7 @@ export async function POST(request: Request) {
           customerId: customer.id,
           type,
           blobPath: chemin,
-          mimeType,
+          mimeType: piece.mimeType,
           tailleOctets: taille,
           sha256,
         },

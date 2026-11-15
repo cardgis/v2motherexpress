@@ -37,7 +37,7 @@ const nextConfig: NextConfig = {
    * volumineux, n'existent que côté serveur, et ne sont chargés que si le
    * fournisseur correspondant est configuré.
    */
-  serverExternalPackages: ["@aws-sdk/client-s3", "@azure/storage-blob", "nodemailer"],
+  serverExternalPackages: ["@aws-sdk/client-s3", "@azure/storage-blob", "nodemailer", "sharp"],
 
   experimental: {
     staleTimes: {

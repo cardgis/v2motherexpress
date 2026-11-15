@@ -400,66 +400,108 @@ Le `DATABASE_URL` de `.env` pointe sur une base Neon **abandonnée** (aucune
 table applicative) : ce n'est pas l'adresse de la production.
 
 
-## Purge des pièces d'identité (2026-11-11)
+## Conservation des pièces d'identité — SANS LIMITE DE DURÉE (2026-11-15)
 
-Règle retenue par Alexandre : **48 heures après le RETRAIT COMPLET** — contrat
-final signé des deux côtés, état des lieux fait, moto livrée. Passé ce délai,
-l'IMAGE de la pièce est effacée du stockage. `Handover.completedAt` marque cet
-instant.
+**Décision d'Alexandre : les pièces justificatives sont conservées de façon
+indéterminée.** Rien n'est effacé, et aucune date d'effacement n'est même
+posée — `purgeApres` et `purgeAt` restent nuls.
 
-`npm run cron:purge` (`--apercu` pour voir sans toucher), ou `/api/cron/purge`
-protégée par `CRON_SECRET`. Cron Vercel à 3 h 30, après celui d'expiration.
-Délai ajustable par `PURGE_PIECES_HEURES`.
+La règle précédente était : 48 heures après le RETRAIT COMPLET — contrat final
+signé des deux côtés, état des lieux fait, moto livrée, `Handover.completedAt`
+marquant cet instant. Elle est **éteinte**, pas supprimée.
 
-**Le déclencheur, c'est la livraison et non la fin du contrat.** J'avais d'abord
-écrit la purge à la clôture du dossier ; Alexandre a corrigé, et il a raison.
-La pièce sert à une chose : vérifier au retrait que la personne à qui l'on
-confie une moto est bien celle qu'elle prétend. Ce service rendu, la garder
-pendant les vingt-quatre mois d'une accession ne protège personne et expose
-tout le monde.
+### Pourquoi éteindre plutôt que supprimer
 
-**C'était la seconde moitié d'une promesse du schéma.** `CustomerDocument`
-portait déjà `purgeApres` et `purgeAt`, et **neuf requêtes de l'application
-filtraient déjà `where: { purgeAt: null }`** — la lecture était prête. Mais
-`purgeApres` n'était jamais posé et aucun blob n'était jamais supprimé. Même cas
-de figure que `Reservation.expireLe` avant le cron d'expiration : le schéma
-promet, les lectures honorent, l'écrivain manque.
+Une règle de conservation se révise dans les deux sens. Le mécanisme est écrit,
+éprouvé par `npm run verif:purge` sur de vrais blobs, et il décide
+correctement du cas difficile : un client aux dossiers multiples, dont l'un
+attend encore le retrait — purger après la livraison d'un autre supprimerait la
+pièce que le gérant doit encore examiner. Le réécrire un jour sous la pression
+d'un avis juridique serait la pire façon de le remettre en service.
 
-**Ce qu'on efface, ce qu'on garde.** L'image part ; le type, la taille, la date
-de dépôt et le **SHA-256** restent — cette empreinte permet encore de confirmer
-qu'une pièce présentée plus tard est bien celle que le gérant a vue. `Handover`
-conserve `pieceVerifiee`, `pieceConforme`, `pieceVerifieeAt` et le nom du
-gérant : qui a vérifié, quand, avec quelle conclusion. Et l'identité survit dans
-le contrat scellé — nom, numéro de pièce, adresse — jamais purgé.
+**Pour le rallumer**, les deux gestes vont ensemble :
+`PURGE_PIECES_ACTIVE="true"`, et remettre l'entrée `/api/cron/purge` dans
+`vercel.json` — elle en a été retirée, sans quoi Vercel frapperait chaque nuit
+une route qui ne fait plus rien. Le délai reste réglable par
+`PURGE_PIECES_HEURES`.
 
-**Les pièces appartiennent au CLIENT, pas à la réservation**, et c'est le point
-qui gouverne tout. Un client peut avoir plusieurs dossiers ; purger après la
-livraison de l'un supprimerait la pièce que le gérant doit encore examiner pour
-un autre. La purge n'intervient donc que lorsque PLUS AUCUN dossier du client
-n'est dans un état qui exige de la regarder : `BROUILLON`,
-`EN_ATTENTE_DOSSIER`, `EN_ATTENTE_VALIDATION`, `EN_ATTENTE_SIGNATURE`,
-`EN_ATTENTE_RETRAIT`. Le délai court depuis la livraison la PLUS RÉCENTE.
+`npm run cron:purge` et `/api/cron/purge` le DISENT quand la purge est
+éteinte, au lieu de répondre « 0 pièce effacée » — ce qui se lirait comme un
+cron en bonne santé n'ayant rien trouvé à faire.
 
-**Deux temps, pour que la purge se voie venir.** Le premier passage POSE
-`purgeApres` sans rien supprimer. Un passage ultérieur efface. Si le délai était
-déjà écoulé au premier passage, les deux temps se produisent dans la même
-exécution.
+### Ce que cela engage
 
-**L'ordre des opérations compte** : le blob d'abord, la ligne ensuite. Si la
-suppression du blob échoue, la ligne reste non purgée et le prochain passage
-réessaie. Dans l'autre sens, on aurait une pièce déclarée effacée mais toujours
-présente dans le stockage — le pire des deux états.
+Une photographie de carte d'identité est la donnée la plus sensible du système.
+La garder indéfiniment est un choix d'exploitant, pas un défaut : il appelle
+une mention dans la politique de confidentialité et, le jour venu, un avis au
+regard de la loi 2008-12 et de la CDP. Le chiffrement au stockage et l'absence
+d'URL publique restent les deux protections qui, elles, ne dépendent d'aucun
+délai.
 
-**Ce que la purge ne résout PAS : le volume.** Un dossier complet pèse 8 à 9 Mo,
-dont les pièces d'identité ne font qu'un quart. Le gros vient des **photos de
-constat** — minimum 4 à la remise, 4 à la restitution, 0,8 Mo chacune, et aucun
-plafond au nombre. Si le stockage devient un sujet, les leviers sont là :
-plafonner le nombre de photos, ou descendre la compression de 1600 à 1200
-pixels. La purge protège la confidentialité, pas la facture.
+Rien dans l'interface n'annonçait les 48 heures au client — vérifié avant le
+changement. Les neuf requêtes filtrant `where: { purgeAt: null }` continuent
+de fonctionner sans rien changer : elles voient simplement toujours toutes les
+pièces.
 
-`npm run verif:purge` éprouve les trois cas sur de vrais blobs : livré il y a
-dix jours (effacé), livré à l'instant (programmé), et livré **avec un second
-dossier en attente de retrait** (épargné, aucune date même posée).
+## Compression des pièces à la réception (2026-11-15)
+
+Conséquence directe de la conservation indéterminée : ce qui entre dans le
+stockage y reste, donc chaque kilo-octet l'est pour toujours.
+`lib/pieces-compression.ts` ramène chaque image à **1600 px en WebP, qualité
+76**, avant l'écriture. Mesuré : une pièce telle que le navigateur l'envoie —
+1800 px, 221 Ko — tombe à **112 Ko, soit 49 % de moins**. À 1600 px une carte
+d'identité occupe encore plus de 1200 pixels de large, au-delà de 350 points
+par pouce : le numéro reste lisible avec de la marge.
+
+### Deux étages, et ce n'est pas une redondance
+
+`DossierForm` compresse déjà DANS LE NAVIGATEUR, aux mêmes réglages — d'abord
+pour le client, dont le forfait mobile sénégalais paie chaque octet. Mais cette
+compression-là est une **convention** : elle dépend d'une bibliothèque chargée
+à la demande et d'un formulaire qu'on peut contourner. Celle du serveur est une
+**garantie** : rien n'entre dans le stockage sans y passer.
+
+### Trois effets de bord qui valaient à eux seuls le détour
+
+1. **Les métadonnées partent.** Une photo de téléphone porte souvent les
+   coordonnées GPS du lieu de la prise de vue — sur une carte d'identité, le
+   domicile du client.
+2. **L'orientation est appliquée, pas perdue.** Un téléphone tenu à la
+   verticale enregistre des pixels COUCHÉS et pose `orientation: 6` pour
+   qu'on les redresse. Les pixels mentent, l'EXIF dit la vérité, et la
+   conversion jette l'EXIF : sans `.rotate()` AVANT, la pièce est stockée
+   couchée pour toujours. C'est le piège classique, et `verif:compression`
+   le garde.
+3. **Le HEIC devient lisible.** Un iPhone envoie du HEIC, que Chrome et
+   Firefox ne savent pas afficher : la pièce partait au stockage dans un
+   format que le gérant ne pouvait pas ouvrir.
+
+### Les deux garde-fous d'écriture
+
+**L'ordre compte** : le type réel est établi sur les octets REÇUS
+(`lib/fichiers.ts`), avant toute conversion — on ne compresse jamais un
+fichier dont on n'a pas d'abord prouvé qu'il est ce qu'il prétend être. Et le
+SHA-256 porte sur les octets STOCKÉS, c'est-à-dire sur ce que le gérant verra.
+
+**En cas d'échec, on garde l'original.** `sharp` est un module natif : il peut
+manquer dans un environnement d'exécution, un fichier peut être trop abîmé pour
+être relu. Le pire acceptable est le comportement d'avant — jamais un dépôt
+refusé. `sharp` est passée de `devDependencies` à `dependencies` et
+figure dans `serverExternalPackages` : elle sert désormais à l'exécution, pas
+seulement au build.
+
+`npm run verif:compression` éprouve les huit propriétés, sans toucher ni la
+base ni le stockage.
+
+### Ce que la compression ne résout PAS : le volume des constats
+
+Un dossier complet pèse 8 à 9 Mo, dont les pièces d'identité ne font qu'un
+quart. Le gros vient des **photos de constat** — minimum 4 à la remise, 4 à la
+restitution, 0,8 Mo chacune, et aucun plafond au nombre. Elles ne passent PAS
+par `comprimerPiece` : elles ont leur propre route, et elles sont embarquées
+dans les PDF par `pdf-lib`, qui ne lit que JPEG et PNG — les convertir en
+WebP casserait les actes. Si le stockage devient un sujet, les leviers sont là :
+plafonner le nombre de photos, ou descendre de 1600 à 1200 pixels.
 
 ## Avant de déployer : `npm run verif:prod`
 

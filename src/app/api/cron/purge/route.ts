@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
-import { purgerPieces, delaiHeures } from "@/lib/purge";
+import { purgerPieces, delaiHeures, purgeActive } from "@/lib/purge";
 
 /**
  * Déclenchement HTTP de la purge des pièces d'identité.
@@ -40,6 +40,13 @@ export async function GET(request: Request) {
 
   if (!secretValide(request.headers.get("authorization"))) {
     return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+  }
+
+  // La purge est ÉTEINTE depuis le 2026-11-15 : les pièces sont conservées
+  // sans limite de durée. On le DIT, au lieu de répondre « 0 pièce effacée »,
+  // qui se lirait comme un cron en bonne santé n ayant rien trouvé à faire.
+  if (!purgeActive()) {
+    return NextResponse.json({ statut: "desactivee", effacees: 0, programmees: 0 });
   }
 
   try {

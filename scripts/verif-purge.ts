@@ -24,6 +24,12 @@
 // `.env.local` UNIQUEMENT : ce script écrit et supprime en base.
 import "./env-local";
 
+// La purge est ÉTEINTE depuis le 2026-11-15 (voir `lib/purge.ts`) : les
+// pièces sont conservées sans limite de durée. Ce script, lui, éprouve le
+// MÉCANISME — il l'allume donc pour lui seul, sur ses propres données
+// temporaires. Sans cette ligne il passerait en ne vérifiant rien.
+process.env.PURGE_PIECES_ACTIVE = "true";
+
 import { prisma } from "../src/lib/prisma";
 import { purgerPieces } from "../src/lib/purge";
 import { ecrireBlob, blobExiste, supprimerBlob } from "../src/lib/storage";
