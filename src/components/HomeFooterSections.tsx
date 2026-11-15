@@ -112,7 +112,7 @@ export function HomeFooterSections() {
           <div className="lme-pied__marque">
             <Link className="lme-pied__logo" href="/">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/assets/img/logo-la-mother-express.svg" alt="La Mother Express" width="180" height="73" decoding="async" />
+              <img src="/assets/img/logo-la-mother-express.png" alt="La Mother Express" width="180" height="57" decoding="async" />
             </Link>
             <p className="lme-pied__accroche">
               Location et vente de scooters électriques au Sénégal. Partenaire officiel Revoo,

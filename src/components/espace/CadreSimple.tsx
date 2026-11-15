@@ -21,10 +21,10 @@ export default function CadreSimple({ mention, children }: { mention: string; ch
         <div className="lme-entete__interieur">
           <Link href="/" className="lme-marque">
             <Image
-              src="/assets/img/logo-la-mother-express.svg"
+              src="/assets/img/logo-la-mother-express.png"
               alt="La Mother Express"
               width={84}
-              height={34}
+              height={27}
               priority
               unoptimized
             />

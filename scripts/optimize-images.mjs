@@ -15,12 +15,19 @@ const QUALITY = 78;
 
 const SOURCE_EXT = new Set([".png", ".jpg", ".jpeg"]);
 
+// Le logo est tenu à l’écart (2026-11-15). Ce n’est pas un oubli : il est
+// fait d’aplats, d’une petite photo et de transparence, et pour ce dessin le
+// PNG est PLUS LÉGER que le WebP à toutes les largeurs — 12 contre 13 Ko à
+// 400 px, 19 contre 20 à 600. Générer des variantes aurait donc produit des
+// fichiers plus lourds que l’original, que le navigateur aurait préférés.
+const HORS_PIPELINE = new Set(["logo-la-mother-express.png"]);
+
 async function walk(dir) {
   const out = [];
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) out.push(...(await walk(full)));
-    else if (SOURCE_EXT.has(extname(entry.name).toLowerCase())) out.push(full);
+    else if (SOURCE_EXT.has(extname(entry.name).toLowerCase()) && !HORS_PIPELINE.has(entry.name)) out.push(full);
   }
   return out;
 }

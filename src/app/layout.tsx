@@ -77,8 +77,8 @@ const localBusinessSchema = {
   priceRange: "CFA",
   currenciesAccepted: "XOF",
   paymentAccepted: "Cash",
-  image: `${SITE_URL}/assets/img/logo-la-mother-express.svg`,
-  logo: `${SITE_URL}/assets/img/logo-la-mother-express.svg`,
+  image: `${SITE_URL}/assets/img/logo-la-mother-express.png`,
+  logo: `${SITE_URL}/assets/img/logo-la-mother-express.png`,
   location: [
     {
       "@type": "Place",
