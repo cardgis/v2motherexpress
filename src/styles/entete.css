@@ -96,13 +96,19 @@
   text-decoration: none;
 }
 
-/* Le cadre est plus large que l'image : c'est `max-width` sur l'`img` qui
-   fixe la taille vue, et l'écart sert la respiration autour du sceau. */
+/* Le cadre ÉPOUSE l'image, et sa largeur est fluide (2026-11-15).
+   Avant, une boîte fixe de 340×140 px et un `max-width` en escalier — 240,
+   150, 112 — laissaient le sceau n'occuper que 76 px des 148 px de la barre.
+   `20vw` est la garantie qui remplace ces paliers : la colonne de gauche ne
+   prend jamais plus d'un cinquième de la fenêtre, donc la navigation et les
+   boutons gardent les quatre cinquièmes, à toute largeur. Les deux bornes
+   sont les tailles éprouvées — 112 px sur les petits téléphones, où
+   l'en-tête tient à 16 px près sur 360 px, et 380 px au plus large, pour
+   121 px de haut dans une barre qui en fait 148. */
 .page-header .logo__icon {
   display: block;
   position: relative;
-  width: 340px;
-  height: 140px;
+  width: clamp(112px, 20vw, 380px);
   filter: drop-shadow(0 2px 14px rgba(0, 0, 0, 0.5));
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), filter 0.35s ease;
 }
@@ -110,9 +116,10 @@
 .page-header .logo__icon img {
   display: block;
   width: 100%;
-  height: 100%;
-  max-width: 240px;
-  object-fit: contain;
+  /* `auto`, et non `100%` : la hauteur vient du rapport de l'image elle-même
+     (600 × 191). Plus de `object-fit`, donc plus de vide au-dessus ni en
+     dessous — le cadre ne peut plus être d'un autre format que le sceau. */
+  height: auto;
 }
 
 .page-header .logo__link:hover .logo__icon,
@@ -322,6 +329,16 @@
   gap: 16px;
 }
 
+/* Le sceau du menu était rendu à la taille de ses attributs — 180 px — alors
+   que le panneau en offre 316 une fois le bouton de fermeture et les marges
+   retranchés. Il en prend 220, sur un panneau large de 420 px comme sur un
+   téléphone, où il reste 264 px disponibles. */
+.navbar-overlay__header .logo__icon img {
+  display: block;
+  width: 220px;
+  height: auto;
+}
+
 .navbar-overlay__content {
   display: flex;
   flex-direction: column;
@@ -494,12 +511,6 @@
   }
 }
 
-@media (max-width: 1280px) {
-  .page-header .logo__icon {
-    width: 280px;
-  }
-}
-
 /* 1200 px : la navigation complète cède la place au bouton du menu. */
 @media (max-width: 1200px) {
   .page-header__inner {
@@ -515,26 +526,11 @@
     display: none;
   }
 
-  .page-header .logo__icon {
-    height: 114px;
-  }
-
-  .page-header .logo__icon img {
-    max-width: 150px;
-  }
-
   .page-header__right .menu-btn--icon {
     display: inline-flex;
     width: 84px;
     height: 84px;
     min-height: 84px;
-  }
-}
-
-@media (max-width: 959px) {
-  .page-header .logo__icon {
-    width: 200px;
-    height: 81px;
   }
 }
 
@@ -546,15 +542,6 @@
   .page-header__left {
     padding-right: 10px;
     padding-left: 10px;
-  }
-
-  .page-header .page-header__left .logo__icon {
-    width: 112px;
-    height: 74px;
-  }
-
-  .page-header .page-header__left .logo__icon img {
-    max-width: 112px;
   }
 
   .page-header__left .logo .logo__text {

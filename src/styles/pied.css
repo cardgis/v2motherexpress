@@ -81,9 +81,11 @@
   margin-bottom: 20px;
 }
 
+/* 56 px de haut, soit 176 de large : le pied est une colonne, la place ne
+   manque pas, et le sceau y était la plus petite chose de la page. */
 .lme-pied__logo img {
   display: block;
-  height: 44px;
+  height: 56px;
   width: auto;
 }
 
