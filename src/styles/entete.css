@@ -101,14 +101,23 @@
    150, 112 — laissaient le sceau n'occuper que 76 px des 148 px de la barre.
    `20vw` est la garantie qui remplace ces paliers : la colonne de gauche ne
    prend jamais plus d'un cinquième de la fenêtre, donc la navigation et les
-   boutons gardent les quatre cinquièmes, à toute largeur. Les deux bornes
-   sont les tailles éprouvées — 112 px sur les petits téléphones, où
-   l'en-tête tient à 16 px près sur 360 px, et 380 px au plus large, pour
-   121 px de haut dans une barre qui en fait 148. */
+   boutons gardent les quatre cinquièmes, à toute largeur.
+
+   LE PLANCHER EST PASSÉ DE 112 À 160 px (Alexandre, 2026-11-16). `20vw`
+   n'atteint 112 px qu'à 560 px de large : sous cette barre — tous les
+   téléphones courants, 360 à 430 px — le sceau n'avait pas bougé d'un pixel.
+   Il ne le pouvait pas tant que « Réserver » occupait la barre ; ce bouton
+   disparaît désormais sous 560 px (voir plus bas), et les 160 px tiennent
+   avec 56 px de reste sur un écran de 360, 16 px sur un de 320.
+
+   C'est la HAUTEUR qui bornerait la suite, et non la largeur : 160 px de
+   large font 51 px de haut dans une barre qui en fait 72, et au-delà de
+   190 px le sceau toucherait les bords. Au plus large, 380 px donnent 121 px
+   dans une barre de 148. */
 .page-header .logo__icon {
   display: block;
   position: relative;
-  width: clamp(112px, 20vw, 380px);
+  width: clamp(160px, 20vw, 380px);
   filter: drop-shadow(0 2px 14px rgba(0, 0, 0, 0.5));
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), filter 0.35s ease;
 }
@@ -562,6 +571,20 @@
   .page-header .entete-acces__reserver {
     padding: 0 16px;
     font-size: 14px;
+  }
+}
+
+/* 560 px : exactement la largeur où `20vw` rejoint le plancher du sceau,
+   donc la frontière en dessous de laquelle la barre est contrainte.
+
+   « Réserver » y quitte l'en-tête pour laisser la place au logo (Alexandre,
+   2026-11-16). L'ACTION N'EST PAS PERDUE : « Réserver en ligne » est le
+   premier élément du menu, à une touche du bouton qui reste visible, et
+   l'accueil porte le même appel dans son bandeau et dans sa capsule
+   flottante. Ce qui disparaît est un raccourci, pas un chemin. */
+@media (max-width: 560px) {
+  .page-header .entete-acces__reserver {
+    display: none;
   }
 }
 
