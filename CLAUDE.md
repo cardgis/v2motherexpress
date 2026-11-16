@@ -503,6 +503,125 @@ dans les PDF par `pdf-lib`, qui ne lit que JPEG et PNG — les convertir en
 WebP casserait les actes. Si le stockage devient un sujet, les leviers sont là :
 plafonner le nombre de photos, ou descendre de 1600 à 1200 pixels.
 
+## Quotas OTP : le verrou par IP distingue les buts (2026-11-16)
+
+`npm run verif:quotas` — 6 contrôles, données temporaires, aucun message envoyé.
+
+| verrou | avant | après |
+|---|---|---|
+| par destinataire, tous buts | 3 / 15 min, 10 / 24 h | **5** / 15 min, 10 / 24 h |
+| par IP, `CONNEXION` | 10 / 15 min, 40 / 24 h | inchangé |
+| par IP, `SIGNATURE` | 10 / 15 min, 40 / 24 h | **60 / 15 min, 240 / 24 h** |
+| plafond global SMS | 50 / h | **150 / h** |
+
+### Pourquoi la signature n'est plus logée à la même enseigne
+
+Le « SMS pumping » suppose de **choisir** le numéro surtaxé qu'on fait appeler.
+À la connexion, l'appelant saisit librement ce numéro : le verrou par IP y est
+la protection principale, et il reste strict. À la signature, le numéro vient
+du compte attaché au contrat et l'appel exige un jeton de signature qui est
+lui-même un secret — le verrou n'y protégeait presque rien.
+
+Pendant ce temps, il pouvait bloquer un vrai client. **Au retrait, le client
+signe sur place**, souvent par le wifi de la boutique : tous les clients du
+jour y partagent une seule adresse, et à deux codes chacun les 40 quotidiens
+tombaient au vingtième. Le NAT des opérateurs sénégalais aggrave le cas — des
+abonnés sans rapport entre eux partagent une même adresse publique. Le client
+se retrouvait devant le gérant, incapable de signer, pour une fraude qu'il ne
+pouvait pas commettre.
+
+### Le piège que `verif:quotas` garde
+
+**Les compteurs par IP sont filtrés PAR BUT**, comme les limites. Sans ce
+filtre — et c'était le cas de ma première version — les codes de signature de
+la journée gonflaient le compteur comparé au quota de connexion : le chemin
+qu'on venait d'élargir rebloquait l'autre par la bande, et personne ne l'aurait
+vu avant une matinée de retraits. Deux des six contrôles ne servent qu'à ça.
+
+Le quota par destinataire, lui, reste commun aux deux buts : il protège la
+personne, pas le chemin. Changer de but ne le débloque pas.
+
+### Le plafond horaire, et la porte de secours qui n'existait pas
+
+50 SMS/heure bloquait **tout le monde** d'un coup, client debout devant son
+gérant compris : deux boutiques et quinze retraits font déjà 30 codes, avant
+les connexions et les renvois. Porté à 150 dans `vercel-variables.txt` — **à
+reporter sur Vercel**, le fichier ne fait pas le déploiement.
+
+Le message invitait alors à « utiliser votre e-mail » alors que
+`EMAIL_DRIVER=console` : l'issue de secours proposée n'existait pas. Il
+s'adapte désormais au canal réellement ouvert, et rementionnera l'e-mail de
+lui-même le jour où il le sera. Le journal dit aussi à quel niveau le plafond
+a sauté — c'est la seule trace qui permette de comprendre, après coup, pourquoi
+une matinée entière n'a pas pu signer.
+
+### Ce qui n'a PAS été touché
+
+La gestion de la disponibilité des motos et la saisie de la flotte côté admin
+(Alexandre, 2026-11-16 : « pas pour maintenant »). Le parcours complet consomme
+une moto du parc existant, il ne sait pas en créer.
+
+## Le parcours complet : `npm run e2e:parcours` (2026-11-16)
+
+```bash
+SMS_DRIVER=console npm run dev     # dans un autre terminal
+npm run e2e:parcours
+```
+
+Seize contrôles éprouvent chaque brique séparément, et `e2e.ts` vérifie que
+chaque écran se rend. **Aucun ne jouait la chaîne** : un client qui arrive sans
+compte, dépose ses pièces, attend la validation du gérant, signe par code et
+repart avec la moto. Or c'est dans les jointures que les parcours cassent.
+
+Quarante contrôles, huit étapes, par les MÊMES routes HTTP que le navigateur :
+connexion OTP d'un numéro inconnu → identité → trois pièces → soumission →
+réservation en accession → validation et affectation par le gérant → contrat,
+transmission, signature du client par code, contre-signature → confrontation de
+la pièce, quatre photos, constat de remise → état final.
+
+### `SMS_DRIVER=console` sur le serveur, sans quoi le script s'arrête
+
+Le code OTP est haché en base : un script ne peut pas le relire. Avec le pilote
+`console`, l'API le renvoie dans sa réponse. Sans lui, chaque étape enverrait
+un vrai SMS : le script détecte l'absence de code et s'arrête AVANT d'en
+demander un second. Seule la session du gérant est forgée, par `creerJeton` —
+le back-office n'est pas le sujet du test.
+
+### Trois pièges rencontrés en l'écrivant, et ce qu'ils ont appris
+
+1. **Un numéro NEUF à chaque exécution.** Le quota anti-abus autorise 3 codes
+   par destinataire et par quart d'heure ; un parcours en consomme 2. Avec un
+   numéro fixe, la deuxième exécution d'affilée se heurtait à un 429
+   parfaitement justifié. Le script tire donc un numéro dans `+2217000…`, hors
+   des plages attribuées. La protection n'est pas contournée, elle est jouée
+   par un client différent.
+2. **La moto doit être RENDUE au nettoyage.** Supprimer la réservation ne
+   libère pas le véhicule : il reste `EN_LOCATION`. Trois motos sur six du parc
+   local y étaient déjà passées avant que le contrôle « une moto disponible
+   existe » ne tombe. Le script mémorise la moto et la repose.
+3. **L'ordre de suppression est imposé par deux clés étrangères non en
+   cascade** — `Handover_reservationId_fkey` et `Contract_reservationId_fkey`
+   retiennent la réservation. Les photos, les échéances, le dossier et les
+   pièces partent seuls.
+
+Un balayage de fin efface aussi les comptes laissés par une exécution
+interrompue : la base locale ne se remplit pas de clients fantômes.
+
+### Un contrôle qui avait tort
+
+Le script attendait d'abord un échéancier après le scellement. **En
+location-accession il n'y en a pas, et c'est voulu** : l'acte prévoit une
+redevance JOURNALIÈRE, pas des mensualités — le dû se calcule jour par jour
+(`duADate`). Une vente échelonnée, elle, pose cinq échéances. C'était le
+contrôle qui se trompait, pas le code.
+
+### Ce qu'il ne couvre pas
+
+La restitution, les versements et l'annulation ont leurs propres contrôles
+(`verif:versements`, `verif:annulation`). Et il ne prouve rien sur la
+production : il tourne en local, contre `.env.local`, comme tous les scripts
+qui écrivent.
+
 ## Avant de déployer : `npm run verif:prod`
 
 Ce contrôle répond à une seule question — si on démarre l'application avec cet

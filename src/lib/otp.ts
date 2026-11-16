@@ -22,8 +22,8 @@
  * Ouvrir la connexion aux numéros étrangers expose à une fraude connue : des
  * robots demandent en masse des codes vers des numéros surtaxés, et c'est
  * l'entreprise qui paie les SMS. D'où quatre verrous cumulés :
- *   — par destinataire : 3 codes / 15 min et 10 / 24 h ;
- *   — par adresse IP   : 10 codes / 15 min et 40 / 24 h ;
+ *   — par destinataire : 5 codes / 15 min et 10 / 24 h ;
+ *   — par adresse IP, ET SEULEMENT POUR LA CONNEXION : 10 / 15 min, 40 / 24 h ;
  *   — plafond GLOBAL de SMS par heure (OTP_PLAFOND_SMS_HEURE), qui coupe la
  *     facture net en cas d'attaque distribuée ;
  *   — liste facultative des pays autorisés par SMS (SMS_PAYS_AUTORISES) ; les
@@ -47,12 +47,49 @@ const TENTATIVES_MAX = 5;
 const QUART_HEURE = 15 * 60_000;
 const JOUR = 24 * 3_600_000;
 
+/**
+ * Par destinataire — le verrou qui protège le CLIENT, et il vaut pour tous
+ * les buts.
+ *
+ * 5 et non 3 par quart d'heure (2026-11-16) : un parcours réel consomme deux
+ * codes, un pour la connexion et un pour la signature. À 3, il ne restait
+ * qu'un seul renvoi de marge — or sur un réseau où un SMS peut mettre
+ * plusieurs minutes, le client appuie sur « renvoyer » précisément parce que
+ * rien n'arrive. Le plafond journalier et le plafond global tiennent la
+ * facture ; celui-ci n'avait pas à être le plus serré des trois.
+ */
 const LIMITES = {
-  destinataireQuartHeure: 3,
+  destinataireQuartHeure: 5,
   destinataireJour: 10,
-  ipQuartHeure: 10,
-  ipJour: 40,
 } as const;
+
+/**
+ * Par adresse IP — le verrou qui protège la FACTURE, et il ne vise qu'un
+ * chemin : la connexion.
+ *
+ * ── Pourquoi la signature n'est pas logée à la même enseigne (2026-11-16) ──
+ * Le « SMS pumping » suppose de CHOISIR le numéro surtaxé qu'on fait appeler.
+ * À la connexion, l'appelant saisit librement ce numéro : le verrou par IP y
+ * est la protection principale, et il reste strict.
+ *
+ * À la signature, le numéro n'est pas choisi — il vient du compte attaché au
+ * contrat, et l'appel exige un jeton de signature qui est lui-même un secret.
+ * Le verrou n'y protégeait donc presque rien, pendant qu'il pouvait bloquer
+ * un vrai client : au retrait, le client signe SUR PLACE, souvent par le wifi
+ * de la boutique. Tous les clients du jour y partagent une seule adresse —
+ * à deux codes chacun, les 40 quotidiens tombaient au vingtième. Et le NAT
+ * des opérateurs sénégalais fait partager une même adresse publique à des
+ * abonnés sans aucun rapport entre eux. Le client se retrouvait devant le
+ * gérant, incapable de signer, pour une fraude qu'il ne pouvait pas commettre.
+ *
+ * Un plafond large demeure quand même sur ce chemin : non pour la fraude, que
+ * le quota par destinataire couvre déjà, mais pour qu'aucune boucle ne puisse
+ * tourner sans fin.
+ */
+const LIMITES_IP: Record<ButOtp, { quartHeure: number; jour: number }> = {
+  CONNEXION: { quartHeure: 10, jour: 40 },
+  SIGNATURE: { quartHeure: 60, jour: 240 },
+};
 
 const PLAFOND_SMS_HEURE_DEFAUT = 300;
 
@@ -162,23 +199,40 @@ export async function demanderCode(params: {
     const [dest15, destJour, ip15, ipJour, smsHeure] = await Promise.all([
       tx.otpCode.count({ where: { destinataire, createdAt: { gte: new Date(maintenant - QUART_HEURE) } } }),
       tx.otpCode.count({ where: { destinataire, createdAt: { gte: new Date(maintenant - JOUR) } } }),
-      ip ? tx.otpCode.count({ where: { ip, createdAt: { gte: new Date(maintenant - QUART_HEURE) } } }) : 0,
-      ip ? tx.otpCode.count({ where: { ip, createdAt: { gte: new Date(maintenant - JOUR) } } }) : 0,
+      // Comptés PAR BUT, comme les limites : sans cela, les codes de signature
+      // de la journée gonfleraient le quota de connexion, et le chemin qu’on
+      // vient de desserrer rebloquerait l’autre par la bande.
+      ip ? tx.otpCode.count({ where: { ip, but, createdAt: { gte: new Date(maintenant - QUART_HEURE) } } }) : 0,
+      ip ? tx.otpCode.count({ where: { ip, but, createdAt: { gte: new Date(maintenant - JOUR) } } }) : 0,
       transport.canal === "SMS"
         ? tx.otpCode.count({ where: { canal: "SMS", createdAt: { gte: new Date(maintenant - 3_600_000) } } })
         : 0,
     ]);
 
-    if (dest15 >= LIMITES.destinataireQuartHeure || ip15 >= LIMITES.ipQuartHeure) {
+    const limitesIp = LIMITES_IP[but];
+
+    if (dest15 >= LIMITES.destinataireQuartHeure || ip15 >= limitesIp.quartHeure) {
       throw new ErreurOtp("Trop de demandes. Réessayez dans 15 minutes.", "TROP_DE_DEMANDES");
     }
-    if (destJour >= LIMITES.destinataireJour || ipJour >= LIMITES.ipJour) {
+    if (destJour >= LIMITES.destinataireJour || ipJour >= limitesIp.jour) {
       throw new ErreurOtp("Trop de demandes aujourd'hui. Réessayez demain.", "TROP_DE_DEMANDES");
     }
     if (smsHeure >= plafondSmsHeure()) {
-      console.error("[otp] plafond horaire de SMS atteint — envois suspendus");
+      // Ce plafond bloque TOUT LE MONDE, y compris un client debout devant son
+      // gérant. Le journal doit donc dire qu'il a sauté, et à quel niveau :
+      // c'est la seule trace qui permette de comprendre, après coup, pourquoi
+      // une matinée entière n'a pas pu signer.
+      console.error(
+        `[otp] PLAFOND HORAIRE DE SMS ATTEINT (${smsHeure}/${plafondSmsHeure()}) — envois suspendus`,
+      );
+      // On n'oriente vers l'e-mail que si ce canal est RÉELLEMENT ouvert :
+      // avec EMAIL_DRIVER=console, l'issue de secours proposée n'existe pas,
+      // et le client cherche une porte qui n'est pas là.
+      const emailOuvert = transportPour("EMAIL").reel;
       throw new ErreurOtp(
-        "Le service d'envoi de SMS est momentanément saturé. Réessayez plus tard ou utilisez votre e-mail.",
+        emailOuvert
+          ? "Le service d'envoi de SMS est momentanément saturé. Réessayez plus tard ou utilisez votre e-mail."
+          : "Le service d'envoi de SMS est momentanément saturé. Réessayez dans quelques minutes, ou appelez votre boutique.",
         "SERVICE_SATURE",
       );
     }
