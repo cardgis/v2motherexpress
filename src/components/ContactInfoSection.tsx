@@ -41,7 +41,7 @@ const AGENCES: Agence[] = [
   {
     ville: 'Mbour',
     gerant: 'Olivier',
-    adresse: 'Route de Saly, près du restaurant Chez Ma Siga',
+    adresse: 'Près du terrain de basket sur la route de Saly',
     telephones: [{ affiche: '+221 70 367 75 75', numero: '+221703677575' }],
     codePlus: 'C2W7+5C',
     carteSrc: "https://maps.google.com/maps?q=C2W7%2B5C+M%27bour%2C+S%C3%A9n%C3%A9gal&output=embed&hl=fr&z=16",
@@ -50,7 +50,7 @@ const AGENCES: Agence[] = [
   {
     ville: 'Thiès',
     gerant: 'Lazare',
-    adresse: 'Quartier Mbour 1, en face du terrain Wallydaan',
+    adresse: 'Quartier Mbour 1, près du terrain Wallydaan',
     telephones: [
       { affiche: '+221 77 232 02 35', numero: '+221772320235' },
       { affiche: '+221 70 001 91 93', numero: '+221700019193' },
