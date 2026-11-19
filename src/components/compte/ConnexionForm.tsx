@@ -3,13 +3,19 @@
 /**
  * Connexion en deux étapes : identifiant → code à usage unique.
  *
- * Deux façons de se connecter :
- *   — par téléphone, sénégalais ou étranger (code par SMS) ;
- *   — par e-mail, pour les visiteurs de passage au Sénégal sans numéro local
- *     joignable (code par e-mail).
+ * UNE SEULE FAÇON DE SE CONNECTER : le téléphone, sénégalais ou étranger,
+ * avec un code par SMS. L'onglet e-mail a été retiré le 2026-11-19 — laisser
+ * le choix, c'est le proposer : un client tenté par l'e-mail devient un
+ * client qu'on ne joint pas au retrait, alors qu'un numéro est direct.
+ *
+ * L'API, elle, accepte toujours un e-mail comme identifiant, et
+ * `lib/dossier.ts` exige de toute façon un téléphone joignable dans le
+ * dossier de quiconque se serait connecté autrement. Le jour où le canal
+ * e-mail sera ouvert — il est fermé, `EMAIL_DRIVER` vaut `console` —,
+ * rouvrir une porte ici sera une ligne.
  *
  * Contraintes de terrain (mobile, 3G/4G instable) :
- *   — clavier adapté à chaque mode (numérique, ou e-mail avec « @ ») ;
+ *   — clavier numérique ;
  *   — `autoComplete="one-time-code"` pour que le téléphone propose le code ;
  *   — la saisie survit au retour arrière, on ne la retape jamais ;
  *   — messages d'erreur explicites, sous le champ concerné ;
@@ -18,7 +24,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, AtSign, RefreshCw, Smartphone } from "lucide-react";
+import { ArrowLeft, RefreshCw } from "lucide-react";
 import { Champ } from "@/components/ui/Champ";
 import { Alerte } from "@/components/ui/Alerte";
 import { Bouton } from "@/components/ui/Bouton";
@@ -26,15 +32,12 @@ import { Bouton } from "@/components/ui/Bouton";
 const SECONDES_AVANT_RENVOI = 45;
 
 type Etape = "identifiant" | "code";
-type Mode = "telephone" | "email";
 
 export default function ConnexionForm({ suite = null }: { suite?: string | null }) {
   const router = useRouter();
 
   const [etape, setEtape] = useState<Etape>("identifiant");
-  const [mode, setMode] = useState<Mode>("telephone");
   const [telephone, setTelephone] = useState("");
-  const [email, setEmail] = useState("");
   const [destinataireMasque, setDestinataireMasque] = useState("");
   const [code, setCode] = useState("");
   /** Renseigné uniquement en développement, quand aucun message n'est envoyé. */
@@ -49,11 +52,8 @@ export default function ConnexionForm({ suite = null }: { suite?: string | null 
 
   const champCode = useRef<HTMLInputElement>(null);
 
-  const identifiant = mode === "telephone" ? telephone : email;
-  const saisieExploitable =
-    mode === "telephone"
-      ? telephone.replace(/\D/g, "").length >= 8
-      : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const identifiant = telephone;
+  const saisieExploitable = telephone.replace(/\D/g, "").length >= 8;
 
   // Décompte avant que le renvoi ne redevienne possible
   useEffect(() => {
@@ -143,74 +143,34 @@ export default function ConnexionForm({ suite = null }: { suite?: string | null 
             "Recevez un code à 6 chiffres, sans mot de passe."
           ) : (
             <>
-              Code envoyé à <strong>{destinataireMasque}</strong>
-              {mode === "email" ? ". Pensez à vérifier vos courriers indésirables." : "."}
+              Code envoyé à <strong>{destinataireMasque}</strong>.
             </>
           )}
         </p>
 
         {etape === "identifiant" ? (
           <form onSubmit={demanderCode} className="lme-pile" style={{ marginTop: 22 }} noValidate>
-            <div role="tablist" aria-label="Mode de connexion" className="lme-onglets">
-              <Onglet actif={mode === "telephone"} id="onglet-telephone" onClick={() => { setMode("telephone"); effacerErreurs(); }}>
-                <Smartphone size={16} aria-hidden />
-                Téléphone
-              </Onglet>
-              <Onglet actif={mode === "email"} id="onglet-email" onClick={() => { setMode("email"); effacerErreurs(); }}>
-                <AtSign size={16} aria-hidden />
-                E-mail
-              </Onglet>
-            </div>
-
-            <div role="tabpanel" id="panneau-connexion" aria-labelledby={`onglet-${mode}`}>
-              {mode === "telephone" ? (
-                <Champ
-                  libelle="Numéro de mobile"
-                  requis
-                  erreur={erreurChamp}
-                  aide="Numéro sénégalais : 77 123 45 67. Numéro étranger : avec l’indicatif, par exemple +33 6 12 34 56 78."
-                >
-                  <input
-                    id="telephone"
-                    type="tel"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    autoFocus
-                    maxLength={32}
-                    placeholder="77 123 45 67"
-                    value={telephone}
-                    onChange={(e) => {
-                      setTelephone(e.target.value);
-                      setErreurChamp(null);
-                    }}
-                  />
-                </Champ>
-              ) : (
-                <Champ
-                  libelle="Adresse e-mail"
-                  requis
-                  erreur={erreurChamp}
-                  aide="Pratique si vous séjournez au Sénégal sans numéro local. / Handy if you are visiting Senegal without a local number."
-                >
-                  <input
-                    id="email"
-                    type="email"
-                    inputMode="email"
-                    autoComplete="email"
-                    autoCapitalize="none"
-                    spellCheck={false}
-                    autoFocus
-                    maxLength={254}
-                    placeholder="prenom.nom@exemple.com"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setErreurChamp(null);
-                    }}
-                  />
-                </Champ>
-              )}
-            </div>
+            <Champ
+              libelle="Numéro de mobile"
+              requis
+              erreur={erreurChamp}
+              aide="Numéro sénégalais : 77 123 45 67. Numéro étranger : avec l’indicatif, par exemple +33 6 12 34 56 78."
+            >
+              <input
+                id="telephone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                autoFocus
+                maxLength={32}
+                placeholder="77 123 45 67"
+                value={telephone}
+                onChange={(e) => {
+                  setTelephone(e.target.value);
+                  setErreurChamp(null);
+                }}
+              />
+            </Champ>
 
             {erreur ? (
               <Alerte ton="erreur" vivante>
@@ -270,7 +230,7 @@ export default function ConnexionForm({ suite = null }: { suite?: string | null 
                   effacerErreurs();
                 }}
               >
-                {mode === "telephone" ? "Changer de numéro" : "Changer d’adresse"}
+                Changer de numéro
               </Bouton>
               <Bouton
                 variante="fantome"
@@ -295,29 +255,3 @@ export default function ConnexionForm({ suite = null }: { suite?: string | null 
   );
 }
 
-function Onglet({
-  actif,
-  id,
-  onClick,
-  children,
-}: {
-  actif: boolean;
-  id: string;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      role="tab"
-      id={id}
-      aria-selected={actif}
-      aria-controls="panneau-connexion"
-      tabIndex={actif ? 0 : -1}
-      className="lme-onglet"
-      onClick={onClick}
-    >
-      {children}
-    </button>
-  );
-}
