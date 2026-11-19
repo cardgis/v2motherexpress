@@ -101,7 +101,6 @@ export function HomeBestSellersSection({ produits }: { produits: ProduitHome[] }
           {produits.map((produit, i) => {
             const usage = USAGES[produit.slug];
             const vingtQuatre = produit.tarification?.tarif24hFcfa;
-            const journee = produit.tarification?.tarifJourneeFcfa;
 
             return (
               <article className="lme-bs" key={produit.id}>
@@ -169,9 +168,11 @@ export function HomeBestSellersSection({ produits }: { produits: ProduitHome[] }
                         <span>les 24 heures</span>
                       </p>
                     ) : null}
-                    {journee ? (
-                      <p className="lme-bs__second">Journée : {fcfa(journee)}</p>
-                    ) : null}
+                    {/* PLUS DE SECONDE LIGNE (Alexandre, 2026-11-19) : la
+                        location se compte en 24 heures, un point c'est tout.
+                        Afficher « Journée : 7 000 » sous « 10 000 les 24 h »
+                        obligeait le visiteur à choisir entre deux durées dont
+                        une seule est proposée. */}
                   </div>
 
                   <div className="lme-bs__actions">

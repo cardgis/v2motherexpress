@@ -32,8 +32,6 @@ function IconeFleche() {
 }
 
 export function HomeFormulesSection({ bornes }: { bornes: BornesTarifs }) {
-  const demiJournee = bornes.demiJourneeMin;
-  const journee = bornes.journeeMin;
   const vingtQuatre = bornes.vingtQuatreMin;
 
   // L'offre à annoncer, et NON la moins chère : la règle vit dans
@@ -66,20 +64,23 @@ export function HomeFormulesSection({ bornes }: { bornes: BornesTarifs }) {
             <p className="lme-formule__pour">Un besoin ponctuel</p>
             <h3 className="lme-formule__nom">Location à la journée</h3>
             <p className="lme-formule__texte">
-              Vous avez besoin d’un scooter quelques heures, quelques jours, le temps d’un
+              Vous avez besoin d’un scooter un jour, quelques jours, le temps d’un
               déplacement.
             </p>
-            {demiJournee !== null ? (
+            {/* LES 24 HEURES, ET RIEN D’AUTRE (Alexandre, 2026-11-19).
+                Cette colonne annonçait la demi-journée en titre, puis
+                « Journée / 24 h » juste en dessous : trois durées pour une
+                seule formule, dont deux qui ne sont pas proposées. Le titre
+                porte donc la borne basse des 24 heures, et la ligne de faits
+                a disparu — elle ne disait plus rien de neuf. */}
+            {vingtQuatre !== null ? (
               <p className="lme-formule__prix">
-                <strong>{fcfa(demiJournee)}</strong>
-                <span>la demi-journée</span>
+                <strong>{fcfa(vingtQuatre)}</strong>
+                <span>les 24 heures</span>
               </p>
             ) : null}
             <dl className="lme-formule__faits">
               <div><dt>Durée</dt><dd>D’un jour à un mois</dd></div>
-              {journee !== null && vingtQuatre !== null ? (
-                <div><dt>Journée / 24 h</dt><dd>{fcfa(journee)} / {fcfa(vingtQuatre)}</dd></div>
-              ) : null}
               <div><dt>Au terme</dt><dd className="lme-formule__neutre">Vous le rendez</dd></div>
             </dl>
             <Link href={LIEN_RESERVER} className="lme-formule__bouton">Louer à la journée</Link>

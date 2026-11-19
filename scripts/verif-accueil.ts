@@ -134,9 +134,14 @@ async function main() {
         page.includes(`<strong>${fr(p.tarification.tarif24hFcfa)} FCFA</strong>`),
         `${p.nom} — les 24 h en titre`,
       );
+      // La seconde ligne « Journée : … » a été retirée le 2026-11-19 : la
+      // location se compte en 24 heures, et afficher deux durées obligeait le
+      // visiteur à choisir entre l'une qu'on propose et l'autre qu'on ne
+      // propose pas. On garde le contrôle, retourné.
       resultat(
-        page.includes(`Journée : ${fr(p.tarification.tarifJourneeFcfa)} FCFA`),
-        `${p.nom} — la journée en seconde ligne`,
+        !page.includes(`Journée : ${fr(p.tarification.tarifJourneeFcfa)} FCFA`),
+        `${p.nom} — aucune seconde ligne « Journée »`,
+        "la location se compte en 24 heures",
       );
     }
   }
@@ -148,11 +153,28 @@ async function main() {
 
   console.log("\n=== Trois façons de rouler : les bornes du catalogue ===");
   const { tarifMatinFcfa, tarifJourneeFcfa, tarif24hFcfa } = tarifs._min;
-  if (tarifMatinFcfa) resultat(page.includes(`<strong>${fr(tarifMatinFcfa)} FCFA</strong>`), `demi-journée : ${fr(tarifMatinFcfa)} F`);
+
+  // UNE SEULE DURÉE, LES 24 HEURES (Alexandre, 2026-11-19) : « on ne fait pas
+  // pour 4 heures, 2 heures ». La colonne annonçait auparavant la
+  // demi-journée en titre puis « Journée / 24 h » en dessous — trois durées
+  // pour une formule, dont deux qui ne sont pas proposées.
+  if (tarif24hFcfa) {
+    resultat(
+      page.includes(`<strong>${fr(tarif24hFcfa)} FCFA</strong>`),
+      `les 24 heures : ${fr(tarif24hFcfa)} F`,
+    );
+  }
+  if (tarifMatinFcfa) {
+    resultat(
+      !page.includes(`<strong>${fr(tarifMatinFcfa)} FCFA</strong>`),
+      "aucune demi-journée annoncée",
+      `${fr(tarifMatinFcfa)} F est le tarif matin : il existe au catalogue, il ne s'affiche plus ici`,
+    );
+  }
   if (tarifJourneeFcfa && tarif24hFcfa) {
     resultat(
-      page.includes(`${fr(tarifJourneeFcfa)} FCFA / ${fr(tarif24hFcfa)} FCFA`),
-      `journée / 24 h : ${fr(tarifJourneeFcfa)} / ${fr(tarif24hFcfa)} F`,
+      !page.includes(`${fr(tarifJourneeFcfa)} FCFA / ${fr(tarif24hFcfa)} FCFA`),
+      "aucune ligne « Journée / 24 h »",
     );
   }
   resultat(page.includes("Sans engagement"), "la colonne accession nomme l'absence d'engagement");
