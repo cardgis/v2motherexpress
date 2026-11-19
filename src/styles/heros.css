@@ -120,9 +120,11 @@
 /* ── Le contenu ──────────────────────────────────────────────────────────── */
 
 /* L'en-tête du site est posé en ABSOLU par-dessus le bandeau : sans réserve
-   en haut, la pastille « Dem rek · Partenaire… » venait se coller au logo
-   (signalé par Alexandre le 2026-11-14). La marge haute dégage la hauteur de
-   l'en-tête, et elle suit la largeur de l'écran comme le reste. */
+   en haut, le contenu vient se coller au logo — signalé par Alexandre le
+   2026-11-14, quand la pastille « Dem rek · Partenaire… » occupait encore
+   cette place. Elle a été retirée le 2026-11-19 : c'est le titre qui doit
+   désormais dégager l'en-tête. La marge haute en réserve la hauteur, et elle
+   suit la largeur de l'écran comme le reste. */
 .lme-heros__bande {
   position: relative;
   max-width: 1240px;
@@ -134,33 +136,9 @@
   max-width: 760px;
 }
 
-.lme-heros__pastille {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0 0 26px;
-  padding: 8px 14px;
-  border: 1px solid rgba(232, 165, 52, 0.35);
-  border-radius: 999px;
-  background: rgba(232, 165, 52, 0.1);
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #fcd34d;
-}
-
 /* « Dem rek » : une SEULE fois, et à la place d'honneur. La V1 le répétait en
    filigrane sur les trois diapositives, où il ne disait rien à qui ne le
    connaît pas. Ici, c'est une signature. */
-.lme-heros__signature {
-  color: #ffffff;
-  letter-spacing: 0.2em;
-}
-
-.lme-heros__separateur {
-  color: rgba(252, 211, 77, 0.5);
-}
 
 .lme-heros__titre {
   margin: 0 0 26px;

@@ -61,7 +61,14 @@
   min-height: 148px;
 }
 
+/* FLEX, et non un bloc (2026-11-19). Le sceau y était un `inline-block`,
+   donc aligné sur la LIGNE DE BASE : le navigateur réservait sous lui la
+   place des jambages, et il remontait de quelques pixels par rapport aux
+   liens et aux boutons, pourtant centrés par `__inner`. En flex, il n'y a
+   plus de ligne de base à respecter — l'élément est centré, point. */
 .page-header__left {
+  display: flex;
+  align-items: center;
   padding-right: 100px;
   padding-left: 100px;
 }

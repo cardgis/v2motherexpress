@@ -112,7 +112,22 @@ async function main() {
     );
     resultat(!entree.avecEngagement, "le tarif annoncé n'exige AUCUN engagement");
   }
-  resultat((page.match(/Dem rek/g) ?? []).length === 1, "« Dem rek » paraît une seule fois");
+  // « Dem rek » a d'abord été un filigrane répété sur chaque diapositive, puis
+  // une signature unique en sur-titre. La pastille qui la portait — avec
+  // « Partenaire officiel Revoo · Thiès & Mbour », son fond et sa bordure — a
+  // été retirée le 2026-11-19 : trois informations de second rang que le
+  // regard devait franchir avant d'arriver à ce qu'on vend. Le contrôle est
+  // retourné pour qu'elle ne revienne pas par habitude.
+  resultat(!/Dem rek/.test(page), "aucune pastille « Dem rek » au-dessus du titre");
+  // Borné AU BANDEAU : « Partenaire officiel Revoo » vit aussi dans le pied de
+  // page, où il a toute sa place. C'est la pastille du bandeau qui est partie,
+  // pas la mention partout.
+  const bandeau = page.slice(0, page.indexOf('id="best"') + 1 || page.length);
+  resultat(
+    !/Partenaire officiel Revoo/.test(bandeau),
+    "ni sa mention « Partenaire officiel Revoo » dans le bandeau",
+    "elle reste dans le pied de page, et c'est voulu",
+  );
 
   console.log("\n=== Best-sellers : données de BASE, pas les tarifs d'accession ===");
   const noms = [...page.matchAll(/lme-bs__nom">([^<]*)/g)].map((m) => m[1]);

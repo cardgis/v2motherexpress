@@ -33,9 +33,11 @@ import '@/styles/heros.css';
  * Les particules dorées, ralenties et atténuées : elles donnent sa chaleur au
  * bandeau, et ce fond sombre les porte mieux qu'une photo claire.
  *
- * « Dem rek » est conservé mais PROMU : une seule occurrence, en sur-titre,
- * là où une signature de marque a du poids — au lieu d'un filigrane répété
- * qui ne disait rien à qui ne le connaît pas.
+ * « Dem rek » avait été conservé puis promu en sur-titre, dans une pastille
+ * qui portait aussi « Partenaire officiel Revoo · Thiès & Mbour ». ELLE A ÉTÉ
+ * RETIRÉE le 2026-11-19, texte, fond et bordure : trois informations de
+ * second rang posées au-dessus du titre, que le regard devait franchir avant
+ * d'arriver à ce qu'on vend. Le bandeau commence maintenant par sa promesse.
  *
  * ── CE QUI EST ABANDONNÉ, DÉLIBÉRÉMENT ───────────────────────────────────
  * Les flèches `data-uk-slidenav` : sans le JavaScript du thème, elles ne
@@ -117,12 +119,6 @@ export function HomeHeroAbout({ nombreModeles, bornes }: { nombreModeles: number
 
       <div className="lme-heros__bande">
         <div className="lme-heros__texte">
-
-          <p className="lme-heros__pastille">
-            <span className="lme-heros__signature">Dem rek</span>
-            <span className="lme-heros__separateur" aria-hidden="true">·</span>
-            Partenaire officiel Revoo · Thiès &amp; Mbour
-          </p>
 
           <h1 className="lme-heros__titre">
             Roulez aujourd’hui.<br />
