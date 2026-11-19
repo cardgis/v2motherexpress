@@ -30,7 +30,7 @@ export function NavbarOverlays({ menuOpen, onCloseMenu }: NavbarOverlaysProps) {
             <div className="logo">
               <Link className="logo__link" href="/" onClick={onCloseMenu}>
                 <div className="logo__icon">
-                  <img src="/assets/img/logo-la-mother-express.png" alt="La Mother Express" width="180" height="57" decoding="async" />
+                  <img src="/assets/img/logo-la-mother-express.png" alt="La Mother Express" width="180" height="58" decoding="async" />
                 </div>
                 <div className="logo__text">La Mother Express</div>
               </Link>

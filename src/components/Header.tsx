@@ -44,7 +44,7 @@ export function Header() {
         <div className="page-header__inner">
           <div className="page-header__left">
             <div className="logo"><Link className="logo__link" href="/">
-                <div className="logo__icon"><img src="/assets/img/logo-la-mother-express.png" alt="La Mother Express" width="600" height="191" decoding="async" /></div>
+                <div className="logo__icon"><img src="/assets/img/logo-la-mother-express.png" alt="La Mother Express" width="600" height="193" decoding="async" /></div>
                 <div className="logo__text"></div>
               </Link></div>
           </div>
