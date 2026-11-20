@@ -154,7 +154,7 @@ export default function ConnexionForm({ suite = null }: { suite?: string | null 
               libelle="Numéro de mobile"
               requis
               erreur={erreurChamp}
-              aide="Numéro sénégalais : 77 123 45 67. Numéro étranger : avec l’indicatif, par exemple +33 6 12 34 56 78."
+              aide="Un numéro sénégalais : 77 123 45 67. Nos codes ne partent que vers le Sénégal."
             >
               <input
                 id="telephone"

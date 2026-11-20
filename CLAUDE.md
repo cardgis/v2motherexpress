@@ -660,6 +660,74 @@ Ce qu'il attrape et qu'un humain relit mal :
 Il ne touche aucune base, donc trois choses restent à faire sur l'hébergeur :
 `npx prisma migrate deploy`, `npm run verif:solde` (le crédit n'est pas de la
 configuration) et la planification quotidienne de `npm run cron:expiration`.
+## Dexchange ne dessert QUE le Sénégal (2026-11-20)
+
+**Établi par un vrai envoi**, pas par une supposition. `npm run verif:sms` sur
+un numéro français :
+
+```
+✓ numéro normalisé en E.164
+✓ FR autorisé (63 pays dans la liste)
+✓ SMS_DRIVER = dexchange
+KO  Dexchange a refusé — HTTP 400, « Envoi non autorisé vers ce(s)
+    numéro(s) : 336… (pays non disponible) »
+```
+
+La configuration annonçait **63 pays** — les 54 d'Afrique plus neuf de
+diaspora. Elle promettait donc pour le compte d'un prestataire qui ne tenait
+pas : le filtre laissait passer, et l'échec survenait chez le fournisseur, où
+le client ne lisait qu'une panne technique. `SMS_PAYS_AUTORISES` vaut
+désormais **`SN`**, et le refus est propre et explicite.
+
+### La liste des pays desservis n'est pas publique
+
+Cherchée à la source avant de trancher. `docs.dexchange-sms.com` dit
+seulement : « Les envois ne sont autorisés que vers les pays **activés** sur
+la plateforme », et renvoie vers une page Tarifs qui répond **404**. La
+spécification OpenAPI complète ne contient **aucune** énumération de pays et
+**aucun** endpoint `/countries`, `/destinations` ou `/coverage` — sept
+chemins seulement : `/send/sms`, `/balance`, `/send/otp`, `/verify/otp` et
+trois WhatsApp.
+
+« Activés sur la plateforme » veut dire **activés sur NOTRE compte** : ce
+n'est pas une donnée publique par nature. La source faisant autorité est le
+tableau de bord Dexchange, ou `support@dexchange.sn`. Alexandre a confirmé le
+2026-11-20 : **le Sénégal seul**.
+
+À savoir si la question revient : un refus « pays non disponible » **ne débite
+aucune unité** (leur documentation le dit, et c'est vérifié). Tester un pays
+fermé est donc gratuit ; tester un pays ouvert envoie un vrai SMS à un vrai
+numéro, ce qui interdit de balayer la liste à l'aveugle.
+
+### Trois textes promettaient avec la configuration
+
+Ils ont été corrigés en même temps, sans quoi ils auraient survécu à la
+limite qu'ils décrivaient :
+
+1. Le refus de pays renvoyait vers « Connectez-vous avec votre adresse
+   e-mail » — dont l'onglet a été retiré la veille et dont le canal est fermé
+   (`EMAIL_DRIVER=console`). Proposer une issue qui n'existe pas est pire que
+   d'énoncer la limite : la personne cherche une porte au lieu d'appeler la
+   boutique. Le message l'invite désormais à appeler.
+2. Le message d'identifiant invalide donnait « +33 6 12 34 56 78 » en exemple
+   de numéro accepté.
+3. L'aide du champ de connexion disait « Numéro étranger : avec l'indicatif ».
+
+`npm run verif:quotas` garde les trois : un numéro français doit être refusé
+AVANT l'envoi avec le code `PAYS_NON_DESSERVI`, et son message ne doit pas
+mentionner l'e-mail.
+
+### Le piège du « 07 », insoluble et assumé
+
+`normaliserTelephone` retire le « zéro de courtoisie » : `0771234567` devient
+`+221771234567`. Un mobile français `07 55 66 77 88` tapé sans indicatif
+devient donc `+221 75 566 77 88`, un numéro sénégalais parfaitement valide —
+le code partirait chez un inconnu. Les deux écritures sont rigoureusement
+identiques en chiffres : **on ne peut que choisir le défaut**, et pour un
+service qui ne dessert que le Sénégal, le Sénégal est le bon. Le garde-fou
+reste l'écran suivant, qui affiche `+221 ••••• 88` : un étranger y verrait
+son indicatif changé.
+
 ## Envoi des codes : Dexchange (2026-11-04)
 
 Choix d'Alexandre : **Dexchange, fournisseur basé à Dakar, devient la route du

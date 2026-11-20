@@ -26,8 +26,11 @@
  *   — par adresse IP, ET SEULEMENT POUR LA CONNEXION : 10 / 15 min, 40 / 24 h ;
  *   — plafond GLOBAL de SMS par heure (OTP_PLAFOND_SMS_HEURE), qui coupe la
  *     facture net en cas d'attaque distribuée ;
- *   — liste facultative des pays autorisés par SMS (SMS_PAYS_AUTORISES) ; les
- *     autres visiteurs se connectent par e-mail, qui ne coûte rien.
+ *   — liste des pays autorisés par SMS (SMS_PAYS_AUTORISES). Elle vaut SN
+ *     seul depuis le 2026-11-20 : Dexchange ne dessert QUE le Sénégal, ce
+ *     qu'un essai sur un numéro français a établi — « pays non disponible »,
+ *     HTTP 400. La liste annonçait 63 pays ; elle promettait pour le compte
+ *     d'un prestataire qui ne tenait pas.
  * Les compteurs vivent en base : ils valent pour toutes les instances.
  */
 
@@ -155,9 +158,13 @@ function verifierPaysSms(identifiant: Identifiant) {
 
   const pays = paysDuTelephone(identifiant.valeur);
   if (!pays || !autorises.has(pays)) {
+    // On ne renvoie PLUS vers l'e-mail : son onglet a été retiré le
+    // 2026-11-19 et son canal est fermé (EMAIL_DRIVER=console). Proposer une
+    // issue qui n'existe pas est pire que de dire la limite — la personne
+    // cherche une porte au lieu d'appeler la boutique.
     throw new ErreurOtp(
-      "L'envoi de code par SMS n'est pas disponible pour ce pays. " +
-        "Connectez-vous avec votre adresse e-mail.",
+      "Nos codes de connexion ne partent que vers des numéros sénégalais. " +
+        "Avec un numéro étranger, appelez la boutique : elle ouvrira votre dossier avec vous.",
       "PAYS_NON_DESSERVI",
     );
   }

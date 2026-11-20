@@ -77,10 +77,49 @@ async function combienPassent(numeros: string[], but: ButOtp, ip: string): Promi
 const numeros = (n: number, decalage = 0) =>
   Array.from({ length: n }, (_, i) => `${PREFIXE}${String(decalage + i).padStart(2, "0")}`);
 
+/** L'erreur levée, pour pouvoir juger son code ET son texte. */
+async function refusPour(numero: string): Promise<ErreurOtp | null> {
+  const identifiant = analyserIdentifiant(numero);
+  if (!identifiant) throw new Error(`numéro invalide : ${numero}`);
+  try {
+    await demanderCode({ identifiant, but: "CONNEXION", ip: "10.0.9.1" });
+    return null;
+  } catch (erreur) {
+    if (erreur instanceof ErreurOtp) return erreur;
+    throw erreur;
+  }
+}
+
 async function main() {
   console.log("\nQuotas anti-abus de l'OTP\n");
 
   try {
+    // ── 0. Le pays, avant tout quota ─────────────────────────────────────
+    // Dexchange ne dessert QUE le Sénégal (établi le 2026-11-20 sur un vrai
+    // envoi : « pays non disponible », HTTP 400). La liste annonçait 63 pays
+    // et promettait donc pour le compte d'un prestataire qui ne tenait pas.
+    console.log("=== Un seul pays desservi ===");
+    // Numéro d’exemple, celui de la documentation de Dexchange : aucun
+    // numéro réel n’a sa place dans un fichier versionné.
+    const etranger = await refusPour("+33612345678");
+    resultat(
+      etranger?.code === "PAYS_NON_DESSERVI",
+      `un numéro français est refusé AVANT l'envoi (${etranger?.code ?? "accepté !"})`,
+      "sinon le refus viendrait du fournisseur, et le client lirait une panne technique",
+    );
+    // Le message ne doit plus orienter vers l'e-mail : son onglet est retiré
+    // et son canal est fermé. Une issue qui n'existe pas est pire que la
+    // limite elle-même.
+    resultat(
+      !!etranger && !/e-?mail/i.test(etranger.message),
+      "et son message ne renvoie pas vers l'e-mail",
+      etranger ? `message : « ${etranger.message} »` : undefined,
+    );
+    resultat(
+      (await refusPour(`${PREFIXE}99`)) === null,
+      "un numéro sénégalais passe",
+    );
+
     // ── 1. Par destinataire : 5 par quart d'heure, tous buts confondus ────
     console.log("=== Le verrou qui protège le CLIENT ===");
     const unSeul = `${PREFIXE}90`;

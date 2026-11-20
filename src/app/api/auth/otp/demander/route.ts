@@ -14,7 +14,9 @@ import { adresseIp } from "@/lib/requete";
 export const maxDuration = 60;
 
 /**
- * Demande d'un code de connexion, par SMS ou par e-mail selon l'identifiant.
+ * Demande d'un code de connexion. Par SMS vers un numéro sénégalais — le
+ * seul pays que Dexchange dessert (2026-11-20). L'e-mail reste accepté par
+ * l'API, mais son canal est fermé et son onglet a été retiré de l'écran.
  *
  * La réponse est la même, qu'un compte existe ou non pour cet identifiant :
  * elle ne permet pas de savoir qui est client de La Mother Express.
@@ -29,8 +31,8 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Identifiant invalide. Saisissez un numéro de mobile (77 123 45 67, ou avec " +
-            "l'indicatif pour un numéro étranger : +33 6 12 34 56 78) ou une adresse e-mail.",
+            "Numéro invalide. Saisissez un numéro de mobile sénégalais, par exemple " +
+            "77 123 45 67.",
         },
         { status: 400 },
       );
