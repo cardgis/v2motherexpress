@@ -14,9 +14,16 @@
  * pour le différentiel de la formule avec engagement).
  *
  * A12, C32 et E52 ne figuraient dans aucun document. Leurs redevances ont été
- * interpolées sur les deux points connus (410 000 F → 3 000 F/j,
- * 860 000 F → 5 000 F/j), arrondies à 500 F, puis VALIDÉES par le client le
- * 2026-09-10. Elles ne sont donc plus provisoires.
+ * interpolées sur les deux points connus À L’ÉPOQUE (A10 à 410 000 F →
+ * 3 000 F/j, B12 à 860 000 F → 5 000 F/j), arrondies à 500 F, puis VALIDÉES
+ * par le client le 2026-09-10. Elles ne sont donc plus provisoires.
+ *
+ * L’A10 est passée à 360 000 F le 2026-11-20 et les redevances N’ONT PAS
+ * BOUGÉ — c’est voulu : elles viennent de la grille officielle et des
+ * contrats signés, pas d’un calcul sur le prix de vente. `calculerAccession`
+ * ne lit d’ailleurs jamais `prixVenteFcfa` : le montant d’une accession est
+ * la redevance multipliée par les jours. Un prix de vente qui change ne
+ * déplace donc aucune accession, en cours ou à venir.
  *
  * Le drapeau `provisoire` reste dans le type : il resservira au prochain
  * modèle ajouté au catalogue sans tarif d'accession arrêté.

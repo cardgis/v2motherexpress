@@ -1,5 +1,6 @@
 import { HomeHeroAbout } from "@/components/HomeHeroAbout";
 import { HomeBestSellersSection } from "@/components/HomeBestSellersSection";
+import { HomeGrilleSection } from "@/components/HomeGrilleSection";
 import { HomeFormulesSection } from "@/components/HomeFormulesSection";
 import { HomeAccessionSection } from "@/components/HomeAccessionSection";
 import { HomeParcoursSection } from "@/components/HomeParcoursSection";
@@ -10,7 +11,7 @@ import { ContactInfoSection } from "@/components/ContactInfoSection";
 import { HomeCTASection } from "@/components/HomeCTASection";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import type { ProduitHome } from "@/types";
-import type { BornesTarifs } from "@/lib/home-data";
+import type { BornesTarifs, LigneGrille } from "@/lib/home-data";
 
 type HomePageContentProps = {
   produits: ProduitHome[];
@@ -18,6 +19,8 @@ type HomePageContentProps = {
   nombreModeles: number;
   /** Bornes de prix du catalogue complet, pour les « à partir de ». */
   bornes: BornesTarifs;
+  /** La grille de location, lue en base : quatre créneaux par modèle. */
+  grille: LigneGrille[];
 };
 
 /**
@@ -42,13 +45,17 @@ type HomePageContentProps = {
  * présentait en promotion ce qui est le modèle économique de la maison.
  * `HomeAccessionSection` prend sa place et son sujet.
  */
-export function HomePageContent({ produits, nombreModeles, bornes }: HomePageContentProps) {
+export function HomePageContent({ produits, nombreModeles, bornes, grille }: HomePageContentProps) {
   return (
     <div className="page-home">
       <ScrollReveal />
       <main className="page-main">
         <HomeHeroAbout nombreModeles={nombreModeles} bornes={bornes} />
         <HomeBestSellersSection produits={produits} />
+        {/* Juste après les trois plus demandés (Alexandre, 2026-11-20) : on
+            vient d'y voir trois prix 24 h, c'est le moment où l'on se demande
+            « et pour une demi-journée ? ». La réponse est la ligne suivante. */}
+        <HomeGrilleSection lignes={grille} />
         <HomeFormulesSection bornes={bornes} />
         <HomeAccessionSection />
         <HomeParcoursSection />

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { HomePageContent } from "@/components/HomePageContent";
-import { getHomeProductsData } from "@/lib/home-data";
+import { getHomeProductsData, grilleLocation } from "@/lib/home-data";
 import { jsonLd, schemaCatalogue } from "@/lib/seo/catalogue";
 
 export const dynamic = 'force-dynamic';
@@ -21,7 +21,10 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const { produits, nombreModeles, bornes } = await getHomeProductsData();
+  const [{ produits, nombreModeles, bornes }, grille] = await Promise.all([
+    getHomeProductsData(),
+    grilleLocation(),
+  ]);
 
   return (
     <>
@@ -39,6 +42,7 @@ export default async function Home() {
         }}
       />
       <HomePageContent
+        grille={grille}
         produits={produits}
         nombreModeles={nombreModeles}
         bornes={bornes}

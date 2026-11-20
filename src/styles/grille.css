@@ -1,0 +1,292 @@
+/*
+ * « La grille, sans surprise » — tarifs de location, 2026-11-20.
+ *
+ * ── Un vrai tableau, et pas des cartes ────────────────────────────────────
+ * Six modèles sur quatre créneaux : c'est une donnée à DEUX entrées, et on
+ * vient y comparer une ligne à l'autre. Des cartes casseraient précisément ce
+ * qu'on vient chercher — « combien me coûte le B12 l'après-midi, contre le
+ * C32 ? ». Le `<table>` est ici la bonne forme, et il est lu comme tel par un
+ * lecteur d'écran : en-têtes de colonnes ET de lignes.
+ *
+ * ── Sur téléphone, il défile, et la colonne des modèles reste ─────────────
+ * Un tableau de six colonnes ne tient pas sur 360 px, et le réduire le
+ * rendrait illisible. Il défile donc horizontalement, la première colonne
+ * collée à gauche : on garde toujours sous les yeux le modèle dont on lit le
+ * prix. C'est ce que fait un tableau de banque, pour la même raison.
+ *
+ * Classes `lme-`, aucune classe `uk-`.
+ */
+
+.lme-grille {
+  --encre: #09090b;
+  --texte-2: #52525b;
+  --texte-3: #71717a;
+  --filet: #e4e4e7;
+  --filet-2: #f4f4f5;
+  --fond: #fafafa;
+  --or: #e8a534;
+  --or-pale: #fdf6e7;
+  --ocre: #92400e;
+
+  background: var(--fond);
+  border-bottom: 1px solid var(--filet);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.lme-grille__bande {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: clamp(44px, 4.6vw, 68px) clamp(16px, 3.5vw, 48px);
+}
+
+/* ── L'en-tête ───────────────────────────────────────────────────────────── */
+
+.lme-grille__entete {
+  margin-bottom: 36px;
+}
+
+.lme-grille__surtitre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ocre);
+}
+
+.lme-grille__surtitre::before {
+  content: "";
+  width: 28px;
+  height: 2px;
+  background: var(--or);
+}
+
+.lme-grille__titre {
+  margin: 0 0 16px;
+  max-width: 48ch;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: clamp(30px, 3.4vw, 48px);
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--encre);
+}
+
+.lme-grille__accroche {
+  margin: 0;
+  max-width: 56ch;
+  font-size: clamp(16px, 1.4vw, 17px);
+  line-height: 1.65;
+  color: var(--texte-2);
+}
+
+/* ── Le tableau ──────────────────────────────────────────────────────────── */
+
+/* Le cadre porte le défilement : sans lui, c'est la page entière qui
+   déborderait sur téléphone. */
+.lme-grille__cadre {
+  overflow-x: auto;
+  background: #ffffff;
+  border: 1px solid var(--filet);
+  border-radius: 20px;
+  box-shadow: 0 1px 2px rgba(9, 9, 11, 0.04);
+  -webkit-overflow-scrolling: touch;
+}
+
+.lme-grille__table {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* La légende sert les lecteurs d'écran ; à l'œil, le titre de section la
+   redit déjà. */
+.lme-grille__legende {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.lme-grille__table thead th {
+  padding: 18px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--filet);
+  text-align: right;
+  vertical-align: bottom;
+}
+
+.lme-grille__creneau {
+  display: block;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--encre);
+}
+
+.lme-grille__detail {
+  display: block;
+  margin-top: 3px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--texte-3);
+}
+
+.lme-grille__table tbody tr + tr th,
+.lme-grille__table tbody tr + tr td {
+  border-top: 1px solid var(--filet-2);
+}
+
+.lme-grille__table td {
+  padding: 16px;
+  text-align: right;
+  font-size: 15.5px;
+  font-weight: 600;
+  color: #18181b;
+}
+
+/* La colonne des modèles reste visible quand le tableau défile. */
+.lme-grille__modele {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  padding: 16px 20px;
+  background: #ffffff;
+  text-align: left;
+  font-family: "Oswald", "Inter", sans-serif;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--encre);
+}
+
+/* L'ombre ne paraît que lorsqu'il y a quelque chose à masquer, c'est-à-dire
+   quand le tableau a effectivement défilé sous la colonne. */
+.lme-grille__table tbody .lme-grille__modele::after,
+.lme-grille__table thead .lme-grille__modele::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 100%;
+  background: var(--filet-2);
+}
+
+.lme-grille__km {
+  text-align: right;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--texte-2);
+}
+
+/* Les 24 h sont la durée que la maison met en avant : la colonne le dit. */
+.lme-grille__phare {
+  background: var(--or-pale);
+  font-weight: 700;
+  color: var(--encre);
+}
+
+/* ── La ligne d'un modèle à venir ────────────────────────────────────────── */
+
+.lme-grille__ligne--avenir th,
+.lme-grille__ligne--avenir td {
+  color: var(--texte-2);
+}
+
+.lme-grille__ligne--avenir .lme-grille__phare {
+  font-weight: 600;
+}
+
+.lme-grille__bientot {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--filet-2);
+  font-family: "Inter", sans-serif;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--texte-3);
+  vertical-align: middle;
+}
+
+/* ── Sous le tableau ─────────────────────────────────────────────────────── */
+
+.lme-grille__pied {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.lme-grille__note {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--texte-2);
+}
+
+.lme-grille__note strong {
+  color: #18181b;
+  font-weight: 600;
+}
+
+.lme-grille__bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 0 28px;
+  border-radius: 11px;
+  background: var(--or);
+  color: #1c1917;
+  font-size: 15.5px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 0.13s ease, filter 0.13s ease;
+}
+
+.lme-grille__bouton:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+
+@media (max-width: 639px) {
+  .lme-grille__modele {
+    font-size: 17px;
+    padding-inline: 16px;
+  }
+
+  .lme-grille__table td,
+  .lme-grille__table thead th {
+    padding: 14px 12px;
+  }
+
+  .lme-grille__bouton {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lme-grille__bouton {
+    transition: none;
+  }
+
+  .lme-grille__bouton:hover {
+    transform: none;
+  }
+}

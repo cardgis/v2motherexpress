@@ -86,3 +86,56 @@ export async function getAllProductsData() {
 
   return { produits };
 }
+
+/**
+ * La GRILLE DE LOCATION, telle que la boutique l'affiche à son comptoir.
+ *
+ * Quatre créneaux par modèle — 8h-13h, 14h-19h, 8h-19h et 24 h — plus les
+ * kilomètres inclus. Les montants viennent de `Tarification`, jamais du
+ * composant : la grille officielle du 2026-11-20 a été écrite en base, et
+ * c'est elle que la page lit. Le jour où un tarif change, il change à un seul
+ * endroit.
+ *
+ * Triée par le tarif 24 h croissant : c'est l'ordre du tableau officiel, et
+ * c'est aussi celui qui se lit — du modèle d'entrée au plus cher.
+ */
+export async function grilleLocation() {
+  const produits = await prisma.produit.findMany({
+    where: { estActif: true, tarification: { isNot: null } },
+    select: {
+      slug: true,
+      nom: true,
+      tarification: {
+        select: {
+          kmInclus: true,
+          tarifKmSupplementaire: true,
+          tarifMatinFcfa: true,
+          tarifApresMidiFcfa: true,
+          tarifJourneeFcfa: true,
+          tarif24hFcfa: true,
+        },
+      },
+    },
+  });
+
+  return produits
+    .filter((p): p is typeof p & { tarification: NonNullable<typeof p.tarification> } =>
+      Boolean(p.tarification),
+    )
+    .map((p) => ({
+      slug: p.slug,
+      // « Revoo A10 » devient « A10 » : la colonne est étroite, et le tableau
+      // officiel les nomme ainsi.
+      nom: p.nom.replace(/^Revoo\s+/i, ""),
+      kmInclus: p.tarification.kmInclus,
+      kmSupplementaire: p.tarification.tarifKmSupplementaire,
+      matin: p.tarification.tarifMatinFcfa,
+      apresMidi: p.tarification.tarifApresMidiFcfa,
+      journee: p.tarification.tarifJourneeFcfa,
+      vingtQuatre: p.tarification.tarif24hFcfa,
+      aVenir: false,
+    }))
+    .sort((a, b) => a.vingtQuatre - b.vingtQuatre);
+}
+
+export type LigneGrille = Awaited<ReturnType<typeof grilleLocation>>[number];

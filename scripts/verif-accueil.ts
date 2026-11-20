@@ -166,6 +166,84 @@ async function main() {
     "ils vivent dans la section accession, qui porte l'image",
   );
 
+  // ══ La grille de location ═══════════════════════════════════════════════
+  //
+  // Elle est arrivée le 2026-11-20 avec la grille officielle, et elle affiche
+  // QUATRE créneaux par modèle — ce qu'on avait retiré la veille des cartes,
+  // et qui revient ici, à un seul endroit, où l'on vient les consulter.
+  //
+  // Chaque montant est confronté à `Tarification`. C'est le contrôle le plus
+  // utile de ce fichier : une grille est exactement le genre de tableau qu'on
+  // recopie à la main « vite fait » le jour d'un changement de prix, et qui
+  // se met alors à mentir au client qui l'a lue avant de venir.
+  console.log("\n=== La grille de location : chaque case contre la base ===");
+
+  const grilleBase = await prisma.produit.findMany({
+    where: { estActif: true, tarification: { isNot: null } },
+    select: { nom: true, tarification: true },
+  });
+
+  const grilleHtml = (() => {
+    const i = page.indexOf('class="lme-grille__table"');
+    return i < 0 ? "" : page.slice(i, page.indexOf("</table>", i));
+  })();
+  resultat(grilleHtml.length > 0, "la section des tarifs est rendue");
+
+  for (const p of grilleBase) {
+    const t = p.tarification!;
+    const nom = p.nom.replace(/^Revoo\s+/i, "");
+    const attendus: [string, number][] = [
+      ["8h-13h", t.tarifMatinFcfa],
+      ["14h-19h", t.tarifApresMidiFcfa],
+      ["8h-19h", t.tarifJourneeFcfa],
+      ["24 h", t.tarif24hFcfa],
+    ];
+    const manquants = attendus.filter(([, v]) => !grilleHtml.includes(`${fr(v)} FCFA`));
+    resultat(
+      manquants.length === 0,
+      `${nom} — ses quatre créneaux sont au tableau (${attendus.map(([, v]) => fr(v)).join(" / ")})`,
+      manquants.length > 0 ? `absents : ${manquants.map(([c]) => c).join(", ")}` : undefined,
+    );
+    resultat(grilleHtml.includes(`${t.kmInclus} km`), `${nom} — ${t.kmInclus} km inclus`);
+  }
+
+  // Le C32 lithium n'est PAS au grilleBase : il viendra. Il figure au tableau,
+  // signalé comme tel, et nulle part ailleurs — surtout pas dans le nombre de
+  // modèles annoncé par l'appel final.
+  resultat(grilleHtml.includes("C32 lithium"), "le C32 lithium figure au tableau");
+  resultat(
+    /C32 lithium[\s\S]{0,200}bientôt/.test(grilleHtml),
+    "et il est signalé « bientôt », pas comme un modèle disponible",
+  );
+  resultat(
+    !(await prisma.produit.findFirst({ where: { nom: { contains: "lithium", mode: "insensitive" } } })),
+    "il n'est pas entré au catalogue par mégarde",
+    "lui créer une fiche le rendrait réservable alors qu'il n'existe pas en boutique",
+  );
+
+  // Le forfait kilométrique est sorti du tableau parce qu'il valait la même
+  // chose partout. La phrase doit donc dire la valeur RÉELLE, pas une
+  // constante qu'on aurait figée.
+  const forfaits = new Set(grilleBase.map((p) => p.tarification!.tarifKmSupplementaire));
+  if (forfaits.size === 1) {
+    const forfait = [...forfaits][0]!;
+    resultat(
+      page.includes(`${fr(forfait)} FCFA par tranche de 10 km`),
+      `le forfait kilométrique annoncé est celui du catalogue (${fr(forfait)} F / 10 km)`,
+    );
+  }
+
+  resultat(
+    !/casque/i.test(grilleHtml),
+    "aucun tarif de casque dans le tableau",
+    "écarté par Alexandre : un accessoire à 500 F n'aide pas à choisir un scooter",
+  );
+  resultat(
+    !/70 001 91 93/.test(grilleHtml),
+    "ni le numéro de téléphone du tableau papier",
+    "l'accueil le donne déjà dans les agences, la capsule et le pied",
+  );
+
   console.log("\n=== Trois façons de rouler : les bornes du catalogue ===");
   const { tarifMatinFcfa, tarifJourneeFcfa, tarif24hFcfa } = tarifs._min;
 
@@ -246,7 +324,7 @@ async function main() {
   console.log("\n=== Ce qui ne doit JAMAIS y revenir ===");
   resultat(!/en stock|Disponible en agence/i.test(page), "aucune disponibilité annoncée");
   resultat(
-    !/970 000|860 000|650 000|520 000|410 000/.test(page),
+    !/970 000|860 000|650 000|520 000|360 000/.test(page),
     "aucun total de scooter dans la prose",
     "les totaux vivent dans la fiche produit",
   );
