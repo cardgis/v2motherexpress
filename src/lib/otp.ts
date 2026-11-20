@@ -39,7 +39,7 @@ import { prisma } from "@/lib/prisma";
 import { cleDerivee } from "@/lib/secrets";
 import { paysDuTelephone, type Identifiant } from "@/lib/identifiant";
 import { masquerIdentifiant } from "@/lib/phone";
-import { transportPour } from "@/lib/envoi";
+import { transportPour, ErreurPaysNonDesservi } from "@/lib/envoi";
 import { messageCode } from "@/lib/envoi/modeles";
 import type { ButOtp, CanalOtp } from "@/generated/prisma";
 
@@ -280,6 +280,22 @@ export async function demanderCode(params: {
     // moyen de contourner la limitation.
     await prisma.otpCode.update({ where: { id: otp.id }, data: { consommeAt: new Date() } });
     console.error(`[otp] envoi impossible vers ${masquerIdentifiant(destinataire)}`, error);
+
+    // LE FILET DE SÉCURITÉ DE `SMS_PAYS_AUTORISES` (2026-11-20). Les pays
+    // desservis sont un réglage du COMPTE chez le fournisseur ; notre liste
+    // n'en est qu'une copie, et elle peut être en avance sur la réalité —
+    // CI, GN et CM y ont été ajoutés sur la foi de la grille tarifaire de
+    // DexNotify, sans qu'un numéro de ces pays ait pu être essayé. Si le
+    // fournisseur dément, le client lit la même phrase que si le filtre
+    // l'avait arrêté, et non une panne.
+    if (error instanceof ErreurPaysNonDesservi) {
+      throw new ErreurOtp(
+        "Nos codes de connexion ne partent pas vers ce pays. " +
+          "Appelez la boutique : elle ouvrira votre dossier avec vous.",
+        "PAYS_NON_DESSERVI",
+      );
+    }
+
     throw error;
   }
 

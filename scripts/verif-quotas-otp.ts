@@ -41,6 +41,9 @@ import type { ButOtp } from "../src/generated/prisma";
 /** Hors des plages attribuées, et propre à cette exécution. */
 const PREFIXE = `+2217001${String(Date.now() % 1000).padStart(3, "0")}`;
 
+/** Numéro ivoirien d'exemple — aucun envoi réel, le pilote est `console`. */
+const IVOIRIEN = "+2250701020304";
+
 let ok = 0;
 let ko = 0;
 
@@ -98,7 +101,7 @@ async function main() {
     // Dexchange ne dessert QUE le Sénégal (établi le 2026-11-20 sur un vrai
     // envoi : « pays non disponible », HTTP 400). La liste annonçait 63 pays
     // et promettait donc pour le compte d'un prestataire qui ne tenait pas.
-    console.log("=== Un seul pays desservi ===");
+    console.log("=== Les pays desservis ===");
     // Numéro d’exemple, celui de la documentation de Dexchange : aucun
     // numéro réel n’a sa place dans un fichier versionné.
     const etranger = await refusPour("+33612345678");
@@ -118,6 +121,19 @@ async function main() {
     resultat(
       (await refusPour(`${PREFIXE}99`)) === null,
       "un numéro sénégalais passe",
+    );
+
+    // CI, GN et CM ont été ajoutés le 2026-11-20 sur la foi de la grille
+    // « Prix par destination » de DexNotify — 0,128 € HT contre 0,016 € au
+    // Sénégal. AUCUN numéro de ces pays n'a pu être essayé : l'ouverture est
+    // un réglage du compte chez le fournisseur, et notre liste n'en est
+    // qu'une copie. Ce contrôle vérifie donc le FILTRE, pas la réalité du
+    // routage — c'est `lib/envoi` qui rattrape un démenti du fournisseur et
+    // le traduit dans la même phrase que ce refus-ci.
+    resultat(
+      (await refusPour(IVOIRIEN)) === null,
+      "un numéro ivoirien passe le filtre (CI, GN, CM ajoutés)",
+      "le fournisseur peut encore le refuser : ce contrôle ne juge que notre liste",
     );
 
     // ── 1. Par destinataire : 5 par quart d'heure, tous buts confondus ────
@@ -170,7 +186,7 @@ async function main() {
     );
   } finally {
     const efface = await prisma.otpCode.deleteMany({
-      where: { destinataire: { startsWith: PREFIXE } },
+      where: { OR: [{ destinataire: { startsWith: PREFIXE } }, { destinataire: IVOIRIEN }] },
     });
     console.log(`\n=== Nettoyage ===\n  OK   ${efface.count} code(s) temporaire(s) effacé(s)`);
   }

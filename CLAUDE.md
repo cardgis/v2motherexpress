@@ -660,10 +660,16 @@ Ce qu'il attrape et qu'un humain relit mal :
 Il ne touche aucune base, donc trois choses restent à faire sur l'hébergeur :
 `npx prisma migrate deploy`, `npm run verif:solde` (le crédit n'est pas de la
 configuration) et la planification quotidienne de `npm run cron:expiration`.
-## Dexchange ne dessert QUE le Sénégal (2026-11-20)
+## Les pays desservis : quatre, et c'est un réglage de COMPTE (2026-11-20)
 
-**Établi par un vrai envoi**, pas par une supposition. `npm run verif:sms` sur
-un numéro français :
+`SMS_PAYS_AUTORISES="SN,CI,GN,CM"`. La liste annonçait auparavant **63 pays**
+— les 54 d'Afrique plus neuf de diaspora — et promettait donc pour le compte
+d'un prestataire qui ne tenait pas.
+
+### Ce qui l'a établi : un vrai envoi
+
+`npm run verif:sms` sur un numéro français, après qu'Alexandre eut signalé
+l'échec :
 
 ```
 ✓ numéro normalisé en E.164
@@ -673,49 +679,88 @@ KO  Dexchange a refusé — HTTP 400, « Envoi non autorisé vers ce(s)
     numéro(s) : 336… (pays non disponible) »
 ```
 
-La configuration annonçait **63 pays** — les 54 d'Afrique plus neuf de
-diaspora. Elle promettait donc pour le compte d'un prestataire qui ne tenait
-pas : le filtre laissait passer, et l'échec survenait chez le fournisseur, où
-le client ne lisait qu'une panne technique. `SMS_PAYS_AUTORISES` vaut
-désormais **`SN`**, et le refus est propre et explicite.
+Le filtre laissait passer, l'échec survenait chez le fournisseur, et le client
+ne lisait qu'une panne technique.
 
-### La liste des pays desservis n'est pas publique
+### D'où viennent les quatre pays
 
-Cherchée à la source avant de trancher. `docs.dexchange-sms.com` dit
-seulement : « Les envois ne sont autorisés que vers les pays **activés** sur
-la plateforme », et renvoie vers une page Tarifs qui répond **404**. La
-spécification OpenAPI complète ne contient **aucune** énumération de pays et
-**aucun** endpoint `/countries`, `/destinations` ou `/coverage` — sept
-chemins seulement : `/send/sms`, `/balance`, `/send/otp`, `/verify/otp` et
-trois WhatsApp.
+De la grille « Prix par destination » de **DexNotify**, la plateforme
+successeur de Dexchange SMS — [dexnotify.com/tarifs](https://dexnotify.com/tarifs) :
 
-« Activés sur la plateforme » veut dire **activés sur NOTRE compte** : ce
-n'est pas une donnée publique par nature. La source faisant autorité est le
-tableau de bord Dexchange, ou `support@dexchange.sn`. Alexandre a confirmé le
-2026-11-20 : **le Sénégal seul**.
+| destination | prix HT par SMS |
+|---|---|
+| Sénégal | **0,016 €** |
+| Côte d'Ivoire | 0,128 € |
+| Guinée | 0,128 € |
+| Cameroun | 0,128 € |
 
-À savoir si la question revient : un refus « pays non disponible » **ne débite
-aucune unité** (leur documentation le dit, et c'est vérifié). Tester un pays
-fermé est donc gratuit ; tester un pays ouvert envoie un vrai SMS à un vrai
-numéro, ce qui interdit de balayer la liste à l'aveugle.
+**Hors du Sénégal, le SMS coûte huit fois plus.** Leur FAQ : « Les SMS partent
+vers les pays ouverts à l'envoi, listés avec leur prix dans la section Tarifs
+[…] la liste s'allonge régulièrement. » Mali, Burkina, Bénin, Togo et Niger
+n'y figurent pas.
+
+### LE POINT QUI GOUVERNE TOUT : c'est un réglage de compte
+
+La documentation dit « les envois ne sont autorisés que vers les pays
+**activés** sur la plateforme » — c'est-à-dire activés sur NOTRE compte. Il n'y
+a donc **pas de liste publique par nature**, aucun endpoint `/countries`,
+`/destinations` ni `/coverage` dans la spécification OpenAPI, et la page
+Tarifs de Dexchange SMS répond 404.
+
+**CI, GN et CM ont été ajoutés sans avoir pu être essayés** : nous n'avions
+aucun numéro de ces pays. Notre liste est une COPIE d'un réglage distant, et
+elle peut être en avance sur la réalité.
+
+### Le filet qui rend cette avance inoffensive
+
+`lib/envoi` reconnaît le refus du fournisseur — « pays non disponible », ou
+`DESTINATION_NOT_ALLOWED` chez DexNotify — et lève `ErreurPaysNonDesservi`.
+`lib/otp` la traduit dans **la même phrase** que le refus du filtre : « Nos
+codes de connexion ne partent pas vers ce pays. Appelez la boutique. » Si le
+fournisseur dément notre liste, le client lit une limite, pas une panne.
+
+C'est la leçon du numéro français : une liste qui promet plus que le
+fournisseur ne livre est pire qu'une liste courte, **sauf si le démenti est
+rattrapé**.
+
+Vérification faite : un refus « pays non disponible » **ne débite aucune
+unité**. Tester un pays fermé est gratuit ; tester un pays ouvert envoie un
+vrai SMS à un vrai numéro, ce qui interdit de balayer une liste à l'aveugle.
 
 ### Trois textes promettaient avec la configuration
 
-Ils ont été corrigés en même temps, sans quoi ils auraient survécu à la
-limite qu'ils décrivaient :
+Corrigés en même temps, sans quoi ils auraient survécu à la limite qu'ils
+décrivaient :
 
 1. Le refus de pays renvoyait vers « Connectez-vous avec votre adresse
-   e-mail » — dont l'onglet a été retiré la veille et dont le canal est fermé
-   (`EMAIL_DRIVER=console`). Proposer une issue qui n'existe pas est pire que
-   d'énoncer la limite : la personne cherche une porte au lieu d'appeler la
-   boutique. Le message l'invite désormais à appeler.
+   e-mail » — dont l'onglet a été retiré le 2026-11-19 et dont le canal est
+   fermé (`EMAIL_DRIVER=console`). Proposer une issue qui n'existe pas est
+   pire que d'énoncer la limite : le message invite à appeler la boutique.
 2. Le message d'identifiant invalide donnait « +33 6 12 34 56 78 » en exemple
-   de numéro accepté.
-3. L'aide du champ de connexion disait « Numéro étranger : avec l'indicatif ».
+   de numéro ACCEPTÉ.
+3. L'aide du champ disait « Numéro étranger : avec l'indicatif ».
 
-`npm run verif:quotas` garde les trois : un numéro français doit être refusé
-AVANT l'envoi avec le code `PAYS_NON_DESSERVI`, et son message ne doit pas
-mentionner l'e-mail.
+`npm run verif:quotas` garde l'ensemble : un numéro français refusé AVANT
+l'envoi avec le code `PAYS_NON_DESSERVI`, un message qui ne mentionne pas
+l'e-mail, un numéro sénégalais et un numéro ivoirien qui passent le filtre.
+
+### DexNotify : ce qu'une migration apporterait
+
+Le gain n'est PAS les SMS — c'est l'**e-mail**, « qui fonctionne partout dans
+le monde » d'après leur FAQ, donc la seule porte pour un client hors de ces
+quatre pays. Il demande un domaine vérifié et trois enregistrements DNS :
+DKIM, un CNAME de retour, et DMARC.
+
+La migration elle-même est modeste : **même clé d'API** (l'en-tête passe de
+`Bearer` à `x-api-key`), expéditeurs, solde et contacts repris
+automatiquement, base `api.dexnotify.com/api/v1`, chemins renommés
+(`/send/sms` → `/sms/messages`, `/balance` → `/sms/balance`) — mais « vos
+anciennes routes répondent toujours », sans date de fin annoncée.
+
+**Ne PAS reprendre leur OTP clé en main** (`/sms/otp`, `/sms/otp/verify`).
+Le nôtre porte le hachage HMAC, les quotas par destinataire, par IP et par
+heure, les cinq tentatives et la piste d'audit liée au contrat. Le déléguer
+perdrait tout cela pour n'économiser qu'une route.
 
 ### Le piège du « 07 », insoluble et assumé
 
@@ -724,7 +769,7 @@ mentionner l'e-mail.
 devient donc `+221 75 566 77 88`, un numéro sénégalais parfaitement valide —
 le code partirait chez un inconnu. Les deux écritures sont rigoureusement
 identiques en chiffres : **on ne peut que choisir le défaut**, et pour un
-service qui ne dessert que le Sénégal, le Sénégal est le bon. Le garde-fou
+service dont le Sénégal est le marché, le Sénégal est le bon. Le garde-fou
 reste l'écran suivant, qui affiche `+221 ••••• 88` : un étranger y verrait
 son indicatif changé.
 

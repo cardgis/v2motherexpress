@@ -166,6 +166,21 @@ function dexchangeBase(): string {
   return sansBarreFinale(process.env.DEXCHANGE_BASE_URL ?? "https://api.dexchange-sms.com/api/v1");
 }
 
+/**
+ * Le fournisseur a refusé le PAYS, et ce n'est pas une panne.
+ *
+ * Distinguée d'une `Error` ordinaire pour que la couche OTP en fasse un
+ * message destiné au CLIENT — « nos codes ne partent pas vers ce pays » — au
+ * lieu d'un « envoi impossible » qui ne lui apprend rien et l'invite à
+ * réessayer indéfiniment.
+ */
+export class ErreurPaysNonDesservi extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ErreurPaysNonDesservi";
+  }
+}
+
 const transportDexchange: Transport = {
   canal: "SMS",
   reel: true,
@@ -188,6 +203,18 @@ const transportDexchange: Transport = {
     if (!reponse.ok) {
       // Leur message d'erreur ne contient pas le numéro : il peut être cité.
       const detail = typeof corps?.message === "string" ? ` — ${corps.message}` : "";
+
+      // UN PAYS FERMÉ N'EST PAS UNE PANNE (2026-11-20). Les pays desservis
+      // sont un réglage du COMPTE chez le fournisseur, pas une propriété du
+      // code : `SMS_PAYS_AUTORISES` n'en tient qu'une copie, et cette copie
+      // peut être en avance sur la réalité. Quand le fournisseur répond
+      // « pays non disponible », on le traduit plutôt que de laisser remonter
+      // une erreur technique — c'est exactement ce qu'un numéro français a
+      // produit avant qu'on ne le constate à la main.
+      if (/pays non disponible|destination.?not.?allowed/i.test(String(corps?.message ?? ""))) {
+        throw new ErreurPaysNonDesservi(`Dexchange n'ouvre pas ce pays sur ce compte${detail}.`);
+      }
+
       throw new Error(`Dexchange a refusé l'envoi (HTTP ${reponse.status}${detail}).`);
     }
 
